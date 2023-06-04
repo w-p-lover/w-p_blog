@@ -1,51 +1,29 @@
 ## 博客介绍
-123
-<p align="center">
-  <a href="https://www.ttkwsd.top">
-    <img src="https://foruda.gitee.com/avatar/1662735858745624876/7774198_wu_shengdong_1662735858.png" alt="阿冬的个人博客" style="border-radius: 50%;">
-  </a>
-</p>
+基于大佬的源码做些改造，部署踩坑实录
 
-<p align="center">
-   基于Springboot + Vue3 开发的前后端分离博客
-</p>
+需要原版的去大佬的地址看
 
-<p align="center">
-   <a target="_blank" href="https://github.com/ttkican/Blog">
-      <img src="https://img.shields.io/badge/JDK-11-green"/>
-      <img src="https://img.shields.io/badge/springboot-2.6.14-green"/>
-      <img src="https://img.shields.io/badge/saToken-1.34.0-green"/>
-      <img src="https://img.shields.io/badge/vue-3.x-green"/>
-      <img src="https://img.shields.io/badge/mysql-8.0.27-green"/>
-      <img src="https://img.shields.io/badge/mybatis--plus-3.5.2-green"/>
-      <img src="https://img.shields.io/badge/redis-6.2.6-green"/>
-      <img src="https://img.shields.io/badge/elasticsearch-7.17.3-green"/>
-      <img src="https://img.shields.io/badge/rabbitmq-3.9.11-green"/>
-   </a>
-</p>
 
-## 在线地址
 
-**项目链接：** [www.ttkwsd.top](https://www.ttkwsd.top)
+1、MySQL8.0安装很费劲，我依然用5.7，不支持窗口函数，需要改造代码
 
-**后台链接：** [admin.ttkwsd.top](https://admin.ttkwsd.top)
 
-**测试账号：** test@qq.com，**密码**：123456
 
-**Github 地址：** [https://github.com/ttkican/Blog](https://github.com/ttkican/Blog)
+2、补充了适用MySQL5.7的脚本，可以直接执行；
 
-**Gitee 地址：** [https://gitee.com/wu_shengdong/blog](https://gitee.com/wu_shengdong/blog)
 
-**接口文档：** https://www.ttkwsd.top/api/doc.html
+
+
+
+
+
+
+
+
 
 ## 本地运行
 
-1. MySQL版本为`8.0.27`，npm版本为`9.4.0`，node版本为`v16.18.0`
-2. SQL 文件位于根目录下的`blog.sql`，将其中的数据导入到自己本地数据库中
-3. ES 映射文件位于`deploy`文件夹下
-4. 修改后端配置文件中的数据库等连接信息，项目中使用到的关于阿里云、腾讯云功能和第三方授权登录等需要自行开通
-5. 一定要将前端`shoka-admin`和`shoka-blog`的 utils 下的 token.ts 中的`{ domain: domain }`给删除，然后再`npm install`、`npm run dev`
-6. 项目启动后，使用`admin@qq.com`管理员账号登录后台，密码为`123456`
+1. 
 
 ## 项目特点
 
@@ -76,22 +54,16 @@
 
 ## 运行环境
 
-**服务器：** 腾讯云 2 核 4G CentOS7.6
 
-**对象存储：** 阿里云 OSS、腾讯云 COS
 
-**最低配置：** 2 核 2G 服务器（关闭 ElasticSearch）
-
-## 开发环境
-
-| 开发工具              | 说明               |
-| --------------------- | ------------------ |
-| IDEA                  | Java 开发工具 IDE  |
-| VSCode                | Vue 开发工具 IDE   |
-| Navicat               | MySQL 远程连接工具 |
-| Redis Desktop Manager | Redis 远程连接工具 |
-| Xshell                | Linux 远程连接工具 |
-| Xftp                  | Linux 文件上传工具 |
+| 开发工具              | 说明                    |
+| --------------------- | ----------------------- |
+| IDEA                  | Java 、vue 开发工具 IDE |
+|                       |                         |
+| Dbeaver               | MySQL 远程连接工具      |
+| Redis Desktop Manager | Redis 远程连接工具      |
+| Xshell                | Linux 远程连接工具      |
+| Xftp                  | Linux 文件上传工具      |
 
 | 开发环境      | 版本   |
 | ------------- | ------ |
@@ -101,22 +73,9 @@
 | Elasticsearch | 7.17.3 |
 | RabbitMQ      | 3.9.11 |
 
-## 项目截图
 
-![](https://static.ttkwsd.top/article/29ebbffccbe4367b8c113f9dee9184fc.png)
-![](https://static.ttkwsd.top/article/14f21792d32ceac730dad62798ac353c.png)
-![](https://static.ttkwsd.top/article/d4efdf65ea8a393693e317cdebdb6b43.png)
 
 ## 后续计划
-
-- [ ] 整合 EasyExcel 导出 Excel
-- [ ] 第三方登录使用 JustAuth
-- [ ] 博客文章导入导出
-- [ ] 移动端文章目录
-- [ ] 图片瀑布流布局
-- [ ] B 站追番页
-- [ ] B 站图床
-- [ ] 聊天室
 
 ## 项目总结
 
