@@ -1,6 +1,13 @@
 package com.ican.strategy.impl;
 
+import com.aliyun.oss.ClientException;
+import com.aliyun.oss.OSS;
+import com.aliyun.oss.OSSClientBuilder;
+import com.aliyun.oss.OSSException;
+import com.ican.config.properties.OssProperties;
 import com.ican.exception.ServiceException;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -11,52 +18,49 @@ import java.io.*;
  *
  * @author ican
  */
+@Slf4j
 @Service("localUploadStrategyImpl")
 public class LocalUploadStrategyImpl extends AbstractUploadStrategyImpl {
 
-    /**
-     * 本地路径
-     */
-    @Value("${upload.local.path}")
-    private String localPath;
-
-    /**
-     * 访问url
-     */
-    @Value("${upload.local.url}")
-    private String localUrl;
+    @Autowired
+    private OssProperties ossProperties;
 
     @Override
     public Boolean exists(String filePath) {
-        return new File(localPath + filePath).exists();
+        return getOssClient().doesObjectExist(ossProperties.getBucketName(), filePath);
     }
 
     @Override
-    public void upload(String path, String fileName, InputStream inputStream) throws IOException {
-        // 判断目录是否存在
-        File directory = new File(localPath + path);
-        if (!directory.exists()) {
-            if (!directory.mkdirs()) {
-                throw new ServiceException("创建目录失败");
-            }
-        }
-        // 写入文件
-        File file = new File(localPath + path + fileName);
-        if (file.createNewFile()) {
-            try (BufferedInputStream bis = new BufferedInputStream(inputStream);
-                 BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file))) {
-                byte[] bytes = new byte[4096];
-                int length;
-                while ((length = bis.read(bytes)) != -1) {
-                    bos.write(bytes, 0, length);
-                }
+    public void upload(String path, String fileName, InputStream inputStream) {
+        OSS ossClient = getOssClient();
+        try {
+            // 调用oss方法上传
+            ossClient.putObject(ossProperties.getBucketName(), path + fileName, inputStream);
+        } catch (OSSException oe) {
+            log.error("Error Message:" + oe.getErrorMessage());
+            log.error("Error Code:" + oe.getErrorCode());
+            log.info("Request ID:" + oe.getRequestId());
+            log.info("Host ID:" + oe.getHostId());
+        } catch (ClientException ce) {
+            log.error("Caught an ClientException, Error Message:" + ce.getMessage());
+        } finally {
+            if (ossClient != null) {
+                ossClient.shutdown();
             }
         }
     }
 
     @Override
     public String getFileAccessUrl(String filePath) {
-        return localUrl + filePath;
+        return ossProperties.getUrl() + filePath;
     }
 
+    /**
+     * 获取ossClient
+     *
+     * @return {@link OSS} ossClient
+     */
+    private OSS getOssClient() {
+        return new OSSClientBuilder().build(ossProperties.getEndpoint(), ossProperties.getAccessKeyId(), ossProperties.getAccessKeySecret());
+    }
 }
