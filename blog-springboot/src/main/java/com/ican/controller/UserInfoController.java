@@ -11,6 +11,7 @@ import com.ican.service.UserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
  **/
 @Api(tags = "用户信息模块")
 @RestController
+@EnableAspectJAutoProxy(proxyTargetClass = false)
 public class UserInfoController {
 
     @Autowired
@@ -73,7 +75,6 @@ public class UserInfoController {
      * @return {@link Result<>}
      */
     @ApiOperation(value = "修改用户信息")
-    @SaCheckPermission(value = "user:info:update")
     @PutMapping("/user/info")
     public Result<?> updateUserInfo(@Validated @RequestBody UserInfoDTO userInfo) {
         userService.updateUserInfo(userInfo);

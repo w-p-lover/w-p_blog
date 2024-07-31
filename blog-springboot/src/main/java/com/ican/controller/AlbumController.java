@@ -32,6 +32,7 @@ import static com.ican.constant.OptTypeConstant.*;
 @RestController
 public class AlbumController {
 
+
     @Autowired
     private AlbumService albumService;
 
@@ -46,6 +47,7 @@ public class AlbumController {
     @GetMapping("/admin/album/list")
     public Result<PageResult<AlbumBackVO>> listAlbumBackVO(ConditionDTO condition) {
         return Result.success(albumService.listAlbumBackVO(condition));
+
     }
 
     /**
