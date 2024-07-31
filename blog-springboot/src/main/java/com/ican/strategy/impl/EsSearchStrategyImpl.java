@@ -1,19 +1,27 @@
 package com.ican.strategy.impl;
 
-import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.elasticsearch._types.FieldValue;
-import co.elastic.clients.elasticsearch.core.SearchRequest;
-import co.elastic.clients.elasticsearch.core.SearchResponse;
+import com.alibaba.fastjson2.JSON;
 import com.ican.model.vo.ArticleSearchVO;
 import com.ican.strategy.SearchStrategy;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -21,17 +29,12 @@ import static com.ican.constant.CommonConstant.FALSE;
 import static com.ican.constant.ElasticConstant.*;
 import static com.ican.enums.ArticleStatusEnum.PUBLIC;
 
-/**
- * ES搜索策略
- *
- * @author ican
- */
 @Log4j2
 @Service("esSearchStrategyImpl")
 public class EsSearchStrategyImpl implements SearchStrategy {
 
     @Autowired
-    private ElasticsearchClient elasticsearchClient;
+    private RestHighLevelClient restHighLevelClient;
 
     @Override
     public List<ArticleSearchVO> searchArticle(String keyword) {
@@ -39,41 +42,56 @@ public class EsSearchStrategyImpl implements SearchStrategy {
             return new ArrayList<>();
         }
         try {
-            // 条件构造
-            SearchRequest searchRequest = SearchRequest.of(s -> s.index(ARTICLE_INDEX)
-                    .query(query -> query
-                            .bool(bool -> bool
-                                    .must(must -> must.match(m -> m.field("all").query(FieldValue.of(keyword))))
-                                    .must(must -> must.term(m -> m.field("isDelete").value(FieldValue.of(FALSE))))
-                                    .must(must -> must.term(m -> m.field("status").value(FieldValue.of(PUBLIC.getStatus())))))
-                    ).highlight(h -> h
-                            .fields(ARTICLE_TITLE, f -> f.preTags(PRE_TAG).postTags(POST_TAG))
-                            .fields(ARTICLE_CONTENT, f -> f.preTags(PRE_TAG).postTags(POST_TAG))
-                            .requireFieldMatch(false)
-                    ));
-            SearchResponse<ArticleSearchVO> search = elasticsearchClient.search(searchRequest, ArticleSearchVO.class);
+            // 构建查询条件
+            BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery()
+                    .must(QueryBuilders.matchQuery("all", keyword))
+                    .must(QueryBuilders.termQuery("isDelete", FALSE))
+                    .must(QueryBuilders.termQuery("status", PUBLIC.getStatus()));
+
+            // 高亮设置
+            HighlightBuilder highlightBuilder = new HighlightBuilder()
+                    .field(new HighlightBuilder.Field(ARTICLE_TITLE).preTags(PRE_TAG).postTags(POST_TAG))
+                    .field(new HighlightBuilder.Field(ARTICLE_CONTENT).preTags(PRE_TAG).postTags(POST_TAG))
+                    .requireFieldMatch(false);
+
+            // 构建搜索请求
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder()
+                    .query(boolQueryBuilder)
+                    .highlighter(highlightBuilder);
+
+            SearchRequest searchRequest = new SearchRequest(ARTICLE_INDEX)
+                    .source(searchSourceBuilder);
+
+            // 执行搜索
+            SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
+
             // 解析结果
-            return handleResponse(search);
+            return handleResponse(searchResponse);
         } catch (Exception e) {
             log.error(e.getMessage());
         }
         return new ArrayList<>();
     }
 
-    private List<ArticleSearchVO> handleResponse(SearchResponse<ArticleSearchVO> response) {
+    private List<ArticleSearchVO> handleResponse(SearchResponse response) {
         // 解析结果并返回
-        return response.hits().hits().stream()
+        return Arrays.stream(response.getHits().getHits())
                 .map(hit -> {
-                    if (CollectionUtils.isNotEmpty(hit.highlight().get(ARTICLE_TITLE))) {
-                        Objects.requireNonNull(hit.source()).setArticleTitle(hit.highlight().get(ARTICLE_TITLE).get(0));
+                    ArticleSearchVO articleSearchVO = new ArticleSearchVO();
+                    Map<String, HighlightField> highlightFields = hit.getHighlightFields();
+                    if (highlightFields.containsKey(ARTICLE_TITLE)) {
+                        articleSearchVO.setArticleTitle(highlightFields.get(ARTICLE_TITLE).fragments()[0].string());
                     }
-                    if (CollectionUtils.isNotEmpty(hit.highlight().get(ARTICLE_CONTENT))) {
-                        Objects.requireNonNull(hit.source()).setArticleContent(hit.highlight().get(ARTICLE_CONTENT).get(0));
+                    if (highlightFields.containsKey(ARTICLE_CONTENT)) {
+                        articleSearchVO.setArticleContent(highlightFields.get(ARTICLE_CONTENT).fragments()[0].string());
                     } else {
-                        Objects.requireNonNull(hit.source()).setArticleContent(hit.source().getArticleContent().substring(0, 300));
+                        // 假设有一个从JSON转换的方法
+                        articleSearchVO = JSON.parseObject(hit.getSourceAsString(),ArticleSearchVO.class);
+                        articleSearchVO.setArticleContent(articleSearchVO.getArticleContent().substring(0, 300));
                     }
-                    return hit.source();
+                    return articleSearchVO;
                 })
                 .collect(Collectors.toList());
     }
+
 }

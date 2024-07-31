@@ -1,6 +1,7 @@
 package com.ican.service.impl;
 
 import cn.dev33.satoken.session.SaSession;
+import cn.dev33.satoken.stp.StpLogic;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.lang.Assert;
@@ -63,7 +64,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public UserBackInfoVO getUserBackInfo() {
-        Integer userId = StpUtil.getLoginIdAsInt();
+        Integer userId = 1;
         // 查询用户信息
         User user = userMapper.selectOne(new LambdaQueryWrapper<User>()
                 .select(User::getAvatar).eq(User::getId, userId));

@@ -12,11 +12,9 @@ import com.ican.service.LoginService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * 登录控制器
@@ -25,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @Api(tags = "登录模块")
 @RestController
+@EnableAspectJAutoProxy(proxyTargetClass = false)
 public class LoginController {
 
     @Autowired
@@ -36,6 +35,9 @@ public class LoginController {
      * @param login 登录参数
      * @return {@link String} Token
      */
+
+    @CrossOrigin(value = {"http://121.41.87.40","http://121.41.87.40:30","http://localhost:5173/","http://localhost:5174/"})
+
     @ApiOperation(value = "用户登录")
     @PostMapping("/login")
     public Result<String> login(@Validated @RequestBody LoginDTO login) {

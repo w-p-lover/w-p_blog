@@ -4,8 +4,11 @@ import cn.dev33.satoken.exception.DisableServiceException;
 import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.exception.NotPermissionException;
 import cn.dev33.satoken.exception.NotRoleException;
+import cn.dev33.satoken.stp.StpUtil;
 import com.ican.exception.ServiceException;
 import com.ican.model.vo.Result;
+import com.ican.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -22,6 +25,8 @@ import static com.ican.enums.StatusCodeEnum.*;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @Autowired
+    UserService userService;
     /**
      * 处理业务异常
      */
