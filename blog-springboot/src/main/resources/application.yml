@@ -112,8 +112,7 @@ upload:
     url: https://wangyoupeng-penghong.oss-cn-beijing.aliyuncs.com/
     endpoint:  oss-cn-beijing.aliyuncs.com
     bucketName: wangyoupeng-penghong
-    accessKeyId: LTAI5tRRZNLER1ze1BpjWzPU
-    accesskeySecret: EJ5hJmjpHo926e7Mlugi3RAsB1AZ6S
+  
   # cos存储
   cos:
     url: https://Bucket域名/
