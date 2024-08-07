@@ -1,6 +1,8 @@
 package com.ican.strategy.impl;
 
 import com.alibaba.fastjson2.JSON;
+import com.ican.mapper.ArticleMapper;
+import com.ican.model.vo.ArticleInfoVO;
 import com.ican.model.vo.ArticleSearchVO;
 import com.ican.strategy.SearchStrategy;
 import lombok.extern.log4j.Log4j2;
@@ -35,7 +37,8 @@ public class EsSearchStrategyImpl implements SearchStrategy {
 
     @Autowired
     private RestHighLevelClient restHighLevelClient;
-
+    @Autowired
+    private ArticleMapper articleMapper;
     @Override
     public List<ArticleSearchVO> searchArticle(String keyword) {
         if (StringUtils.isBlank(keyword)) {
@@ -77,8 +80,13 @@ public class EsSearchStrategyImpl implements SearchStrategy {
         // 解析结果并返回
         return Arrays.stream(response.getHits().getHits())
                 .map(hit -> {
+                    String articleId = hit.getId();
                     ArticleSearchVO articleSearchVO = new ArticleSearchVO();
+                    String articleTitle = articleMapper.selectArticleInfoById(Integer.valueOf(articleId)).getArticleTitle();
                     Map<String, HighlightField> highlightFields = hit.getHighlightFields();
+
+                    articleSearchVO.setId(Integer.valueOf(articleId));
+                    articleSearchVO.setArticleTitle(articleTitle);
                     if (highlightFields.containsKey(ARTICLE_TITLE)) {
                         articleSearchVO.setArticleTitle(highlightFields.get(ARTICLE_TITLE).fragments()[0].string());
                     }
