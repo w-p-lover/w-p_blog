@@ -26,7 +26,7 @@ public class Knife4jConfig {
     public Docket createRestApi() {
         return new Docket(DocumentationType.SWAGGER_2)
                 .protocols(Collections.singleton("https"))
-                .host("https://www.ttkwsd.top")
+                .host("http://121.41.87.40")
                 .apiInfo(apiInfo())
                 .select()
                 .apis(RequestHandlerSelectors.basePackage("com.ican.controller"))
@@ -38,8 +38,8 @@ public class Knife4jConfig {
         return new ApiInfoBuilder()
                 .title("博客API文档")
                 .description("基于SpringBoot + Vue开发的博客项目")
-                .termsOfServiceUrl("https://www.ttkwsd.top/api")
-                .contact(new Contact("阿冬", "https://github.com/ICAN1999", "1632167813@qq.com"))
+                .termsOfServiceUrl("http://121.41.87.40:8080")
+                .contact(new Contact("w&p", "https://github.com/ICAN1999", "1632167813@qq.com"))
                 .version("2.0")
                 .build();
     }
