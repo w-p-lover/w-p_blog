@@ -37,7 +37,6 @@ declare module '@vue/runtime-core' {
     Notice: typeof import('./../components/Layout/SideBar/Notice.vue')['default']
     NPagination: typeof import('naive-ui')['NPagination']
     NPopover: typeof import('naive-ui')['NPopover']
-    NUpload: typeof import('naive-ui')['NUpload']
     Oauth: typeof import('./../components/Oauth/index.vue')['default']
     Pagination: typeof import('./../components/Pagination/index.vue')['default']
     Paging: typeof import('./../components/Pagination/Paging.vue')['default']
