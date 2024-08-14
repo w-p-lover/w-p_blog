@@ -16,6 +16,7 @@ export function login(data: LoginForm): AxiosPromise<Result<string>> {
   });
 }
 
+
 /**
  * 邮箱注册
  * @param data 注册信息

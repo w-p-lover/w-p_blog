@@ -22,7 +22,6 @@ const props = defineProps({
   },
   color: {
     type: String,
-    default: 'black'
   },
   size: {
     type: String,
@@ -38,6 +37,6 @@ const symbolId = computed(() => `#${props.prefix}-${props.iconClass}`);
   vertical-align: -0.25em;
   overflow: hidden;
   fill: currentColor;
-  color: rgb(44, 51, 65)
+  color: rgba(82, 143, 176, 0.5);
 }
 </style>
