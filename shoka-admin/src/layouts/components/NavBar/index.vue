@@ -40,6 +40,9 @@
             <el-dropdown-item divided command="logout">
               <span>退出登录</span>
             </el-dropdown-item>
+            <el-dropdown-item divided command="getData">
+              <span>导出数据</span>
+            </el-dropdown-item>
           </el-dropdown-menu>
         </template>
       </el-dropdown>
@@ -49,6 +52,7 @@
 
 <script setup lang="ts">
 import breadcrumb from "@/components/Breadcrumb/index.vue";
+import { getData } from "@/api/dict";
 import hamburger from "@/components/Hamburger/index.vue";
 import password from "@/components/Password/index.vue";
 import Screenfull from '@/components/Screenfull/index.vue';
@@ -69,6 +73,9 @@ const handleCommand = (command: string) => {
     case "logout":
       logout();
       break;
+    case "getData":
+      getArtData();
+      break;
     default:
       break;
   }
@@ -78,6 +85,11 @@ const logout = () => {
     user.LogOut().then(() => {
       location.href = "/login";
     });
+  }).catch(() => { });
+};
+const getArtData = () => {
+  messageConfirm("导出内容为文章数据").then(() => {
+    getData()
   }).catch(() => { });
 };
 const emits = defineEmits(['setLayout']);
