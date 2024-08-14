@@ -2,7 +2,6 @@ package com.ican.utils;
 
 import com.alibaba.excel.EasyExcel;
 import com.ican.model.vo.DemoData;
-import io.swagger.annotations.ApiModel;
 
 import java.util.ArrayList;
 
