@@ -14,7 +14,7 @@
                 </el-input>
             </el-form-item>
             <el-form-item>
-                <el-button :loading="loading" type="primary" @click.prevent="handleLogin()"
+                <el-button class="custom-input-bg" :loading="loading" type="primary" @click.prevent="handleLogin()"
                     style="width:100%;">
                     <span v-if="!loading">登 录</span>
                     <span v-else>登 录中...</span>
@@ -23,7 +23,7 @@
         </el-form>
         <!--  底部  -->
         <div class="el-login-footer">
-            <span>Copyright © 2022 - {{ new Date().getFullYear() }} By 阿冬</span>
+            <span>Copyright © 2022 - {{ new Date().getFullYear() }} By w&p</span>
         </div>
     </div>
 </template>
@@ -71,28 +71,67 @@ const handleLogin = () => {
 
 </script>
 <style lang="scss" scoped>
+
 .login {
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100%;
-    background-image: url("https://static.ttkwsd.top/config/0d7d8d691e644989b72ddda5f695aca2.jpg");
+    background-image: url("https://wangyoupeng-penghong.oss-cn-beijing.aliyuncs.com/img/202408131724486.png");
     background-size: cover;
 }
 
 .title {
-    margin: 0px auto 30px auto;
+    margin: 25px auto 45px auto;
     text-align: center;
-    color: #707070;
+    color: #ffffff;
+    font-size: 30px;
 }
 
 .login-form {
-    border-radius: 6px;
-    background: #ffffff;
-    width: 400px;
-    padding: 25px 25px 5px 25px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 400px;
+  box-shadow: 20px 20px 50px rgba(0, 0, 0, 0.5);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, .9);
+
+  @supports (backdrop-filter: blur(10px) brightness(150%)) {
+    background: rgba(255, 255, 255, .1);
+    backdrop-filter: blur(20px) brightness(90%);
+  }
+  border-radius: 6px;
+  width: 400px;
+  padding: 25px 25px 5px 25px;
+  .el-form-item
+  {
+    margin: 30px 30px 10px 30px;
+  }
+  .el-button{
+    height: 45px;
+    font-size: 16px;
+    background-color: rgba(29, 83, 189, 0.9);
+    border-color: #2757bd;
+    color: #ffffff;
+  }
 }
 
+:deep(.el-input__wrapper)  {
+  background-color: rgba(176, 197, 221,0.7);
+  height: 46px;
+  border: thin  #ffffff;
+}
+//输入框颜色
+:deep(.el-input__inner) {
+  color: rgb(44, 51, 65);
+
+}
+//提示框的字体颜色
+:deep(input::-webkit-input-placeholder) {
+  color: #fff;
+}
 .login-tip {
     font-size: 13px;
     text-align: center;

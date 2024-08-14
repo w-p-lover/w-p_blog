@@ -1,4 +1,5 @@
 import "@/assets/styles/index.scss";
+import "@/assets/styles/button.scss"
 import CalendarHeatmap from "@/components/CalendarHeatmap/index.vue";
 import Echarts from "@/components/Echarts/index.vue";
 import Pagination from "@/components/Pagination/index.vue";
