@@ -1,10 +1,10 @@
-import {AxiosPromise} from "axios";
-import request from "@/utils/request";
+import { AxiosPromise } from 'axios';
+import request from '@/utils/request';
 
-export function getData(): AxiosPromise<null> {
+export function getData(): AxiosPromise<Blob> {
     return request({
-        url: "/admin/exportData",
-        method: "get",
-        responseType: "arraybuffer"
+        url: '/admin/exportData',
+        method: 'get',
+        responseType: 'blob',
     });
 }
