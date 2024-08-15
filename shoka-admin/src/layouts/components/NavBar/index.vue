@@ -58,8 +58,10 @@ import password from "@/components/Password/index.vue";
 import Screenfull from '@/components/Screenfull/index.vue';
 import SizeSelect from '@/components/SizeSelect/index.vue';
 import useStore from "@/store";
+import { saveAs } from 'file-saver';
 import { messageConfirm } from "@/utils/modal";
 import { computed } from "vue";
+
 const { app, user } = useStore();
 const device = computed(() => app.device);
 const openHome = () => {
@@ -88,14 +90,33 @@ const logout = () => {
   }).catch(() => { });
 };
 const getArtData = () => {
-  messageConfirm("导出内容为文章数据").then(() => {
-    getData()
+  messageConfirm("导出内容为文章数据").then(async () => {
+    try {
+      const response = await getData();
+      const blob = new Blob([response.data], { type: 'application/vnd.ms-excel' });
+
+      // 获取文件名
+      const contentDisposition = response.headers['content-disposition'];
+      let fileName = 'data.xlsx';
+      if (contentDisposition && contentDisposition.indexOf('attachment') !== -1) {
+        const matches = /filename="([^"]*)"/.exec(contentDisposition);
+        if (matches != null && matches[1]) {
+          fileName = matches[1];
+        }
+      }
+      saveAs(blob, fileName);
+    } catch (error) {
+      console.error('导出数据时发生错误:', error);
+    }
   }).catch(() => { });
 };
+
+
 const emits = defineEmits(['setLayout']);
 const setLayout = () => {
   emits('setLayout');
 };
+
 </script>
 
 <style lang="scss" scoped>

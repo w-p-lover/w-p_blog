@@ -34,36 +34,47 @@ public class DictServiceImpl implements DictService {
     @Override
     public void exportData(HttpServletResponse response) {
         try {
-            //设置相关参数
-            response.setContentType("application/vnd.ms-excel");
-            response.setCharacterEncoding("UTF-8");
-            // 这里URLEncoder.encode可以防止中文乱码 当然和easyexcel没有关系
-            String fileName = URLEncoder.encode("数据字典", StandardCharsets.UTF_8);
-            response.setHeader("Content-disposition", "attachment;filename=" + fileName + ".xlsx");
-            //获取文件
+            // 设置相关参数
+            /*String fileName = URLEncoder.encode("数据字典", "UTF-8").replaceAll("\\+", "%20");
+*/            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            /*response.setHeader("Content-Disposition", "attachment;filename*=UTF-8''" + fileName + ".xlsx");
+*/            response.addHeader("Access-Control-Expose-Headers", "Content-Disposition");
+
+            // 获取数据
             List<Article> list = articleMapper.selectList(null);
-            //转换文件
             ArrayList<DictEeVo> dictEeVos = new ArrayList<>();
             for (Article article : list) {
                 DictEeVo dictEeVo = new DictEeVo();
-                //转换
                 BeanUtils.copyProperties(article, dictEeVo);
-                dictEeVo.setArticleContent("测试一下");
+
+                // 处理文章内容，保证长度不超过50
+                String articleContent = article.getArticleContent();
+                if (articleContent != null && articleContent.length() > 50) {
+                    articleContent = articleContent.substring(0, 50).replace("\n", ""); // 截取前50个字符
+                }
+                dictEeVo.setArticleContent(articleContent);
+
                 dictEeVo.setIsTop(article.getIsTop().equals(1) ? "置顶" : "未置顶");
                 dictEeVo.setIsRecommend(article.getIsRecommend().equals(1) ? "推荐" : "未推荐");
                 dictEeVo.setStatus(article.getStatus().equals(1) ? "公开"
                         : article.getStatus().equals(2) ? "私人" : "草稿");
                 dictEeVo.setArticleType(article.getArticleType().equals(1) ? "原创"
                         : article.getArticleType().equals(2) ? "转载" : "翻译");
-                //添加
+
                 dictEeVos.add(dictEeVo);
             }
-            //写出
-            ServletOutputStream outputStream = response.getOutputStream();
-            EasyExcel.write(outputStream, DictEeVo.class).sheet("数据字典").doWrite(dictEeVos);
-            outputStream.flush();
+
+            // 使用 EasyExcel 写出数据
+            try (ServletOutputStream outputStream = response.getOutputStream()) {
+                EasyExcel.write(outputStream, DictEeVo.class).sheet("数据字典").doWrite(dictEeVos);
+            }
+
+            // 确保响应流被刷新
+            response.flushBuffer();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
 }
