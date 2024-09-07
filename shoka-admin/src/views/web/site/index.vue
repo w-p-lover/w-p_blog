@@ -75,7 +75,7 @@
                 </template>
                 <el-form label-width="80px" :model="siteConfig" label-position="left">
                     <el-form-item label="作者头像">
-                        <el-upload class="avatar-uploader" :headers="authorization" action="/api/admin/site/upload"
+                        <el-upload class="avatar-uploader" :headers="authorization" action="http://121.41.87.40:8080/admin/site/upload"
                             :show-file-list="false" accept="image/*" :before-upload="beforeUpload"
                             :on-success="handleAuthorAvatarSuccess">
                             <img v-if="siteConfig.authorAvatar" :src="siteConfig.authorAvatar" class="avatar" />
@@ -162,7 +162,7 @@
                     <el-row style="width: 600px" v-if="siteConfig.isReward == 1">
                         <el-col :md="12">
                             <el-form-item label="微信收款码">
-                                <el-upload class="avatar-uploader" :headers="authorization" action="/api/admin/site/upload"
+                                <el-upload class="avatar-uploader" :headers="authorization" action="http://121.41.87.40:8080/admin/site/upload"
                                     :show-file-list="false" accept="image/*" :before-upload="beforeUpload"
                                     :on-success="handleWeiXinSuccess">
                                     <img v-if="siteConfig.weiXinCode" :src="siteConfig.weiXinCode" class="avatar" />
@@ -174,7 +174,7 @@
                         </el-col>
                         <el-col :md="12">
                             <el-form-item label="支付宝收款码">
-                                <el-upload class="avatar-uploader" :headers="authorization" action="/api/admin/site/upload"
+                                <el-upload class="avatar-uploader" :headers="authorization" action="http://121.41.87.40:8080/admin/site/upload"
                                     :show-file-list="false" accept="image/*" :before-upload="beforeUpload"
                                     :on-success="handleAliSuccess">
                                     <img v-if="siteConfig.aliCode" :src="siteConfig.aliCode" class="avatar" />
@@ -202,7 +202,7 @@
                 </template>
                 <el-form label-width="100px" :model="siteConfig" label-position="left">
                     <el-form-item label="文章默认封面">
-                        <el-upload class="avatar-uploader" :headers="authorization" action="/api/admin/site/upload"
+                        <el-upload class="avatar-uploader" :headers="authorization" action="http://121.41.87.40:8080/admin/site/upload"
                             :show-file-list="false" accept="image/*" :before-upload="beforeUpload"
                             :on-success="handleArticleSuccess">
                             <img v-if="siteConfig.articleCover" :src="siteConfig.articleCover" class="article-cover" />

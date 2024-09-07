@@ -3,7 +3,7 @@ import axios, { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from "ax
 import { getToken, token_prefix } from "./token";
 
 const requests = axios.create({
-  baseURL: "http://localhost:8080",
+  baseURL: "http://121.41.87.40:8080",
   timeout: 10000,
   // 请求头
   headers: {
