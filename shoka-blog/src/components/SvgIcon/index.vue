@@ -32,5 +32,6 @@ const symbolId = computed(() => `#${props.prefix}-${props.iconClass}`);
   vertical-align: -0.15em;
   overflow: hidden;
   fill: currentColor;
+  stroke : #eeeeee;
 }
 </style>

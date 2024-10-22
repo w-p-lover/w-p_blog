@@ -9,7 +9,14 @@
     <div class="page-container">
       <div class="title">基本信息</div>
       <div class="info-container">
-        <user-avatar class="avatar"></user-avatar>
+        <div class="up">
+          <user-avatar class="avatar"></user-avatar>
+          <div>
+            <n-button color="#3e999f" @click="handleUpdate" style="margin-left: 5%; padding: 10px 50px">
+              修改
+            </n-button>
+          </div>
+        </div>
         <div class="info mt-4">
           <n-form label-align="left" :label-width="80" :model="userForm">
             <n-form-item label="昵称" path="nickname">
@@ -33,9 +40,7 @@
               </n-input-group>
             </n-form-item>
           </n-form>
-          <n-button color="#3e999f" @click="handleUpdate" style='margin-left: 40%'>
-            修改
-          </n-button>
+
         </div>
       </div>
     </div>
@@ -92,11 +97,17 @@ onMounted(() => {
     display: inline-flex;
     width: 230px;
     height: 140px;
+    margin-bottom: 50px;
   }
 
   .info {
     width: 530px;
   }
+  .up{
+    display: flex;
+    flex-direction: column
+  }
+  display: flex; flex-direction: row;
 }
 
 @media (max-width: 850px) {
