@@ -1,7 +1,7 @@
 ## 博客介绍
-<p align="center" style="text-align: left; margin-left: 20px;"> 
+<p align="center"> 
   <a href="w-love-p.top" style="display: inline-block; text-align: left;">  
-    <img src="https://wangyoupeng-penghong.oss-cn-beijing.aliyuncs.com/img202410082058148.jpg" alt="一个比较大的博客" style="border-radius: 50%; width: 50%; height: auto; margin-left: 120px;"> 
+    <img src="https://wangyoupeng-penghong.oss-cn-beijing.aliyuncs.com/img202410082058148.jpg" alt="一个比较大的博客" style="border-radius: 50%; width: 40%; height: auto; margin-left: 120px;"> 
   </a>  
 </p>
 
@@ -30,7 +30,7 @@
 
 **测试账号：** test@qq.com，**密码**：123456
 
-**Github 地址：**[ https://github.com/w-p-lover/w-p_blog/]( Personal blog front-end and back-end projects😌)
+**Github 地址：**[ https://github.com/w-p-lover/w-p_blog/]
 
 **接口文档：** [http://w-love-p.top:8080/doc.html](api接口文档)
 
