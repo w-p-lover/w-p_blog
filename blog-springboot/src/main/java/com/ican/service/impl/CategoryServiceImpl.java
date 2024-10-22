@@ -1,12 +1,16 @@
 package com.ican.service.impl;
 
+import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.lang.Assert;
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ican.entity.Article;
 import com.ican.entity.Category;
+import com.ican.entity.User;
 import com.ican.mapper.ArticleMapper;
 import com.ican.mapper.CategoryMapper;
+import com.ican.mapper.UserMapper;
 import com.ican.model.dto.CategoryDTO;
 import com.ican.model.dto.ConditionDTO;
 import com.ican.model.vo.*;
@@ -17,8 +21,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+
+import static com.ican.constant.PersonConstant.MY_MAIL;
+import static com.ican.constant.PersonConstant.MY_RED_MAIL;
 
 /**
  * 分类业务接口实现类
@@ -31,6 +39,9 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
 
     @Autowired
     private CategoryMapper categoryMapper;
+
+    @Autowired
+    private UserMapper userMapper;
 
     @Autowired
     private ArticleMapper articleMapper;
@@ -100,7 +111,19 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
 
     @Override
     public List<CategoryVO> listCategoryVO() {
-        return categoryMapper.selectCategoryVO();
+        //DONE 对于用户角色进行选择性掩饰
+        int userId;
+        String email = null;
+        List<CategoryVO> categoryVOS = categoryMapper.selectCategoryVO();
+        if (StpUtil.isLogin()) {
+            userId = StpUtil.getLoginIdAsInt();
+            email = userMapper.selectOne(new LambdaQueryWrapper<User>()
+                    .select(User::getEmail).eq(User::getId, userId)).getEmail();
+        }
+        if (!ObjectUtil.isNotNull(email) || (!email.equals(MY_MAIL) && !email.equals(MY_RED_MAIL))) {
+            categoryVOS.removeIf(category -> category.getCategoryName().equals("宝宝~"));
+        }
+        return categoryVOS;
     }
 
     @Override
@@ -108,8 +131,8 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
         List<ArticleConditionVO> articleConditionList = articleMapper.listArticleByCondition(PageUtils.getLimit(),
                 PageUtils.getSize(), condition);
         String name = categoryMapper.selectOne(new LambdaQueryWrapper<Category>()
-                .select(Category::getCategoryName)
-                .eq(Category::getId, condition.getCategoryId()))
+                        .select(Category::getCategoryName)
+                        .eq(Category::getId, condition.getCategoryId()))
                 .getCategoryName();
         return ArticleConditionList.builder()
                 .articleConditionVOList(articleConditionList)

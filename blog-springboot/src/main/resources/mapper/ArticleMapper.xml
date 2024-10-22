@@ -218,6 +218,46 @@
                  a.id DESC
     </select>
 
+    <select id="PselectArticleHomeList" resultMap="articleHomeVO">
+        SELECT a.id,
+               article_cover,
+               article_title,
+               article_content,
+               a.create_time,
+               a.article_type,
+               a.is_top,
+               a.category_id,
+               category_name,
+               t.id                            AS tag_id,
+               t.tag_name
+        FROM (
+                 SELECT id,
+                        article_cover,
+                        article_title,
+                        SUBSTR(article_content, 1, 500) AS article_content,
+                        create_time,
+                        article_type,
+                        is_top,
+                        category_id
+                 FROM t_article
+                 WHERE is_delete = 0
+                   AND `status` = 1
+                   AND id IN (
+                     -- 过滤标签
+                     SELECT tat.article_id
+                     FROM t_article_tag tat
+                              INNER JOIN t_tag t ON tat.tag_id = t.id
+                     WHERE t.tag_name NOT IN ('红红专属~', '猫猫出没', 'w&amp;p~')
+                 )
+                 ORDER BY is_top DESC, id DESC
+                 LIMIT #{limit}, #{size}
+             ) a
+                 INNER JOIN t_category c ON a.category_id = c.id
+                 INNER JOIN t_article_tag tat ON a.id = tat.article_id
+                 INNER JOIN t_tag t ON t.id = tat.tag_id
+        ORDER BY a.is_top DESC, a.id DESC
+    </select>
+
     <select id="selectArticleHomeById" resultMap="articleVO">
         SELECT a.id,
                article_cover,
