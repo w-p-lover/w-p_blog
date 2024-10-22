@@ -66,7 +66,11 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-
+        <dependency>
+            <groupId>com.tinify</groupId>
+            <artifactId>tinify</artifactId>
+            <version>RELEASE</version>
+        </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>easyexcel</artifactId>
