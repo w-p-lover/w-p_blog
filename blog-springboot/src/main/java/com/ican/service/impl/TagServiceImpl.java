@@ -1,13 +1,17 @@
 package com.ican.service.impl;
 
+import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.lang.Assert;
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ican.entity.ArticleTag;
 import com.ican.entity.Tag;
+import com.ican.entity.User;
 import com.ican.mapper.ArticleMapper;
 import com.ican.mapper.ArticleTagMapper;
 import com.ican.mapper.TagMapper;
+import com.ican.mapper.UserMapper;
 import com.ican.model.dto.ConditionDTO;
 import com.ican.model.dto.TagDTO;
 import com.ican.model.vo.*;
@@ -17,8 +21,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+
+import static com.ican.constant.PersonConstant.MY_MAIL;
+import static com.ican.constant.PersonConstant.MY_RED_MAIL;
 
 /**
  * 标签业务接口实现类
@@ -31,6 +41,9 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements TagSe
 
     @Autowired
     private TagMapper tagMapper;
+
+    @Autowired
+    private UserMapper userMapper;
 
     @Autowired
     private ArticleTagMapper articleTagMapper;
@@ -100,7 +113,19 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements TagSe
 
     @Override
     public List<TagVO> listTagVO() {
-        return tagMapper.selectTagVOList();
+        int userId;
+        String email = null;
+        List<TagVO> tagVOS = tagMapper.selectTagVOList();
+        Set<String> tagsToRemove = new HashSet<>(Arrays.asList("猫猫出没", "w&p~", "红红专属~"));
+        if (StpUtil.isLogin()) {
+            userId = StpUtil.getLoginIdAsInt();
+            email = userMapper.selectOne(new LambdaQueryWrapper<User>()
+                    .select(User::getEmail).eq(User::getId, userId)).getEmail();
+        }
+        if (!ObjectUtil.isNotNull(email) || (!email.equals(MY_MAIL) && !email.equals(MY_RED_MAIL))) {
+            tagVOS.removeIf(tagVO -> tagsToRemove.contains(tagVO.getTagName()));
+        }
+        return tagVOS;
     }
 
     @Override

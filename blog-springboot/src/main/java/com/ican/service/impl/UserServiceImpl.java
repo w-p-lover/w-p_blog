@@ -64,7 +64,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public UserBackInfoVO getUserBackInfo() {
-        Integer userId = 1;
+        Integer userId = StpUtil.getLoginIdAsInt();
         // 查询用户信息
         User user = userMapper.selectOne(new LambdaQueryWrapper<User>()
                 .select(User::getAvatar).eq(User::getId, userId));

@@ -2,6 +2,7 @@ package com.ican.service.impl;
 
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.lang.Assert;
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
@@ -24,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -31,6 +33,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.ican.constant.CommonConstant.FALSE;
+import static com.ican.constant.PersonConstant.MY_MAIL;
+import static com.ican.constant.PersonConstant.MY_RED_MAIL;
 import static com.ican.constant.RedisConstant.*;
 import static com.ican.enums.ArticleStatusEnum.PUBLIC;
 import static com.ican.enums.FilePathEnum.ARTICLE;
@@ -43,6 +47,9 @@ import static com.ican.enums.FilePathEnum.ARTICLE;
  **/
 @Service
 public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> implements ArticleService {
+
+    @Autowired
+    private UserMapper userMapper;
 
     @Autowired
     private CategoryMapper categoryMapper;
@@ -91,6 +98,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             Integer likeCount = likeCountMap.get(item.getId().toString());
             item.setLikeCount(Optional.ofNullable(likeCount).orElse(0));
         });
+
         return new PageResult<>(articleBackVOList, count);
     }
 
@@ -201,9 +209,22 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         if (count == 0) {
             return new PageResult<>();
         }
-        // 查询首页文章
-        List<ArticleHomeVO> articleHomeVOList = articleMapper.selectArticleHomeList(PageUtils.getLimit(), PageUtils.getSize());
-        return new PageResult<>(articleHomeVOList, count);
+        Integer userId = null;
+        String email = null;
+        if (StpUtil.isLogin()) {
+            userId = StpUtil.getLoginIdAsInt();
+            email = userMapper.selectOne(new LambdaQueryWrapper<User>()
+                    .select(User::getEmail).eq(User::getId, userId)).getEmail();
+        }
+        // 查询用户信息
+        if (ObjectUtil.isNotNull(email) && (email.equals(MY_MAIL) || email.equals(MY_RED_MAIL))) {
+            // 查询首页文章
+            List<ArticleHomeVO> articleHomeVOList = articleMapper.selectArticleHomeList(PageUtils.getLimit(), PageUtils.getSize());
+            return new PageResult<>(articleHomeVOList, count);
+        } else {
+            List<ArticleHomeVO> articleHomeVOList = articleMapper.PselectArticleHomeList(PageUtils.getLimit(), PageUtils.getSize());
+            return new PageResult<>(articleHomeVOList, count);
+        }
     }
 
     @Override
