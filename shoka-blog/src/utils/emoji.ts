@@ -1,7 +1,7 @@
 export default {
   "[emoji1]": "https://wangyoupeng-penghong.oss-cn-beijing.aliyuncs.com/img/emoji202409041747462.png",
   "[emoji2]": "https://wangyoupeng-penghong.oss-cn-beijing.aliyuncs.com/img/emoji202409041747463.png",
-  "[emoji3]": "https://wangyoupeng-penghong.oss-cn-beijing.aliyuncs.com/img/emoji202409041747464.png",
+  "[emoji3]": "https://wangyoupeng-penghong.oss-cn-beijing.aliyuncs.com/img/emoji202409041747600.png",
   "[emoji4]": "https://wangyoupeng-penghong.oss-cn-beijing.aliyuncs.com/img/emoji202409041747465.png",
   "[emoji5]": "https://wangyoupeng-penghong.oss-cn-beijing.aliyuncs.com/img/emoji202409041747466.png",
   "[emoji6]": "https://wangyoupeng-penghong.oss-cn-beijing.aliyuncs.com/img/emoji202409041747467.png",
