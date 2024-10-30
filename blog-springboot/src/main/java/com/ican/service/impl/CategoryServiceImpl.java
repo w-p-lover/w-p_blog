@@ -112,11 +112,10 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
     @Override
     public List<CategoryVO> listCategoryVO() {
         //DONE 对于用户角色进行选择性掩饰
-        int userId;
         String email = null;
         List<CategoryVO> categoryVOS = categoryMapper.selectCategoryVO();
         if (StpUtil.isLogin()) {
-            userId = StpUtil.getLoginIdAsInt();
+            int userId = StpUtil.getLoginIdAsInt();
             email = userMapper.selectOne(new LambdaQueryWrapper<User>()
                     .select(User::getEmail).eq(User::getId, userId)).getEmail();
         }

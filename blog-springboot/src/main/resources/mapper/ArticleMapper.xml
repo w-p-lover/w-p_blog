@@ -297,13 +297,23 @@
         ORDER BY id ASC LIMIT 1
     </select>
 
+    <select id="PselectArchiveList" resultType="com.ican.model.vo.ArchiveVO">
+        select id, article_title, article_cover, create_time
+        from t_article
+        where is_delete = 0
+          and `status` = 1
+        order by create_time desc
+            limit #{limit}, #{size}
+    </select>
+
     <select id="selectArchiveList" resultType="com.ican.model.vo.ArchiveVO">
         select id, article_title, article_cover, create_time
         from t_article
         where is_delete = 0
           and `status` = 1
-        order by create_time
-            limit #{limit}, #{size}
+          and category_id  NOT IN ('红红专属~', '猫猫出没', 'w&amp;p~')
+        order by create_time desc
+        limit #{limit}, #{size}
     </select>
 
     <select id="selectArticleStatistics" resultType="com.ican.model.vo.ArticleStatisticsVO">

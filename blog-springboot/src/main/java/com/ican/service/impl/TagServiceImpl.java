@@ -113,12 +113,11 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements TagSe
 
     @Override
     public List<TagVO> listTagVO() {
-        int userId;
         String email = null;
         List<TagVO> tagVOS = tagMapper.selectTagVOList();
         Set<String> tagsToRemove = new HashSet<>(Arrays.asList("猫猫出没", "w&p~", "红红专属~"));
         if (StpUtil.isLogin()) {
-            userId = StpUtil.getLoginIdAsInt();
+            int userId = StpUtil.getLoginIdAsInt();
             email = userMapper.selectOne(new LambdaQueryWrapper<User>()
                     .select(User::getEmail).eq(User::getId, userId)).getEmail();
         }

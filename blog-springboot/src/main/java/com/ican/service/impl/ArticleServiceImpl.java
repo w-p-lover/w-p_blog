@@ -261,8 +261,22 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         if (count == 0) {
             return new PageResult<>();
         }
-        List<ArchiveVO> archiveList = articleMapper.selectArchiveList(PageUtils.getLimit(), PageUtils.getSize());
-        return new PageResult<>(archiveList, count);
+        String email = null;
+        if (StpUtil.isLogin()) {
+            int userId = StpUtil.getLoginIdAsInt();
+            email = userMapper.selectOne(new LambdaQueryWrapper<User>()
+                    .select(User::getEmail).eq(User::getId, userId)).getEmail();
+        }
+        // 查询用户信息
+        if (ObjectUtil.isNotNull(email) && (email.equals(MY_MAIL) || email.equals(MY_RED_MAIL))) {
+            // 查询首页文章
+            List<ArchiveVO> archiveList = articleMapper.PselectArchiveList(PageUtils.getLimit(), PageUtils.getSize());
+            return new PageResult<>(archiveList, count);
+        } else {
+            List<ArchiveVO> articleHomeVOList = articleMapper.selectArchiveList(PageUtils.getLimit(), PageUtils.getSize());
+            return new PageResult<>(articleHomeVOList, count);
+        }
+
     }
 
     @Override
