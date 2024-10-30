@@ -104,6 +104,15 @@ public interface ArticleMapper extends BaseMapper<Article> {
     List<ArchiveVO> selectArchiveList(@Param("limit") Long limit, @Param("size") Long size);
 
     /**
+     * 查询私人文章归档
+     *
+     * @param limit
+     * @param size
+     * @return
+     */
+    List<ArchiveVO> PselectArchiveList(@Param("limit") Long limit, @Param("size") Long size);
+
+    /**
      * 查询文章统计
      *
      * @return 文章统计

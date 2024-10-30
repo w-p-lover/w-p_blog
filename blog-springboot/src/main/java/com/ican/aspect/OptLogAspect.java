@@ -105,7 +105,7 @@ public class OptLogAspect {
         // 请求用户ID
         operationLog.setUserId(StpUtil.getLoginIdAsInt());
         // 请求用户昵称
-        operationLog.setNickname("阿冬");
+        operationLog.setNickname("w&p");
         // 操作ip和操作地址
         String ip = IpUtils.getIpAddress(request);
         operationLog.setIpAddress(ip);
