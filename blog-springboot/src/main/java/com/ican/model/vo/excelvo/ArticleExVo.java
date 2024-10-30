@@ -1,19 +1,13 @@
-package com.ican.model.vo;
+package com.ican.model.vo.excelvo;
 
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.annotation.write.style.ColumnWidth;
 import com.alibaba.excel.annotation.write.style.ContentRowHeight;
-import com.alibaba.excel.annotation.write.style.ContentStyle;
 import com.alibaba.excel.annotation.write.style.HeadRowHeight;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.apache.poi.ss.usermodel.HorizontalAlignment;
-import org.apache.poi.ss.usermodel.VerticalAlignment;
-
-import javax.validation.constraints.NotBlank;
-import java.util.List;
 
 /**
  * @Author：yep
@@ -28,7 +22,7 @@ import java.util.List;
 @EqualsAndHashCode
 @ColumnWidth(15)
 @ApiModel(description = "文章导出")
-public class DictEeVo {
+public class ArticleExVo {
     /**
      * 文章id
      */
