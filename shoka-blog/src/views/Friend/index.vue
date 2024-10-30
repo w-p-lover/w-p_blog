@@ -1,7 +1,7 @@
 <template>
   <div class="page-header">
     <h1 class="page-title">友情链接</h1>
-    <img class="page-cover" src="https://wangyoupeng-penghong.oss-cn-beijing.aliyuncs.com/avatar/wallhaven-we56z6_5000x3000.png" alt="" />
+    <img class="page-cover" src="https://wangyoupeng-penghong.oss-cn-beijing.aliyuncs.com/avatar/wallhaven-q21drl_2560x1440.png" alt="" />
     <!-- 波浪 -->
     <Waves></Waves>
   </div>

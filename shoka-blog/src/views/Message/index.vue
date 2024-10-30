@@ -71,7 +71,7 @@ const send = () => {
   width: 22.5rem;
   margin: 0 auto;
   text-align: center;
-  color: #fff;
+  color: #ffffff;
   z-index: 5;
 }
 
@@ -117,7 +117,9 @@ const send = () => {
   right: 0;
   bottom: 0;
   width: 100%;
-  background: var(--color-cyan-light) url("https://static.ttkwsd.top/config/e3408389cb0d4ea1b5f651873dab2a19.jpg") no-repeat center;
+  background: var(--color-cyan-light) url("https://wangyoupeng-penghong.oss-cn-beijing.aliyuncs.com/avatar/wallhaven-d6eq6o_5640x2400.png") no-repeat center;
+  background-size: cover;
+  filter: brightness(85%);
   animation: slideDownIn 1s;
 }
 

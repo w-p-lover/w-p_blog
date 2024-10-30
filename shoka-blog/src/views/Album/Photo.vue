@@ -1,7 +1,7 @@
 <template>
   <div class="page-header">
     <h1 class="page-title">{{ photoInfo.albumName }}</h1>
-    <img class="page-cover" src="https://static.ttkwsd.top/config/0639b8855aab4dcbb827a9884e8ec57d.jpg" alt="">
+    <img class="page-cover" src="https://wangyoupeng-penghong.oss-cn-beijing.aliyuncs.com/avatar/wallhaven-q21drl_2560x1440.png" alt="">
     <Waves></Waves>
   </div>
   <div class="bg">

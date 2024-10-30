@@ -6,19 +6,21 @@
     <div :class="{ hasTagsView: needTagView }" class="main-container">
       <div :class="{ 'fixed-header': fixedHeader }">
         <!-- 导航栏 -->
-        <NavBar @setLayout="setLayout"></NavBar>
+        <NavBar @setLayout="setLayout" @exportExcel="exportExcel"></NavBar>
         <!-- 历史标签栏 -->
         <TagView v-if="needTagView"></TagView>
       </div>
       <AppMain></AppMain>
       <!-- 设置 -->
       <Settings ref="settingRef"></Settings>
+      <ExportExcel ref="exportRef"></ExportExcel>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import Settings from "@/components/Settings/index.vue";
+import ExportExcel from "@/components/ExportExcel/index.vue";
 import TagView from "@/components/TagView/index.vue";
 import useStore from "@/store";
 import { useWindowSize } from "@vueuse/core";
@@ -31,6 +33,7 @@ const { app, setting } = useStore();
 const { width } = useWindowSize();
 const WIDTH = 992;
 const settingRef = ref();
+const exportRef = ref();
 
 const device = computed(() => app.device);
 const needTagView = computed(() => setting.tagView);
@@ -57,6 +60,10 @@ const handleClickOutside = () => {
 
 const setLayout = () => {
   settingRef.value.openSetting();
+}
+
+const exportExcel = () => {
+  exportRef.value.openSetting();
 }
 </script>
 
