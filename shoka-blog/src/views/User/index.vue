@@ -12,7 +12,7 @@
         <div class="up">
           <user-avatar class="avatar"></user-avatar>
           <div>
-            <n-button color="#3e999f" @click="handleUpdate" style="margin-left: 5%; padding: 10px 50px">
+            <n-button color="#3e8e9e" @click="handleUpdate" style="margin-left: 5%; padding: 10px 50px">
               修改
             </n-button>
           </div>
@@ -40,10 +40,10 @@
               </n-input-group>
             </n-form-item>
           </n-form>
-
         </div>
       </div>
     </div>
+
   </div>
 </template>
 
@@ -102,6 +102,7 @@ onMounted(() => {
 
   .info {
     width: 530px;
+    margin-bottom: 15px;
   }
   .up{
     display: flex;

@@ -58,6 +58,7 @@ declare module '@vue/runtime-core' {
     ElTreeSelect: typeof import('element-plus/es')['ElTreeSelect']
     ElUpload: typeof import('element-plus/es')['ElUpload']
     EmojiExtension: typeof import('./src/components/EmojiExtension/index.vue')['default']
+    ExportExcel: typeof import('./src/components/ExportExcel/index.vue')['default']
     GithubCorner: typeof import('./src/components/GithubCorner/index.vue')['default']
     Hamburger: typeof import('./src/components/Hamburger/index.vue')['default']
     Hour: typeof import('./src/components/Crontab/hour.vue')['default']

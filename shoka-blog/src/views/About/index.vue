@@ -1,7 +1,7 @@
 <template>
   <div class="page-header">
     <h1 class="page-title">关于</h1>
-    <img class="page-cover" src="https://wangyoupeng-penghong.oss-cn-beijing.aliyuncs.com/avatar/wallhaven-we56z6_5000x3000.png"
+    <img class="page-cover" src="https://wangyoupeng-penghong.oss-cn-beijing.aliyuncs.com/avatar/wallhaven-q21drl_2560x1440.png"
       alt="" />
     <Waves></Waves>
   </div>

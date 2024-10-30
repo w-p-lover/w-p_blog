@@ -65,7 +65,7 @@ import { computed } from "vue";
 const { app, user } = useStore();
 const device = computed(() => app.device);
 const openHome = () => {
-  window.open("https://www.ttkwsd.top");
+  window.open("http://w-love-p.top/");
 };
 const handleCommand = (command: string) => {
   switch (command) {
@@ -76,7 +76,7 @@ const handleCommand = (command: string) => {
       logout();
       break;
     case "getData":
-      getArtData();
+      exportExcel();
       break;
     default:
       break;
@@ -89,32 +89,14 @@ const logout = () => {
     });
   }).catch(() => { });
 };
-const getArtData = () => {
-  messageConfirm("导出内容为文章数据").then(async () => {
-    try {
-      const response = await getData();
-      const blob = new Blob([response.data], { type: 'application/vnd.ms-excel' });
 
-      // 获取文件名
-      const contentDisposition = response.headers['content-disposition'];
-      let fileName = 'data.xlsx';
-      if (contentDisposition && contentDisposition.indexOf('attachment') !== -1) {
-        const matches = /filename="([^"]*)"/.exec(contentDisposition);
-        if (matches != null && matches[1]) {
-          fileName = matches[1];
-        }
-      }
-      saveAs(blob, fileName);
-    } catch (error) {
-      console.error('导出数据时发生错误:', error);
-    }
-  }).catch(() => { });
-};
-
-
-const emits = defineEmits(['setLayout']);
+const emits = defineEmits(['setLayout','exportExcel']);
 const setLayout = () => {
   emits('setLayout');
+};
+
+const exportExcel = () => {
+  emits('exportExcel');
 };
 
 </script>
