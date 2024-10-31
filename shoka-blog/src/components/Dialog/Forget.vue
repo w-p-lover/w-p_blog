@@ -60,6 +60,9 @@ const sendCode = () => {
   getCode(forgetForm.value.username).then(({ data }) => {
     if (data.flag) {
       window.$message?.success("发送成功");
+    }else{
+      window.$message?.warning("后台发送失败");
+      return;
     }
   });
 };

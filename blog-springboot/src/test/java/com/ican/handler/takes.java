@@ -1,3 +1,4 @@
+package com.ican.handler;
 
 import com.alibaba.fastjson2.JSON;
 import com.ican.BlogApplication;
