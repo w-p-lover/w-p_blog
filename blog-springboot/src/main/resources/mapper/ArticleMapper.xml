@@ -311,7 +311,7 @@
         from t_article
         where is_delete = 0
           and `status` = 1
-          and category_id  NOT IN ('红红专属~', '猫猫出没', 'w&amp;p~')
+          and category_id  NOT IN (60,61)
         order by create_time desc
         limit #{limit}, #{size}
     </select>

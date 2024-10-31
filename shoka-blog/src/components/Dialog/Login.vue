@@ -98,7 +98,7 @@ const handlelogin = () => {
       app.setLoginFlag(false);
     }
     loading.value = false;
-
+    return;
   });
 };
 </script>

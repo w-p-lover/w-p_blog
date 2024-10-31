@@ -36,7 +36,7 @@ public class LoginController {
      * @return {@link String} Token
      */
 
-    @CrossOrigin(value = {"http://121.41.87.40","http://121.41.87.40:30","http://w-love-p.top/","http://localhost:5173"})
+    @CrossOrigin(value = {"http://121.41.87.40","http://121.41.87.40:30","http://w-love-p.top/","http://localhost:5173","http://localhost:5174"})
     @ApiOperation(value = "用户登录")
     @PostMapping("/login")
     public Result<String> login(@Validated @RequestBody LoginDTO login) {
