@@ -1,7 +1,7 @@
-import { PageResult, Result } from "@/model";
+import {PageResult, Result} from "@/model";
 import request from "@/utils/request";
-import { AxiosPromise } from "axios";
-import { Role, RoleForm, RoleQuery, RoleStatus } from "./types";
+import {AxiosPromise} from "axios";
+import {Role, RoleForm, RoleQuery, RoleStatus} from "./types";
 
 /**
  * 查看角色列表
@@ -9,11 +9,11 @@ import { Role, RoleForm, RoleQuery, RoleStatus } from "./types";
  * @returns 角色列表
  */
 export function getRoleList(params: RoleQuery): AxiosPromise<Result<PageResult<Role[]>>> {
-  return request({
-    url: "/admin/role/list",
-    method: "get",
-    params,
-  });
+    return request({
+        url: "/admin/role/list",
+        method: "get",
+        params,
+    });
 }
 
 /**
@@ -21,11 +21,11 @@ export function getRoleList(params: RoleQuery): AxiosPromise<Result<PageResult<R
  * @param data 角色id集合
  */
 export function deleteRole(data: string[]): AxiosPromise<Result<null>> {
-  return request({
-    url: "/admin/role/delete",
-    method: "delete",
-    data,
-  });
+    return request({
+        url: "/admin/role/delete",
+        method: "delete",
+        data,
+    });
 }
 
 /**
@@ -33,11 +33,11 @@ export function deleteRole(data: string[]): AxiosPromise<Result<null>> {
  * @param data 角色信息
  */
 export function addRole(data: RoleForm): AxiosPromise<Result<null>> {
-  return request({
-    url: "/admin/role/add",
-    method: "post",
-    data,
-  });
+    return request({
+        url: "/admin/role/add",
+        method: "post",
+        data,
+    });
 }
 
 /**
@@ -45,11 +45,11 @@ export function addRole(data: RoleForm): AxiosPromise<Result<null>> {
  * @param data 角色信息
  */
 export function updateRole(data: RoleForm): AxiosPromise<Result<null>> {
-  return request({
-    url: "/admin/role/update",
-    method: "put",
-    data,
-  });
+    return request({
+        url: "/admin/role/update",
+        method: "put",
+        data,
+    });
 }
 
 /**
@@ -57,11 +57,11 @@ export function updateRole(data: RoleForm): AxiosPromise<Result<null>> {
  * @param data 角色状态
  */
 export function updateRoleStatus(data: RoleStatus): AxiosPromise<Result<null>> {
-  return request({
-    url: "/admin/role/changeStatus",
-    method: "put",
-    data,
-  });
+    return request({
+        url: "/admin/role/changeStatus",
+        method: "put",
+        data,
+    });
 }
 
 /**
@@ -69,8 +69,8 @@ export function updateRoleStatus(data: RoleStatus): AxiosPromise<Result<null>> {
  * @param roleId 角色id
  */
 export function getRoleMenuTree(roleId: string): AxiosPromise<Result<number[]>> {
-  return request({
-    url: `/admin/role/menu/${roleId}`,
-    method: "get",
-  });
+    return request({
+        url: `/admin/role/menu/${roleId}`,
+        method: "get",
+    });
 }

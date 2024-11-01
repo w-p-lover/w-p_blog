@@ -1,4 +1,4 @@
-import { AxiosPromise } from 'axios';
+import {AxiosPromise} from 'axios';
 import request from '@/utils/request';
 
 export function getData(data: any): AxiosPromise<Blob> {

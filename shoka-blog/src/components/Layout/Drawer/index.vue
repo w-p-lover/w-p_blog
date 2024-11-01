@@ -2,7 +2,7 @@
   <n-drawer class="side-bg" v-model:show="drawerVisible" :width="240" :block-scroll="false" placement="right">
     <n-drawer-content style="padding-top: 0.5rem">
       <div class="author-container">
-        <img class="author-avatar" :src="blog.blogInfo.siteConfig.authorAvatar" />
+        <img class="author-avatar" :src="blog.blogInfo.siteConfig.authorAvatar"/>
         <p class="author-name">{{ blog.blogInfo.siteConfig.siteAuthor }}</p>
         <div class="site-desc">{{ blog.blogInfo.siteConfig.siteIntro }}</div>
       </div>
@@ -11,30 +11,42 @@
       <ul class="side-menu">
         <template v-for="menu of menuList" :key="menu.name">
           <li v-if="!menu.children" class="item" :class="{ active: route.path === menu.path }">
-            <router-link :to="menu.path"><svg-icon :icon-class="menu.icon"></svg-icon> {{ menu.name }} </router-link>
+            <router-link :to="menu.path">
+              <svg-icon :icon-class="menu.icon"></svg-icon>
+              {{ menu.name }}
+            </router-link>
           </li>
           <li v-else class="item dropdown" :class="{ expand: expand(menu.children) }">
-            <a><svg-icon :icon-class="menu.icon"></svg-icon> {{ menu.name }} </a>
+            <a>
+              <svg-icon :icon-class="menu.icon"></svg-icon>
+              {{ menu.name }} </a>
             <ul class="submenu">
               <li class="item" v-for="submenu of menu.children" :key="submenu.name"
-                :class="{ active: route.path === submenu.path }">
-                <router-link :to="submenu.path"> <svg-icon :icon-class="submenu.icon"></svg-icon> {{ submenu.name }}
+                  :class="{ active: route.path === submenu.path }">
+                <router-link :to="submenu.path">
+                  <svg-icon :icon-class="submenu.icon"></svg-icon>
+                  {{ submenu.name }}
                 </router-link>
               </li>
             </ul>
           </li>
         </template>
         <li class="item" v-if="!user.id">
-          <a @click="app.loginFlag = true"> <svg-icon icon-class="user"></svg-icon> 登录 </a>
+          <a @click="app.loginFlag = true">
+            <svg-icon icon-class="user"></svg-icon>
+            登录 </a>
         </li>
         <template v-else>
           <li class="item" :class="{ active: route.path === '/user' }">
             <router-link to="/user">
-              <svg-icon icon-class="author"></svg-icon> 个人中心
+              <svg-icon icon-class="author"></svg-icon>
+              个人中心
             </router-link>
           </li>
           <li class="item">
-            <a @click="logout"> <svg-icon icon-class="logout"></svg-icon> 退出 </a>
+            <a @click="logout">
+              <svg-icon icon-class="logout"></svg-icon>
+              退出 </a>
           </li>
         </template>
       </ul>
@@ -44,11 +56,12 @@
 
 <script setup lang="ts">
 import useStore from "@/store";
-import { useWindowSize } from "@vueuse/core";
+import {useWindowSize} from "@vueuse/core";
+
 const route = useRoute();
 const router = useRouter();
-const { app, blog, user } = useStore();
-const { width } = useWindowSize();
+const {app, blog, user} = useStore();
+const {width} = useWindowSize();
 const menuList = [
   {
     name: "首页",

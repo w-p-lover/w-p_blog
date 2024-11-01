@@ -1,9 +1,9 @@
 <template>
   <n-modal class="bg" v-model:show="dialogVisible" preset="dialog" :show-icon="false" transform-origin="center"
-    style="padding-bottom: 2rem;" :block-scroll="false">
+           style="padding-bottom: 2rem;" :block-scroll="false">
     <n-input class="mt-11" placeholder="邮箱号" v-model:value="emailForm.email"></n-input>
     <n-input-group class="mt-11">
-      <n-input placeholder="验证码" v-model:value="emailForm.code" />
+      <n-input placeholder="验证码" v-model:value="emailForm.code"/>
       <n-button color="#49b1f5" :disabled="flag" @click="sendCode">
         {{ timer == 0 ? '发送' : `${timer}s` }}
       </n-button>
@@ -15,12 +15,13 @@
 </template>
 
 <script setup lang="ts">
-import { getCode } from '@/api/login';
-import { updateUserEmail } from '@/api/user';
-import { EmailForm } from '@/api/user/types';
+import {getCode} from '@/api/login';
+import {updateUserEmail} from '@/api/user';
+import {EmailForm} from '@/api/user/types';
 import useStore from "@/store";
-import { useIntervalFn } from '@vueuse/core';
-const { app, user } = useStore();
+import {useIntervalFn} from '@vueuse/core';
+
+const {app, user} = useStore();
 const data = reactive({
   timer: 0,
   flag: false,
@@ -30,15 +31,15 @@ const data = reactive({
     code: "",
   } as EmailForm,
 });
-const { timer, flag, loading, emailForm } = toRefs(data);
-const { pause, resume } = useIntervalFn(() => {
+const {timer, flag, loading, emailForm} = toRefs(data);
+const {pause, resume} = useIntervalFn(() => {
   timer.value--;
   if (timer.value <= 0) {
     // 停止定时器
     pause();
     flag.value = false;
   }
-}, 1000, { immediate: false });
+}, 1000, {immediate: false});
 const start = (time: number) => {
   flag.value = true;
   timer.value = time;
@@ -52,7 +53,7 @@ const sendCode = () => {
     return;
   }
   start(60);
-  getCode(emailForm.value.email).then(({ data }) => {
+  getCode(emailForm.value.email).then(({data}) => {
     if (data.flag) {
       window.$message?.success("发送成功");
     }
@@ -68,7 +69,7 @@ const handleUpdate = () => {
     return;
   }
   loading.value = true;
-  updateUserEmail(emailForm.value).then(({ data }) => {
+  updateUserEmail(emailForm.value).then(({data}) => {
     if (data.flag) {
       window.$message?.success("修改成功");
       user.email = emailForm.value.email;

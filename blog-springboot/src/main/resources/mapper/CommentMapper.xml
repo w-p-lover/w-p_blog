@@ -82,7 +82,8 @@
         FROM t_comment c
                  INNER JOIN t_user u ON c.from_uid = u.id
         WHERE c.is_check = 1
-        ORDER BY c.create_time DESC LIMIT 5
+        ORDER BY c.create_time DESC
+        LIMIT 5
     </select>
 
     <select id="selectParentComment" resultType="com.ican.model.vo.CommentVO">
@@ -192,6 +193,7 @@
                  JOIN t_user r ON c.to_uid = r.id
         WHERE c.is_check = 1
           AND parent_id = #{commentId}
-        ORDER BY c.id ASC LIMIT #{limit}, #{size}
+        ORDER BY c.id ASC
+        LIMIT #{limit}, #{size}
     </select>
 </mapper>

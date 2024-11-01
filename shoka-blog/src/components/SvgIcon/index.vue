@@ -1,6 +1,6 @@
 <template>
   <svg aria-hidden="true" class="svg-icon" :width="size" :height="size">
-    <use :xlink:href="symbolId" :fill="color" />
+    <use :xlink:href="symbolId" :fill="color"/>
   </svg>
 </template>
 
@@ -32,6 +32,6 @@ const symbolId = computed(() => `#${props.prefix}-${props.iconClass}`);
   vertical-align: -0.15em;
   overflow: hidden;
   fill: currentColor;
-  stroke : #eeeeee;
+  stroke: #eeeeee;
 }
 </style>

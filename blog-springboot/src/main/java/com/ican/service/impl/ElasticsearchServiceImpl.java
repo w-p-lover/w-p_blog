@@ -49,7 +49,7 @@ public class ElasticsearchServiceImpl implements ElasticsearchService {
                     .index(ARTICLE_INDEX)
                     .doc(article)
                     .id(article.getId().toString());
-            elasticsearchClient.update(request,RequestOptions.DEFAULT);
+            elasticsearchClient.update(request, RequestOptions.DEFAULT);
         } catch (IOException e) {
             e.printStackTrace();
         }

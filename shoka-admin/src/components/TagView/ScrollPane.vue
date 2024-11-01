@@ -1,6 +1,6 @@
 <template>
   <el-scrollbar ref="scrollContainer" :vertical="false" class="scroll-container">
-    <slot />
+    <slot/>
   </el-scrollbar>
 </template>
 

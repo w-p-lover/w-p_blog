@@ -21,25 +21,26 @@ import ElementPlus from "element-plus";
 import "element-plus/theme-chalk/index.css";
 import "element-plus/theme-chalk/dark/css-vars.css";
 import "nprogress/nprogress.css";
-import { createPinia } from "pinia";
+import {createPinia} from "pinia";
 import piniaPluginPersistedstate from "pinia-plugin-persistedstate";
 import Prism from "prismjs";
 import VueViewer from "v-viewer";
 import "viewerjs/dist/viewer.css";
 import "virtual:svg-icons-register";
-import { createApp, Directive } from "vue";
+import {createApp, Directive} from "vue";
 import App from "./App.vue";
+
 const app = createApp(App);
 const pinia = createPinia();
 
-VMdEditor.use(vuepressTheme, { Prism }).use(createEmojiPlugin()).use(createTodoListPlugin());
+VMdEditor.use(vuepressTheme, {Prism}).use(createEmojiPlugin()).use(createTodoListPlugin());
 
 Object.keys(directive).forEach((key) => {
-  app.directive(key, (directive as { [key: string]: Directive })[key]);
+    app.directive(key, (directive as { [key: string]: Directive })[key]);
 });
 
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
-  app.component(key, component);
+    app.component(key, component);
 }
 pinia.use(piniaPluginPersistedstate);
 app.use(pinia);

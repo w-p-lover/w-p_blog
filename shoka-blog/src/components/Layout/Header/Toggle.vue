@@ -11,7 +11,7 @@
 <script setup lang="ts">
 import useStore from "@/store";
 
-const { app } = useStore();
+const {app} = useStore();
 
 const drawerVisible = computed(() => (value: boolean) => value ? "toggle close" : "toggle");
 </script>

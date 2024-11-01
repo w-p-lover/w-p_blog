@@ -1,7 +1,7 @@
-import { PageResult, Result } from "@/model";
+import {PageResult, Result} from "@/model";
 import request from "@/utils/request";
-import { AxiosPromise } from "axios";
-import { Category, CategoryForm, CategoryQuery } from "./types";
+import {AxiosPromise} from "axios";
+import {Category, CategoryForm, CategoryQuery} from "./types";
 
 /**
  * 查看分类列表
@@ -9,13 +9,13 @@ import { Category, CategoryForm, CategoryQuery } from "./types";
  * @returns 分类列表
  */
 export function getCategoryList(
-  params: CategoryQuery
+    params: CategoryQuery
 ): AxiosPromise<Result<PageResult<Category[]>>> {
-  return request({
-    url: "/admin/category/list",
-    method: "get",
-    params,
-  });
+    return request({
+        url: "/admin/category/list",
+        method: "get",
+        params,
+    });
 }
 
 /**
@@ -23,11 +23,11 @@ export function getCategoryList(
  * @param data 分类id集合
  */
 export function deleteCategory(data: number[]): AxiosPromise<Result<null>> {
-  return request({
-    url: "/admin/category/delete",
-    method: "delete",
-    data,
-  });
+    return request({
+        url: "/admin/category/delete",
+        method: "delete",
+        data,
+    });
 }
 
 /**
@@ -35,11 +35,11 @@ export function deleteCategory(data: number[]): AxiosPromise<Result<null>> {
  * @param data 分类信息
  */
 export function addCategory(data: CategoryForm): AxiosPromise<Result<null>> {
-  return request({
-    url: "/admin/category/add",
-    method: "post",
-    data,
-  });
+    return request({
+        url: "/admin/category/add",
+        method: "post",
+        data,
+    });
 }
 
 /**
@@ -47,9 +47,9 @@ export function addCategory(data: CategoryForm): AxiosPromise<Result<null>> {
  * @param data 分类信息
  */
 export function updateCategory(data: CategoryForm): AxiosPromise<Result<null>> {
-  return request({
-    url: "/admin/category/update",
-    method: "put",
-    data,
-  });
+    return request({
+        url: "/admin/category/update",
+        method: "put",
+        data,
+    });
 }

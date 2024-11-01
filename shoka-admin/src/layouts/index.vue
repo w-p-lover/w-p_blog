@@ -1,6 +1,6 @@
 <template>
   <div :class="classObj" class="app-wrapper">
-    <div v-if="(device === 'mobile' && !app.isCollapse)" class="drawer-bg" @click="handleClickOutside" />
+    <div v-if="(device === 'mobile' && !app.isCollapse)" class="drawer-bg" @click="handleClickOutside"/>
     <!-- 侧边栏 -->
     <SideBar class="sidebar-container"></SideBar>
     <div :class="{ hasTagsView: needTagView }" class="main-container">
@@ -23,14 +23,14 @@ import Settings from "@/components/Settings/index.vue";
 import ExportExcel from "@/components/ExportExcel/index.vue";
 import TagView from "@/components/TagView/index.vue";
 import useStore from "@/store";
-import { useWindowSize } from "@vueuse/core";
-import { computed, ref, watchEffect } from "vue";
+import {useWindowSize} from "@vueuse/core";
+import {computed, ref, watchEffect} from "vue";
 import AppMain from "./components/AppMain/index.vue";
 import NavBar from "./components/NavBar/index.vue";
 import SideBar from "./components/SideBar/index.vue";
 
-const { app, setting } = useStore();
-const { width } = useWindowSize();
+const {app, setting} = useStore();
+const {width} = useWindowSize();
 const WIDTH = 992;
 const settingRef = ref();
 const exportRef = ref();

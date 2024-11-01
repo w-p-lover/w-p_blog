@@ -1,7 +1,8 @@
 <template>
   <div class="page-header">
     <h1 class="page-title">相册</h1>
-    <img class="page-cover" src="https://wangyoupeng-penghong.oss-cn-beijing.aliyuncs.com/avatar/wallhaven-q21drl_2560x1440.png" alt="">
+    <img class="page-cover"
+         src="https://wangyoupeng-penghong.oss-cn-beijing.aliyuncs.com/avatar/wallhaven-q21drl_2560x1440.png" alt="">
     <!-- 波浪 -->
     <Waves></Waves>
   </div>
@@ -21,11 +22,12 @@
 </template>
 
 <script setup lang="ts">
-import { getAlbumList } from "@/api/album";
-import { Album } from "@/api/album/types";
+import {getAlbumList} from "@/api/album";
+import {Album} from "@/api/album/types";
+
 const albumList = ref<Album[]>([]);
 onMounted(() => {
-  getAlbumList().then(({ data }) => {
+  getAlbumList().then(({data}) => {
     albumList.value = data.data;
   })
 })

@@ -2,7 +2,7 @@
   <div class="page-header">
     <h1 class="page-title">说说</h1>
     <img class="page-cover" src="https://ik.imagekit.io/nicexl/Wallpaper/ba41a32b219e4b40ad055bbb52935896_Y0819msuI.jpg"
-      alt="">
+         alt="">
     <Waves></Waves>
   </div>
   <div class="bg">
@@ -20,13 +20,13 @@
         <div class="info mt-4">
           <n-form label-align="left" :label-width="80" :model="userForm">
             <n-form-item label="昵称" path="nickname">
-              <n-input placeholder="输入您的昵称" v-model:value="userForm.nickname" />
+              <n-input placeholder="输入您的昵称" v-model:value="userForm.nickname"/>
             </n-form-item>
             <n-form-item label="个人网站" path="website">
-              <n-input placeholder="请输入个人网站" v-model:value="userForm.webSite" />
+              <n-input placeholder="请输入个人网站" v-model:value="userForm.webSite"/>
             </n-form-item>
             <n-form-item label="简介" path="intro">
-              <n-input placeholder="介绍一下自己吧" v-model:value="userForm.intro" />
+              <n-input placeholder="介绍一下自己吧" v-model:value="userForm.intro"/>
             </n-form-item>
             <n-form-item label="邮箱" path="email">
               <n-input-group>
@@ -48,10 +48,11 @@
 </template>
 
 <script setup lang="ts">
-import { updateUserInfo } from "@/api/user";
-import { UserInfo } from "@/api/user/types";
+import {updateUserInfo} from "@/api/user";
+import {UserInfo} from "@/api/user/types";
 import useStore from "@/store";
-const { user, app } = useStore();
+
+const {user, app} = useStore();
 const router = useRouter();
 const userForm = ref<UserInfo>({
   nickname: user.nickname,
@@ -59,7 +60,7 @@ const userForm = ref<UserInfo>({
   webSite: user.webSite,
 });
 const handleUpdate = () => {
-  updateUserInfo(userForm.value).then(({ data }) => {
+  updateUserInfo(userForm.value).then(({data}) => {
     if (data.flag) {
       user.updateUserInfo(userForm.value);
       window.$message?.success("修改成功");
@@ -88,6 +89,7 @@ onMounted(() => {
   padding: 1px;
   border-radius: 5px;
 }
+
 .info-container {
   @include flex;
   flex-wrap: wrap;
@@ -104,11 +106,14 @@ onMounted(() => {
     width: 530px;
     margin-bottom: 15px;
   }
-  .up{
+
+  .up {
     display: flex;
     flex-direction: column
   }
-  display: flex; flex-direction: row;
+
+  display: flex;
+  flex-direction: row;
 }
 
 @media (max-width: 850px) {

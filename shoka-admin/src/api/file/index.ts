@@ -1,7 +1,7 @@
-import { PageResult, Result } from "@/model";
+import {PageResult, Result} from "@/model";
 import request from "@/utils/request";
-import { AxiosPromise } from "axios";
-import { BlogFile, FileQuery, FolderForm } from "./types";
+import {AxiosPromise} from "axios";
+import {BlogFile, FileQuery, FolderForm} from "./types";
 
 /**
  * 查看文件列表
@@ -9,11 +9,11 @@ import { BlogFile, FileQuery, FolderForm } from "./types";
  * @returns 文件列表
  */
 export function getFileList(params: FileQuery): AxiosPromise<Result<PageResult<BlogFile[]>>> {
-  return request({
-    url: "/admin/file/list",
-    method: "get",
-    params,
-  });
+    return request({
+        url: "/admin/file/list",
+        method: "get",
+        params,
+    });
 }
 
 /**
@@ -21,11 +21,11 @@ export function getFileList(params: FileQuery): AxiosPromise<Result<PageResult<B
  * @param data 文件id集合
  */
 export function deleteFile(data: number[]): AxiosPromise<Result<null>> {
-  return request({
-    url: "/admin/file/delete",
-    method: "delete",
-    data,
-  });
+    return request({
+        url: "/admin/file/delete",
+        method: "delete",
+        data,
+    });
 }
 
 /**
@@ -33,11 +33,11 @@ export function deleteFile(data: number[]): AxiosPromise<Result<null>> {
  * @param data 文件夹信息
  */
 export function createFolder(data: FolderForm): AxiosPromise<Result<null>> {
-  return request({
-    url: "/admin/file/createFolder",
-    method: "post",
-    data,
-  });
+    return request({
+        url: "/admin/file/createFolder",
+        method: "post",
+        data,
+    });
 }
 
 /**
@@ -45,12 +45,12 @@ export function createFolder(data: FolderForm): AxiosPromise<Result<null>> {
  * @param data 文件
  */
 export function uploadFile(data: FormData): AxiosPromise<Result<null>> {
-  return request({
-    url: "/admin/file/upload",
-    headers: { "content-type": "multipart/form-data" },
-    method: "post",
-    data,
-  });
+    return request({
+        url: "/admin/file/upload",
+        headers: {"content-type": "multipart/form-data"},
+        method: "post",
+        data,
+    });
 }
 
 /**
@@ -58,8 +58,8 @@ export function uploadFile(data: FormData): AxiosPromise<Result<null>> {
  * @param fileId 文件id
  */
 export function downloadFile(fileId: number): AxiosPromise<Result<null>> {
-  return request({
-    url: `/admin/file/download/${fileId}`,
-    method: "get",
-  });
+    return request({
+        url: `/admin/file/download/${fileId}`,
+        method: "get",
+    });
 }

@@ -1,7 +1,7 @@
-import { CheckDTO, PageResult, Result } from "@/model";
+import {CheckDTO, PageResult, Result} from "@/model";
 import request from "@/utils/request";
-import { AxiosPromise } from "axios";
-import {  Message, MessageQuery } from "./types";
+import {AxiosPromise} from "axios";
+import {Message, MessageQuery} from "./types";
 
 /**
  * 查看留言列表
@@ -9,11 +9,11 @@ import {  Message, MessageQuery } from "./types";
  * @returns 留言列表
  */
 export function getMessageList(params: MessageQuery): AxiosPromise<Result<PageResult<Message[]>>> {
-  return request({
-    url: "/admin/message/list",
-    method: "get",
-    params,
-  });
+    return request({
+        url: "/admin/message/list",
+        method: "get",
+        params,
+    });
 }
 
 /**
@@ -21,11 +21,11 @@ export function getMessageList(params: MessageQuery): AxiosPromise<Result<PageRe
  * @param data 留言id集合
  */
 export function deleteMessage(data: number[]): AxiosPromise<Result<null>> {
-  return request({
-    url: "/admin/message/delete",
-    method: "delete",
-    data,
-  });
+    return request({
+        url: "/admin/message/delete",
+        method: "delete",
+        data,
+    });
 }
 
 /**
@@ -33,9 +33,9 @@ export function deleteMessage(data: number[]): AxiosPromise<Result<null>> {
  * @param data 审核信息
  */
 export function updateMessageCheck(data: CheckDTO): AxiosPromise<Result<null>> {
-  return request({
-    url: "/admin/message/pass",
-    method: "put",
-    data,
-  });
+    return request({
+        url: "/admin/message/pass",
+        method: "put",
+        data,
+    });
 }

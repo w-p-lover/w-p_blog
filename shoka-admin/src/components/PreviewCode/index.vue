@@ -6,26 +6,26 @@
 
 <script setup lang="ts">
 import Prism from "prismjs";
-import { computed, onMounted } from "vue";
+import {computed, onMounted} from "vue";
 
 const props = defineProps({
-    code: {
-        type: String,
-        default: "",
-    },
-    type: {
-        type: String,
-        default: "html",
-    },
-    isShowlineNumbers: {
-        type: Boolean,
-        default: false,
-    },
+  code: {
+    type: String,
+    default: "",
+  },
+  type: {
+    type: String,
+    default: "html",
+  },
+  isShowlineNumbers: {
+    type: Boolean,
+    default: false,
+  },
 });
 const lineNumbers = computed(() => {
-    return props.isShowlineNumbers ? "line-numbers" : "";
+  return props.isShowlineNumbers ? "line-numbers" : "";
 });
 onMounted(() => {
-    Prism.highlightAll(); //切换菜单重新渲染
+  Prism.highlightAll(); //切换菜单重新渲染
 });
 </script>

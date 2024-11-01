@@ -10,7 +10,8 @@
 
 <script setup lang="ts">
 import useStore from "@/store";
-const { blog } = useStore();
+
+const {blog} = useStore();
 const isShowSocial = computed(() => (social: string) => blog.blogInfo.siteConfig.socialList.includes(social));
 const showSocialList = [
   {

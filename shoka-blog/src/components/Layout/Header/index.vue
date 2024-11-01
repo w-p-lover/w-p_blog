@@ -18,10 +18,11 @@
 
 <script setup lang="ts">
 import useStore from "@/store";
-import { useDark, useScroll } from "@vueuse/core";
-import { useToggle } from '@vueuse/shared';
-const { app } = useStore();
-const { y } = useScroll(window);
+import {useDark, useScroll} from "@vueuse/core";
+import {useToggle} from '@vueuse/shared';
+
+const {app} = useStore();
+const {y} = useScroll(window);
 const isDark = useDark({
   selector: 'html',
   attribute: 'theme',

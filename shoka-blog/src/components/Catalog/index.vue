@@ -5,15 +5,15 @@
   </div>
   <div class="catalog-content">
     <div class="catalog-item" v-for="(anchor, index) of titleList" :key="anchor.title"
-      :class="currentIndex === index ? 'active' : ''" :style="{ paddingLeft: `${5 + anchor.indent * 15}px` }"
-      @click="handleAnchorClick(anchor, index)">
+         :class="currentIndex === index ? 'active' : ''" :style="{ paddingLeft: `${5 + anchor.indent * 15}px` }"
+         @click="handleAnchorClick(anchor, index)">
       <a> {{ anchor.title }} </a>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useScroll, watchThrottled } from '@vueuse/core';
+import {useScroll, watchThrottled} from '@vueuse/core';
 
 const titleList = ref<any>([]);
 const currentIndex = ref(0);
@@ -54,14 +54,14 @@ function handleAnchorClick(anchor: any, idx: number) {
 
 // * 实现目录高亮当前位置的标题
 // 思路: 循环的方式将标题距离顶部距离与滚动条当前位置对比, 来确定高亮的标题
-const { y } = useScroll(window)
+const {y} = useScroll(window)
 watchThrottled(y, () => {
   titleList.value.forEach((e: any, idx: number) => {
     const heading = props.domRef.$el.querySelector(`[data-v-md-line="${e.lineIndex}"]`)
     if (y.value >= heading.offsetTop - 50) // 比 40 稍微多一点
       currentIndex.value = idx
   })
-}, { throttle: 200 })
+}, {throttle: 200})
 onMounted(() => {
   nextTick(() => {
     getTitles();

@@ -2,7 +2,7 @@
   <div class="page-header">
     <h1 class="page-title">说说</h1>
     <img class="page-cover" src="https://ik.imagekit.io/nicexl/Wallpaper/ba41a32b219e4b40ad055bbb52935896_Y0819msuI.jpg"
-      alt="">
+         alt="">
     <Waves></Waves>
   </div>
   <div class="bg">
@@ -14,12 +14,12 @@
         <div class="talk-content-wrap">
           <div class="talk-info">
             <span class="talk-user-name">{{ talk.nickname }}<svg-icon icon-class="badge"
-                style="margin-left: 0.4rem;"></svg-icon></span>
+                                                                      style="margin-left: 0.4rem;"></svg-icon></span>
             <span class="talk-time">{{ formatDateTime(talk.createTime) }}</span>
           </div>
           <div class="talk-content" v-html="talk.talkContent"></div>
           <div class="talk-image" v-viewer v-if="talk.imgList">
-            <img @click.prevent class="image" v-for="(img, index) in talk.imgList" :key="index" v-lazy="img" />
+            <img @click.prevent class="image" v-for="(img, index) in talk.imgList" :key="index" v-lazy="img"/>
           </div>
           <div class="info" style="margin-top: 0.5rem;">
             <span class="talk-like info" @click="like">
@@ -39,12 +39,13 @@
 </template>
 
 <script setup lang="ts">
-import { getTalk, likeTalk } from "@/api/talk";
-import { Talk } from "@/api/talk/types";
+import {getTalk, likeTalk} from "@/api/talk";
+import {Talk} from "@/api/talk/types";
 import useStore from "@/store";
-import { formatDateTime } from "@/utils/date";
+import {formatDateTime} from "@/utils/date";
+
 const route = useRoute();
-const { user, app } = useStore();
+const {user, app} = useStore();
 const isLike = computed(() => (id: number) => user.talkLikeSet.indexOf(id) != -1 ? "like-flag" : "");
 const data = reactive({
   commentCount: 0,
@@ -61,7 +62,7 @@ const data = reactive({
     createTime: "",
   } as Talk,
 });
-const { commentCount, commentType, talk } = toRefs(data);
+const {commentCount, commentType, talk} = toRefs(data);
 const getCommentCount = (count: number) => {
   commentCount.value = count;
 };
@@ -71,7 +72,7 @@ const like = () => {
     return;
   }
   let id = talk.value.id;
-  likeTalk(id).then(({ data }) => {
+  likeTalk(id).then(({data}) => {
     if (data.flag) {
       //判断是否点赞
       if (user.talkLikeSet.indexOf(id) != -1) {
@@ -84,7 +85,7 @@ const like = () => {
   });
 };
 onMounted(() => {
-  getTalk(Number(route.params.id)).then(({ data }) => {
+  getTalk(Number(route.params.id)).then(({data}) => {
     talk.value = data.data;
   })
 })

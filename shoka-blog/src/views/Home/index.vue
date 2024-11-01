@@ -25,7 +25,8 @@ import Brand from "./Brand/index.vue";
 import Images from "./Swiper/Images.vue";
 import Recommend from "./Swiper/Recommend.vue";
 import TalkSwiper from "./Swiper/TalkSwiper.vue";
-const { app } = useStore();
+
+const {app} = useStore();
 </script>
 
 <style lang="scss" scoped>

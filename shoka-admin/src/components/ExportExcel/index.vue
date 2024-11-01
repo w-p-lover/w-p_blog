@@ -64,7 +64,7 @@ const exportExcel = () => {
     try {
       console.log(exportSetting)
       const response = await getData(exportSetting);
-      const blob = new Blob([response.data], { type: 'application/vnd.ms-excel' });
+      const blob = new Blob([response.data], {type: 'application/vnd.ms-excel'});
       // 获取文件名
       const contentDisposition = response.headers['content-disposition'];
       let fileName = 'data.xlsx';
@@ -78,7 +78,8 @@ const exportExcel = () => {
     } catch (error) {
       console.error('导出数据时发生错误:', error);
     }
-  }).catch(() => { });
+  }).catch(() => {
+  });
 };
 
 // Reactive object to track the state of each switch
@@ -113,6 +114,7 @@ defineExpose({
   }
 
 }
+
 .button-container {
   display: flex;
   justify-content: center;

@@ -1,7 +1,7 @@
-import { PageResult, Result } from "@/model";
+import {PageResult, Result} from "@/model";
 import request from "@/utils/request";
-import { AxiosPromise } from "axios";
-import { Friend, FriendForm, FriendQuery } from "./types";
+import {AxiosPromise} from "axios";
+import {Friend, FriendForm, FriendQuery} from "./types";
 
 /**
  * 查看友链列表
@@ -9,11 +9,11 @@ import { Friend, FriendForm, FriendQuery } from "./types";
  * @returns 友链列表
  */
 export function getFriendList(params: FriendQuery): AxiosPromise<Result<PageResult<Friend[]>>> {
-  return request({
-    url: "/admin/friend/list",
-    method: "get",
-    params,
-  });
+    return request({
+        url: "/admin/friend/list",
+        method: "get",
+        params,
+    });
 }
 
 /**
@@ -21,11 +21,11 @@ export function getFriendList(params: FriendQuery): AxiosPromise<Result<PageResu
  * @param data 友链id集合
  */
 export function deleteFriend(data: number[]): AxiosPromise<Result<null>> {
-  return request({
-    url: "/admin/friend/delete",
-    method: "delete",
-    data,
-  });
+    return request({
+        url: "/admin/friend/delete",
+        method: "delete",
+        data,
+    });
 }
 
 /**
@@ -33,11 +33,11 @@ export function deleteFriend(data: number[]): AxiosPromise<Result<null>> {
  * @param data 友链信息
  */
 export function addFriend(data: FriendForm): AxiosPromise<Result<null>> {
-  return request({
-    url: "/admin/friend/add",
-    method: "post",
-    data,
-  });
+    return request({
+        url: "/admin/friend/add",
+        method: "post",
+        data,
+    });
 }
 
 /**
@@ -45,10 +45,10 @@ export function addFriend(data: FriendForm): AxiosPromise<Result<null>> {
  * @param data 友链信息
  */
 export function updateFriend(data: FriendForm): AxiosPromise<Result<null>> {
-  return request({
-    url: "/admin/friend/update",
-    method: "put",
-    data,
-  });
+    return request({
+        url: "/admin/friend/update",
+        method: "put",
+        data,
+    });
 }
 

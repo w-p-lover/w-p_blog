@@ -20,6 +20,7 @@ import java.util.List;
 
 /**
  * 友链业务接口实现类
+ *
  * @author ican
  */
 @Service

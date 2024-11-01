@@ -9,7 +9,7 @@
         <!-- 博客首页 -->
         <el-tooltip content="博客首页" effect="dark" placement="bottom">
           <div class="right-menu-item hover-effect">
-            <svg-icon @click="openHome" icon-class="home" size="1.2rem" />
+            <svg-icon @click="openHome" icon-class="home" size="1.2rem"/>
           </div>
         </el-tooltip>
         <!-- 修改密码 -->
@@ -20,15 +20,15 @@
         <screenfull class="right-menu-item hover-effect"></screenfull>
         <!-- 布局大小 -->
         <el-tooltip content="布局大小" effect="dark" placement="bottom">
-          <size-select class="right-menu-item hover-effect" />
+          <size-select class="right-menu-item hover-effect"/>
         </el-tooltip>
       </template>
       <el-dropdown @command="handleCommand" class="avatar-container right-menu-item hover-effect" trigger="click">
         <!-- 头像 -->
         <div class="avatar-wrapper">
-          <img :src="user.avatar" class="user-avatar" />
+          <img :src="user.avatar" class="user-avatar"/>
           <el-icon class="el-icon-caret-bottom">
-            <caret-bottom />
+            <caret-bottom/>
           </el-icon>
         </div>
         <!-- 选项 -->
@@ -52,17 +52,17 @@
 
 <script setup lang="ts">
 import breadcrumb from "@/components/Breadcrumb/index.vue";
-import { getData } from "@/api/dict";
+import {getData} from "@/api/dict";
 import hamburger from "@/components/Hamburger/index.vue";
 import password from "@/components/Password/index.vue";
 import Screenfull from '@/components/Screenfull/index.vue';
 import SizeSelect from '@/components/SizeSelect/index.vue';
 import useStore from "@/store";
-import { saveAs } from 'file-saver';
-import { messageConfirm } from "@/utils/modal";
-import { computed } from "vue";
+import {saveAs} from 'file-saver';
+import {messageConfirm} from "@/utils/modal";
+import {computed} from "vue";
 
-const { app, user } = useStore();
+const {app, user} = useStore();
 const device = computed(() => app.device);
 const openHome = () => {
   window.open("http://w-love-p.top/");
@@ -87,10 +87,11 @@ const logout = () => {
     user.LogOut().then(() => {
       location.href = "/login";
     });
-  }).catch(() => { });
+  }).catch(() => {
+  });
 };
 
-const emits = defineEmits(['setLayout','exportExcel']);
+const emits = defineEmits(['setLayout', 'exportExcel']);
 const setLayout = () => {
   emits('setLayout');
 };

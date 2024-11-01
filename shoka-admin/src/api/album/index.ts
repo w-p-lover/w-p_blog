@@ -1,7 +1,7 @@
-import { PageResult, Result } from "@/model";
+import {PageResult, Result} from "@/model";
 import request from "@/utils/request";
-import { AxiosPromise } from "axios";
-import { Album, AlbumForm, AlbumQuery } from "./types";
+import {AxiosPromise} from "axios";
+import {Album, AlbumForm, AlbumQuery} from "./types";
 
 /**
  * 查看相册列表
@@ -9,11 +9,11 @@ import { Album, AlbumForm, AlbumQuery } from "./types";
  * @returns 相册列表
  */
 export function getAlbumList(params: AlbumQuery): AxiosPromise<Result<PageResult<Album[]>>> {
-  return request({
-    url: "/admin/album/list",
-    method: "get",
-    params,
-  });
+    return request({
+        url: "/admin/album/list",
+        method: "get",
+        params,
+    });
 }
 
 /**
@@ -22,10 +22,10 @@ export function getAlbumList(params: AlbumQuery): AxiosPromise<Result<PageResult
  * @returns 相册
  */
 export function editAlbum(albumId: number): AxiosPromise<Result<AlbumForm>> {
-  return request({
-    url: `/admin/album/edit/${albumId}`,
-    method: "get",
-  });
+    return request({
+        url: `/admin/album/edit/${albumId}`,
+        method: "get",
+    });
 }
 
 /**
@@ -33,11 +33,11 @@ export function editAlbum(albumId: number): AxiosPromise<Result<AlbumForm>> {
  * @param data 相册信息
  */
 export function addAlbum(data: AlbumForm): AxiosPromise<Result<null>> {
-  return request({
-    url: "/admin/album/add",
-    method: "post",
-    data,
-  });
+    return request({
+        url: "/admin/album/add",
+        method: "post",
+        data,
+    });
 }
 
 /**
@@ -45,11 +45,11 @@ export function addAlbum(data: AlbumForm): AxiosPromise<Result<null>> {
  * @param data 分类信息
  */
 export function updateAlbum(data: AlbumForm): AxiosPromise<Result<null>> {
-  return request({
-    url: "/admin/album/update",
-    method: "put",
-    data,
-  });
+    return request({
+        url: "/admin/album/update",
+        method: "put",
+        data,
+    });
 }
 
 /**
@@ -57,8 +57,8 @@ export function updateAlbum(data: AlbumForm): AxiosPromise<Result<null>> {
  * @param data 相册id
  */
 export function deleteAlbum(albumId: number | undefined): AxiosPromise<Result<null>> {
-  return request({
-    url: `/admin/album/delete/${albumId}`,
-    method: "delete",
-  });
+    return request({
+        url: `/admin/album/delete/${albumId}`,
+        method: "delete",
+    });
 }

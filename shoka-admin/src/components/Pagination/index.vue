@@ -1,12 +1,13 @@
 <template>
   <el-pagination class="pagination-container" :background="background"
-    v-model:current-page="currentPage" v-model:page-size="pageSize" :layout="layout" :page-sizes="pageSizes"
-    :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange"></el-pagination>
+                 v-model:current-page="currentPage" v-model:page-size="pageSize" :layout="layout"
+                 :page-sizes="pageSizes"
+                 :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange"></el-pagination>
 </template>
 
 <script setup lang="ts">
-import { scrollTo } from '@/utils/scroll-to';
-import { computed, PropType } from 'vue';
+import {scrollTo} from '@/utils/scroll-to';
+import {computed, PropType} from 'vue';
 
 const props = defineProps({
   total: {
@@ -61,7 +62,7 @@ const pageSize = computed<number | undefined>({
 });
 
 function handleSizeChange(val: number) {
-  emit('pagination', { page: currentPage, limit: val });
+  emit('pagination', {page: currentPage, limit: val});
   if (props.autoScroll) {
     scrollTo(0, 800);
   }
@@ -69,7 +70,7 @@ function handleSizeChange(val: number) {
 
 function handleCurrentChange(val: number) {
   currentPage.value = val;
-  emit('pagination', { page: val, limit: props.limit });
+  emit('pagination', {page: val, limit: props.limit});
   if (props.autoScroll) {
     scrollTo(0, 800);
   }

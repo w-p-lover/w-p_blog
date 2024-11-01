@@ -3,8 +3,9 @@
 </template>
 
 <script setup lang="ts">
-import { useResizeObserver } from "@vueuse/core";
+import {useResizeObserver} from "@vueuse/core";
 import * as echarts from "echarts";
+
 const chartDom = ref<HTMLElement>();
 const myChart = ref<echarts.EChartsType>();
 const props = defineProps({
@@ -23,13 +24,13 @@ const props = defineProps({
   },
 });
 watch(
-  () => props.options,
-  (newOptions) => {
-    myChart.value?.setOption(newOptions);
-  },
-  {
-    deep: true,
-  }
+    () => props.options,
+    (newOptions) => {
+      myChart.value?.setOption(newOptions);
+    },
+    {
+      deep: true,
+    }
 );
 onMounted(() => {
   myChart.value = echarts.init(chartDom.value!);

@@ -44,7 +44,7 @@ public class ElasticsearchConfig {
     @Value("${elasticsearch.connectionRequestTimeout}")
     private int connectionRequestTimeout;
 
-/*    @Bean*/
+    /*    @Bean*/
 /*    public ElasticsearchClient elasticsearchClient() {
         CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
         credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(username, password));
@@ -58,7 +58,7 @@ public class ElasticsearchConfig {
         return new ElasticsearchClient(transport);*//*
     }*/
     @Bean
-    public RestHighLevelClient restHighLevelClient(){
+    public RestHighLevelClient restHighLevelClient() {
         CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
         credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(username, password));
         return new RestHighLevelClient(RestClient.builder(new HttpHost(hostname, port, scheme))
@@ -66,6 +66,6 @@ public class ElasticsearchConfig {
                         .setConnectTimeout(connTimeout)
                         .setSocketTimeout(socketTimeout)
                         .setConnectionRequestTimeout(connectionRequestTimeout))
-                .setHttpClientConfigCallback(f->f.setDefaultCredentialsProvider(credentialsProvider)));
+                .setHttpClientConfigCallback(f -> f.setDefaultCredentialsProvider(credentialsProvider)));
     }
 }

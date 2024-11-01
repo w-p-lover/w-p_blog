@@ -1,15 +1,15 @@
-import { PageResult, Result } from "@/model";
+import {PageResult, Result} from "@/model";
 import request from "@/utils/request";
-import { AxiosPromise } from "axios";
+import {AxiosPromise} from "axios";
 import {
-  Article,
-  ArticleForm,
-  ArticleQuery,
-  CategoryVO,
-  DeleteDTO,
-  Recommend,
-  TagVO,
-  Top,
+    Article,
+    ArticleForm,
+    ArticleQuery,
+    CategoryVO,
+    DeleteDTO,
+    Recommend,
+    TagVO,
+    Top,
 } from "./types";
 
 /**
@@ -18,11 +18,11 @@ import {
  * @returns 文章列表
  */
 export function getArticleList(params: ArticleQuery): AxiosPromise<Result<PageResult<Article[]>>> {
-  return request({
-    url: "/admin/article/list",
-    method: "get",
-    params,
-  });
+    return request({
+        url: "/admin/article/list",
+        method: "get",
+        params,
+    });
 }
 
 /**
@@ -30,10 +30,10 @@ export function getArticleList(params: ArticleQuery): AxiosPromise<Result<PageRe
  * @returns 分类选项
  */
 export function getCategoryOption(): AxiosPromise<Result<CategoryVO[]>> {
-  return request({
-    url: "/admin/category/option",
-    method: "get",
-  });
+    return request({
+        url: "/admin/category/option",
+        method: "get",
+    });
 }
 
 /**
@@ -41,10 +41,10 @@ export function getCategoryOption(): AxiosPromise<Result<CategoryVO[]>> {
  * @returns 标签选项
  */
 export function getTagOption(): AxiosPromise<Result<TagVO[]>> {
-  return request({
-    url: "/admin/tag/option",
-    method: "get",
-  });
+    return request({
+        url: "/admin/tag/option",
+        method: "get",
+    });
 }
 
 /**
@@ -52,11 +52,11 @@ export function getTagOption(): AxiosPromise<Result<TagVO[]>> {
  * @param data 文章信息
  */
 export function addArticle(data: ArticleForm): AxiosPromise<Result<null>> {
-  return request({
-    url: "/admin/article/add",
-    method: "post",
-    data,
-  });
+    return request({
+        url: "/admin/article/add",
+        method: "post",
+        data,
+    });
 }
 
 /**
@@ -64,11 +64,11 @@ export function addArticle(data: ArticleForm): AxiosPromise<Result<null>> {
  * @param data 文章id
  */
 export function deleteArticle(data: number[]): AxiosPromise<Result<null>> {
-  return request({
-    url: "/admin/article/delete",
-    method: "delete",
-    data,
-  });
+    return request({
+        url: "/admin/article/delete",
+        method: "delete",
+        data,
+    });
 }
 
 /**
@@ -76,11 +76,11 @@ export function deleteArticle(data: number[]): AxiosPromise<Result<null>> {
  * @param data 逻辑删除
  */
 export function recycleArticle(data: DeleteDTO): AxiosPromise<Result<null>> {
-  return request({
-    url: "/admin/article/recycle",
-    method: "put",
-    data,
-  });
+    return request({
+        url: "/admin/article/recycle",
+        method: "put",
+        data,
+    });
 }
 
 /**
@@ -88,11 +88,11 @@ export function recycleArticle(data: DeleteDTO): AxiosPromise<Result<null>> {
  * @param data 文章信息
  */
 export function updateArticle(data: ArticleForm): AxiosPromise<Result<null>> {
-  return request({
-    url: "/admin/article/update",
-    method: "put",
-    data,
-  });
+    return request({
+        url: "/admin/article/update",
+        method: "put",
+        data,
+    });
 }
 
 /**
@@ -100,10 +100,10 @@ export function updateArticle(data: ArticleForm): AxiosPromise<Result<null>> {
  * @param articleId 文章id
  */
 export function editArticle(articleId: number): AxiosPromise<Result<ArticleForm>> {
-  return request({
-    url: `/admin/article/edit/${articleId}`,
-    method: "get",
-  });
+    return request({
+        url: `/admin/article/edit/${articleId}`,
+        method: "get",
+    });
 }
 
 /**
@@ -111,11 +111,11 @@ export function editArticle(articleId: number): AxiosPromise<Result<ArticleForm>
  * @param data 置顶信息
  */
 export function updateArticleTop(data: Top): AxiosPromise<Result<null>> {
-  return request({
-    url: "/admin/article/top",
-    method: "put",
-    data,
-  });
+    return request({
+        url: "/admin/article/top",
+        method: "put",
+        data,
+    });
 }
 
 /**
@@ -123,11 +123,11 @@ export function updateArticleTop(data: Top): AxiosPromise<Result<null>> {
  * @param data 推荐信息
  */
 export function updateArticleRecommend(data: Recommend): AxiosPromise<Result<null>> {
-  return request({
-    url: "/admin/article/recommend",
-    method: "put",
-    data,
-  });
+    return request({
+        url: "/admin/article/recommend",
+        method: "put",
+        data,
+    });
 }
 
 /**
@@ -135,10 +135,10 @@ export function updateArticleRecommend(data: Recommend): AxiosPromise<Result<nul
  * @returns 图片链接
  */
 export function uploadArticleCover(data: FormData): AxiosPromise<Result<string>> {
-  return request({
-    url: "/admin/article/upload",
-    headers: { "content-type": "multipart/form-data" },
-    method: "post",
-    data,
-  });
+    return request({
+        url: "/admin/article/upload",
+        headers: {"content-type": "multipart/form-data"},
+        method: "post",
+        data,
+    });
 }

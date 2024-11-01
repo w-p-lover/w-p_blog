@@ -1,7 +1,8 @@
 <template>
   <div class="page-header">
     <h1 class="page-title">{{ photoInfo.albumName }}</h1>
-    <img class="page-cover" src="https://wangyoupeng-penghong.oss-cn-beijing.aliyuncs.com/avatar/wallhaven-q21drl_2560x1440.png" alt="">
+    <img class="page-cover"
+         src="https://wangyoupeng-penghong.oss-cn-beijing.aliyuncs.com/avatar/wallhaven-q21drl_2560x1440.png" alt="">
     <Waves></Waves>
   </div>
   <div class="bg">
@@ -14,8 +15,8 @@
 </template>
 
 <script setup lang="ts">
-import { getPhotoList } from '@/api/album';
-import { Photo, PhotoInfo } from '@/api/album/types';
+import {getPhotoList} from '@/api/album';
+import {Photo, PhotoInfo} from '@/api/album/types';
 
 const route = useRoute();
 const photoInfo = ref<PhotoInfo>({
@@ -23,7 +24,7 @@ const photoInfo = ref<PhotoInfo>({
   photoVOList: [] as Photo[],
 });
 onMounted(() => {
-  getPhotoList(Number(route.params.albumId)).then(({ data }) => {
+  getPhotoList(Number(route.params.albumId)).then(({data}) => {
     photoInfo.value = data.data;
   })
 })

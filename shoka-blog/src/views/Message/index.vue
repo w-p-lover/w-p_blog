@@ -3,7 +3,7 @@
   <div class="message-container">
     <h1 class="message-title">留言板</h1>
     <div class="message-input">
-      <input class="input" v-model="messageContent" @click="show = true" @keyup.enter="send" placeholder="说点什么吧" />
+      <input class="input" v-model="messageContent" @click="show = true" @keyup.enter="send" placeholder="说点什么吧"/>
       <button class="send" @click="send" v-show="show">发送</button>
     </div>
   </div>
@@ -12,7 +12,7 @@
     <vue-danmaku ref="danmaku" class="danmaku" use-slot v-model:danmus="messageList" :is-suspend="true">
       <template v-slot:dm="{ danmu }">
         <span class="danmaku-item">
-          <img :src="danmu.avatar" width="30" height="30" style="border-radius: 50%" />
+          <img :src="danmu.avatar" width="30" height="30" style="border-radius: 50%"/>
           <span class="ml">{{ danmu.nickname }} :</span>
           <span class="ml">{{ danmu.messageContent }}</span>
         </span>
@@ -22,17 +22,18 @@
 </template>
 
 <script setup lang="ts">
-import { addMessage, getMessageList } from "@/api/message";
-import { Message } from "@/api/message/types";
+import {addMessage, getMessageList} from "@/api/message";
+import {Message} from "@/api/message/types";
 import useStore from "@/store";
 import vueDanmaku from "vue3-danmaku";
-const { blog, user } = useStore();
+
+const {blog, user} = useStore();
 const messageContent = ref("");
 const show = ref(false);
 const danmaku = ref();
 const messageList = ref<Message[]>([]);
 onMounted(async () => {
-  await getMessageList().then(({ data }) => {
+  await getMessageList().then(({data}) => {
     messageList.value = data.data;
   });
 });
@@ -48,7 +49,7 @@ const send = () => {
     nickname: userNickname,
     messageContent: messageContent.value,
   };
-  addMessage(message).then(({ data }) => {
+  addMessage(message).then(({data}) => {
     if (data.flag) {
       if (blog.blogInfo.siteConfig.messageCheck) {
         window.$message?.warning("留言成功，正在审核中");

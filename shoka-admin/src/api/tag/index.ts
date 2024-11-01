@@ -1,7 +1,7 @@
-import { PageResult, Result } from "@/model";
+import {PageResult, Result} from "@/model";
 import request from "@/utils/request";
-import { AxiosPromise } from "axios";
-import { Tag, TagForm, TagQuery } from "./types";
+import {AxiosPromise} from "axios";
+import {Tag, TagForm, TagQuery} from "./types";
 
 /**
  * 查看标签列表
@@ -9,13 +9,13 @@ import { Tag, TagForm, TagQuery } from "./types";
  * @returns 标签列表
  */
 export function getTagList(
-  params?: TagQuery
+    params?: TagQuery
 ): AxiosPromise<Result<PageResult<Tag[]>>> {
-  return request({
-    url: "/admin/tag/list",
-    method: "get",
-    params,
-  });
+    return request({
+        url: "/admin/tag/list",
+        method: "get",
+        params,
+    });
 }
 
 /**
@@ -23,11 +23,11 @@ export function getTagList(
  * @param data 标签id集合
  */
 export function deleteTag(data: number[]): AxiosPromise<Result<null>> {
-  return request({
-    url: "/admin/tag/delete",
-    method: "delete",
-    data,
-  });
+    return request({
+        url: "/admin/tag/delete",
+        method: "delete",
+        data,
+    });
 }
 
 /**
@@ -35,11 +35,11 @@ export function deleteTag(data: number[]): AxiosPromise<Result<null>> {
  * @param data 标签信息
  */
 export function addTag(data: TagForm): AxiosPromise<Result<null>> {
-  return request({
-    url: "/admin/tag/add",
-    method: "post",
-    data,
-  });
+    return request({
+        url: "/admin/tag/add",
+        method: "post",
+        data,
+    });
 }
 
 /**
@@ -47,9 +47,9 @@ export function addTag(data: TagForm): AxiosPromise<Result<null>> {
  * @param data 标签信息
  */
 export function updateTag(data: TagForm): AxiosPromise<Result<null>> {
-  return request({
-    url: "/admin/tag/update",
-    method: "put",
-    data,
-  });
+    return request({
+        url: "/admin/tag/update",
+        method: "put",
+        data,
+    });
 }

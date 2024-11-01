@@ -1,7 +1,7 @@
-import { CheckDTO, PageResult, Result } from "@/model";
+import {CheckDTO, PageResult, Result} from "@/model";
 import request from "@/utils/request";
-import { AxiosPromise } from "axios";
-import { Comment, CommentQuery } from "./types";
+import {AxiosPromise} from "axios";
+import {Comment, CommentQuery} from "./types";
 
 /**
  * 查看评论列表
@@ -9,11 +9,11 @@ import { Comment, CommentQuery } from "./types";
  * @returns 评论列表
  */
 export function getCommentList(params: CommentQuery): AxiosPromise<Result<PageResult<Comment[]>>> {
-  return request({
-    url: "/admin/comment/list",
-    method: "get",
-    params,
-  });
+    return request({
+        url: "/admin/comment/list",
+        method: "get",
+        params,
+    });
 }
 
 /**
@@ -21,11 +21,11 @@ export function getCommentList(params: CommentQuery): AxiosPromise<Result<PageRe
  * @param data 评论id集合
  */
 export function deleteComment(data: number[]): AxiosPromise<Result<null>> {
-  return request({
-    url: "/admin/comment/delete",
-    method: "delete",
-    data,
-  });
+    return request({
+        url: "/admin/comment/delete",
+        method: "delete",
+        data,
+    });
 }
 
 /**
@@ -33,9 +33,9 @@ export function deleteComment(data: number[]): AxiosPromise<Result<null>> {
  * @param data 审核信息
  */
 export function updateCommentCheck(data: CheckDTO): AxiosPromise<Result<null>> {
-  return request({
-    url: "/admin/comment/pass",
-    method: "put",
-    data,
-  });
+    return request({
+        url: "/admin/comment/pass",
+        method: "put",
+        data,
+    });
 }

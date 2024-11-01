@@ -1,11 +1,11 @@
 <template>
   <div class="dashboard-container">
-    <github-corner class="github-corner" />
+    <github-corner class="github-corner"/>
     <el-row :gutter="40" class="panel-group">
       <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
         <div class="card-panel">
           <div class="card-panel-icon-wrapper icon-view">
-            <svg-icon icon-class="button" size="4em" class-tagName="card-panel-icon" />
+            <svg-icon icon-class="button" size="4em" class-tagName="card-panel-icon"/>
           </div>
           <div class="card-panel-description">
             <div class="card-panel-text">
@@ -18,7 +18,7 @@
       <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
         <div class="card-panel">
           <div class="card-panel-icon-wrapper icon-money">
-            <svg-icon icon-class="edit" size="3rem" class-tagName="card-panel-icon" />
+            <svg-icon icon-class="edit" size="3rem" class-tagName="card-panel-icon"/>
           </div>
           <div class="card-panel-description">
             <div class="card-panel-text">
@@ -31,7 +31,7 @@
       <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
         <div class="card-panel">
           <div class="card-panel-icon-wrapper icon-people">
-            <svg-icon icon-class="peoples" size="4em" lass-tagName="card-panel-icon" />
+            <svg-icon icon-class="peoples" size="4em" lass-tagName="card-panel-icon"/>
           </div>
           <div class="card-panel-description">
             <div class="card-panel-text">
@@ -44,7 +44,7 @@
       <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
         <div class="card-panel">
           <div class="card-panel-icon-wrapper icon-message">
-            <svg-icon icon-class="comment" size="4em" class-tagName="card-panel-icon" />
+            <svg-icon icon-class="comment" size="4em" class-tagName="card-panel-icon"/>
           </div>
           <div class="card-panel-description">
             <div class="card-panel-text">
@@ -58,7 +58,7 @@
     <el-row class="data-card" style="margin-bottom:32px;">
       <div class="title">文章贡献统计🎉</div>
       <calendar-heatmap style=" width: 100%; margin-top: 0.5rem" :values="articleStatisticsList" :end-date="new Date()"
-        :range-color="['#ebedf0', '#9be9a8', '#40c463', '#30a14e', '#216e39']" />
+                        :range-color="['#ebedf0', '#9be9a8', '#40c463', '#30a14e', '#216e39']"/>
     </el-row>
     <el-row :gutter="32">
       <el-col :xs="24" :sm="24" :lg="8">
@@ -88,12 +88,13 @@
 </template>
 
 <script setup lang="ts">
-import { TagVO } from "@/api/article/types";
-import { getBlogInfo } from "@/api/blog";
-import { ArticleStatisticsVO } from "@/api/blog/types";
+import {TagVO} from "@/api/article/types";
+import {getBlogInfo} from "@/api/blog";
+import {ArticleStatisticsVO} from "@/api/blog/types";
 import GithubCorner from "@/components/GithubCorner/index.vue";
 import TagCloud from "@/components/TagCloud/index.vue";
-import { onMounted, reactive, ref } from "vue";
+import {onMounted, reactive, ref} from "vue";
+
 const tagList = ref<TagVO[]>([]);
 const viewCount = ref(0);
 const messageCount = ref(0);
@@ -143,9 +144,7 @@ let userView = reactive({
       },
       smooth: true,
       type: 'line',
-      data: [
-
-      ] as number[],
+      data: [] as number[],
       animationDuration: 2800,
       animationEasing: 'cubicInOut'
     },
@@ -163,9 +162,7 @@ let userView = reactive({
       areaStyle: {
         color: '#f3f8ff'
       },
-      data: [
-
-      ] as number[],
+      data: [] as number[],
       animationDuration: 2800,
       animationEasing: 'quadraticOut'
     }
@@ -232,7 +229,7 @@ let ariticleRank = reactive({
   ]
 });
 const getList = () => {
-  getBlogInfo().then(({ data }) => {
+  getBlogInfo().then(({data}) => {
     viewCount.value = data.data.viewCount;
     messageCount.value = data.data.messageCount;
     userCount.value = data.data.userCount;
@@ -384,13 +381,13 @@ onMounted(() => {
   }
 }
 
-@media (max-width:1024px) {
+@media (max-width: 1024px) {
   .chart-wrapper {
     padding: 8px;
   }
 }
 
-@media (max-width:550px) {
+@media (max-width: 550px) {
   .card-panel-description {
     display: none;
   }

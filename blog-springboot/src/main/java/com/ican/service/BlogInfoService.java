@@ -13,6 +13,7 @@ public interface BlogInfoService {
      * 上传访客信息
      */
     void report();
+
     /**
      * 查看博客信息
      *

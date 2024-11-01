@@ -4,11 +4,11 @@
     <el-form ref="queryFormRef" :model="queryParams" :inline="true" v-show="showSearch">
       <el-form-item label="角色名称">
         <el-input v-model="queryParams.keyword" style="width: 200px" placeholder="请输入角色名称" clearable
-          @keyup.enter="handleQuery" />
+                  @keyup.enter="handleQuery"/>
       </el-form-item>
       <el-form-item label="状态">
         <el-select v-model="queryParams.isDisable" placeholder="角色状态" clearable style="width: 200px">
-          <el-option v-for="item in status" :key="item.value" :label="item.label" :value="item.value" />
+          <el-option v-for="item in status" :key="item.value" :label="item.label" :value="item.value"/>
         </el-select>
       </el-form-item>
       <el-form-item>
@@ -22,7 +22,8 @@
       </el-col>
       <el-col :span="1.5">
         <el-button type="danger" plain :disabled="roleIdList.length === 0" icon="Delete"
-          @click="handleDelete(undefined)">批量删除</el-button>
+                   @click="handleDelete(undefined)">批量删除
+        </el-button>
       </el-col>
       <right-toolbar v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
@@ -38,7 +39,7 @@
       <el-table-column prop="isDisable" label="状态" align="center">
         <template #default="scope">
           <el-switch v-model="scope.row.isDisable" active-color="#13ce66" inactive-color="#ff4949" :active-value="0"
-            :inactive-value="1" @change="handleChangeStatus(scope.row)"></el-switch>
+                     :inactive-value="1" @change="handleChangeStatus(scope.row)"></el-switch>
         </template>
       </el-table-column>
       <!-- 创建时间 -->
@@ -46,7 +47,7 @@
         <template #default="scope">
           <div class="create-time">
             <el-icon>
-              <clock />
+              <clock/>
             </el-icon>
             <span style="margin-left: 10px">{{ formatDateTime(scope.row.createTime) }}</span>
           </div>
@@ -66,12 +67,12 @@
     </el-table>
     <!-- 分页 -->
     <pagination v-if="count > 0" :total="count" v-model:page="queryParams.current" v-model:limit="queryParams.size"
-      @pagination="getList" />
+                @pagination="getList"/>
     <!-- 添加或修改对话框 -->
     <el-dialog :title="title" v-model="addOrUpdate" width="500px" append-to-body>
       <el-form ref="roleFormRef" :model="roleForm" :rules="rules" label-width="100px">
         <el-form-item label="角色名称" prop="roleName">
-          <el-input placeholder="请输入角色名称" v-model="roleForm.roleName" />
+          <el-input placeholder="请输入角色名称" v-model="roleForm.roleName"/>
         </el-form-item>
         <el-form-item label="状态">
           <el-radio-group v-model="roleForm.isDisable">
@@ -85,12 +86,12 @@
           <el-checkbox v-model="menuNodeAll" @change="handleCheckedTreeNodeAll">全选/全不选</el-checkbox>
           <el-checkbox v-model="menuCheckStrictly" @change="handleCheckedTreeConnect">父子联动</el-checkbox>
           <el-tree class="tree-border" :data="treeData" show-checkbox ref="treeRef" node-key="id"
-            :default-expand-all="false" :check-strictly="!menuCheckStrictly" empty-text="加载中，请稍候"
-            :props="defaultProps"></el-tree>
+                   :default-expand-all="false" :check-strictly="!menuCheckStrictly" empty-text="加载中，请稍候"
+                   :props="defaultProps"></el-tree>
         </el-form-item>
         <el-form-item label="角色描述">
           <el-input v-model="roleForm.roleDesc" :autosize="{ minRows: 2, maxRows: 4 }" resize="none" type="textarea"
-            placeholder="请输入内容"></el-input>
+                    placeholder="请输入内容"></el-input>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -104,19 +105,20 @@
 </template>
 
 <script setup lang="ts">
-import { getMenuTree } from "@/api/menu";
-import { MenuTree } from "@/api/menu/types";
-import { addRole, deleteRole, getRoleList, getRoleMenuTree, updateRole, updateRoleStatus } from "@/api/role";
-import { Role, RoleForm, RoleQuery } from "@/api/role/types";
-import { formatDateTime } from "@/utils/date";
-import { messageConfirm, notifySuccess } from "@/utils/modal";
-import { ElTree, FormInstance, FormRules } from 'element-plus';
+import {getMenuTree} from "@/api/menu";
+import {MenuTree} from "@/api/menu/types";
+import {addRole, deleteRole, getRoleList, getRoleMenuTree, updateRole, updateRoleStatus} from "@/api/role";
+import {Role, RoleForm, RoleQuery} from "@/api/role/types";
+import {formatDateTime} from "@/utils/date";
+import {messageConfirm, notifySuccess} from "@/utils/modal";
+import {ElTree, FormInstance, FormRules} from 'element-plus';
 import type Node from 'element-plus/es/components/tree/src/model/node';
-import { nextTick, onMounted, reactive, ref, toRefs } from "vue";
+import {nextTick, onMounted, reactive, ref, toRefs} from "vue";
+
 const treeRef = ref<InstanceType<typeof ElTree>>()
 const roleFormRef = ref<FormInstance>();
 const rules = reactive<FormRules>({
-  roleName: [{ required: true, message: "请输入角色名称", trigger: "blur" }],
+  roleName: [{required: true, message: "请输入角色名称", trigger: "blur"}],
 });
 const defaultProps = {
   children: 'children',
@@ -192,7 +194,7 @@ const reset = () => {
 };
 const openModel = async (role?: Role) => {
   reset();
-  await getMenuTree().then(({ data }) => {
+  await getMenuTree().then(({data}) => {
     treeData.value = data.data;
   });
   if (role !== undefined) {
@@ -201,7 +203,7 @@ const openModel = async (role?: Role) => {
     roleForm.value.roleName = role.roleName;
     roleForm.value.isDisable = role.isDisable;
     roleForm.value.roleDesc = role.roleDesc;
-    getRoleMenuTree(role.id).then(({ data }) => {
+    getRoleMenuTree(role.id).then(({data}) => {
       data.data.forEach(v => {
         nextTick(() => {
           treeRef.value!.setChecked(v, true, false);
@@ -225,7 +227,7 @@ const submitForm = () => {
     if (valid) {
       if (roleForm.value.id !== undefined) {
         roleForm.value.menuIdList = getMenuAllCheckedKeys();
-        updateRole(roleForm.value).then(({ data }) => {
+        updateRole(roleForm.value).then(({data}) => {
           if (data.flag) {
             notifySuccess(data.msg);
             getList();
@@ -234,7 +236,7 @@ const submitForm = () => {
         })
       } else {
         roleForm.value.menuIdList = getMenuAllCheckedKeys();
-        addRole(roleForm.value).then(({ data }) => {
+        addRole(roleForm.value).then(({data}) => {
           if (data.flag) {
             notifySuccess(data.msg);
             getList();
@@ -261,17 +263,18 @@ const handleDelete = (id?: string) => {
     ids = [id];
   }
   messageConfirm("确认删除已选中的数据项?").then(() => {
-    deleteRole(ids).then(({ data }) => {
+    deleteRole(ids).then(({data}) => {
       if (data.flag) {
         notifySuccess(data.msg);
         getList();
       }
     });
-  }).catch(() => { });
+  }).catch(() => {
+  });
 };
 const getList = () => {
   loading.value = true;
-  getRoleList(queryParams.value).then(({ data }) => {
+  getRoleList(queryParams.value).then(({data}) => {
     roleList.value = data.data.recordList;
     count.value = data.data.count;
     loading.value = false;
@@ -280,14 +283,16 @@ const getList = () => {
 const handleChangeStatus = (role: Role) => {
   let text = role.isDisable === 0 ? "启用" : "禁用";
   messageConfirm("确定要" + text + role.roleName + "角色吗?").then(() => {
-    updateRoleStatus({ id: role.id, isDisable: role.isDisable }).then(({ data }) => {
+    updateRoleStatus({id: role.id, isDisable: role.isDisable}).then(({data}) => {
       if (data.flag) {
         notifySuccess(data.msg);
       } else {
         role.isDisable = role.isDisable === 0 ? 1 : 0;
       }
     });
-  }).catch(() => { role.isDisable = role.isDisable === 0 ? 1 : 0; });
+  }).catch(() => {
+    role.isDisable = role.isDisable === 0 ? 1 : 0;
+  });
 };
 
 const handleQuery = () => {

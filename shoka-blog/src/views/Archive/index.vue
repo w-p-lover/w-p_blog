@@ -2,7 +2,7 @@
   <div class="page-header">
     <h1 class="page-title">归档</h1>
     <img class="page-cover" src="https://ik.imagekit.io/nicexl/Wallpaper/ba41a32b219e4b40ad055bbb52935896_Y0819msuI.jpg"
-      alt="">
+         alt="">
     <!-- 波浪 -->
     <Waves></Waves>
   </div>
@@ -32,11 +32,11 @@
 </template>
 
 <script setup lang="ts">
-import { getArchivesList } from '@/api/archives';
-import { Archives } from '@/api/archives/types';
+import {getArchivesList} from '@/api/archives';
+import {Archives} from '@/api/archives/types';
 import Pagination from '@/components/Pagination/index.vue';
-import { PageQuery } from '@/model';
-import { formatDate } from '@/utils/date';
+import {PageQuery} from '@/model';
+import {formatDate} from '@/utils/date';
 
 const data = reactive({
   count: 0,
@@ -52,16 +52,16 @@ const {
   archivesList,
 } = toRefs(data);
 watch(
-  () => queryParams.value.current,
-  () => {
-    getArchivesList(queryParams.value).then(({ data }) => {
-      archivesList.value = data.data.recordList;
-      count.value = data.data.count;
-    });
-  }
+    () => queryParams.value.current,
+    () => {
+      getArchivesList(queryParams.value).then(({data}) => {
+        archivesList.value = data.data.recordList;
+        count.value = data.data.count;
+      });
+    }
 );
 onMounted(() => {
-  getArchivesList(queryParams.value).then(({ data }) => {
+  getArchivesList(queryParams.value).then(({data}) => {
     archivesList.value = data.data.recordList;
     count.value = data.data.count;
   });

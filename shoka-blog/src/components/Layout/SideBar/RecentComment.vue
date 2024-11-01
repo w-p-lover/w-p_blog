@@ -8,7 +8,7 @@
     <!-- 评论 -->
     <div class="comment-item" v-for="comment in commentList" :key="comment.id">
       <!-- 头像 -->
-      <img class="user-avatar" :src="comment.avatar" alt="" />
+      <img class="user-avatar" :src="comment.avatar" alt=""/>
       <div class="comment-content">
         <div class="info">
           <!-- 昵称 -->
@@ -24,12 +24,13 @@
 </template>
 
 <script setup lang="ts">
-import { getRecentComment } from "@/api/comment";
-import { RecentComment } from "@/api/comment/types";
-import { formatDate } from "@/utils/date";
+import {getRecentComment} from "@/api/comment";
+import {RecentComment} from "@/api/comment/types";
+import {formatDate} from "@/utils/date";
+
 const commentList = ref<RecentComment[]>([]);
 onMounted(() => {
-  getRecentComment().then(({ data }) => {
+  getRecentComment().then(({data}) => {
     commentList.value = data.data;
   });
 });

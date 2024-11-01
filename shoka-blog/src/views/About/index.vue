@@ -1,14 +1,15 @@
 <template>
   <div class="page-header">
     <h1 class="page-title">关于</h1>
-    <img class="page-cover" src="https://wangyoupeng-penghong.oss-cn-beijing.aliyuncs.com/avatar/wallhaven-q21drl_2560x1440.png"
-      alt="" />
+    <img class="page-cover"
+         src="https://wangyoupeng-penghong.oss-cn-beijing.aliyuncs.com/avatar/wallhaven-q21drl_2560x1440.png"
+         alt=""/>
     <Waves></Waves>
   </div>
   <div class="bg">
-    <div class="page-container" >
+    <div class="page-container">
       <div class="avatar-box">
-        <img class="author-avatar" :src="blog.blogInfo.siteConfig.authorAvatar" />
+        <img class="author-avatar" :src="blog.blogInfo.siteConfig.authorAvatar"/>
       </div>
       <v-md-preview class="md" :text="blog.blogInfo.siteConfig.aboutMe"></v-md-preview>
     </div>
@@ -17,7 +18,8 @@
 
 <script setup lang="ts">
 import useStore from "@/store";
-const { blog } = useStore();
+
+const {blog} = useStore();
 </script>
 
 <style scoped>

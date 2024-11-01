@@ -14,7 +14,8 @@
 <script setup lang="ts">
 import useStore from "@/store";
 import dayjs from "dayjs";
-const { blog } = useStore();
+
+const {blog} = useStore();
 const runTime = ref("");
 setInterval(() => {
   const days = dayjs().diff(blog.blogInfo.siteConfig.createSiteTime, "days");
@@ -27,9 +28,9 @@ setInterval(() => {
   runTime.value = str;
 }, 1000);
 const webInfo = ref([
-  { name: "文章数目", count: blog.blogInfo.articleCount, },
-  { name: "有只小猫", count: runTime, },
-  { name: "总访问量", count: blog.blogInfo.viewCount, }
+  {name: "文章数目", count: blog.blogInfo.articleCount,},
+  {name: "有只小猫", count: runTime,},
+  {name: "总访问量", count: blog.blogInfo.viewCount,}
 ])
 </script>
 
