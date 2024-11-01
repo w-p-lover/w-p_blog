@@ -1,7 +1,7 @@
-import { PageResult, Result } from "@/model";
+import {PageResult, Result} from "@/model";
 import request from "@/utils/request";
-import { AxiosPromise } from "axios";
-import { Talk, TalkForm, TalkQuery } from "./types";
+import {AxiosPromise} from "axios";
+import {Talk, TalkForm, TalkQuery} from "./types";
 
 /**
  * 查看说说列表
@@ -9,11 +9,11 @@ import { Talk, TalkForm, TalkQuery } from "./types";
  * @returns 说说列表
  */
 export function getTalkList(params: TalkQuery): AxiosPromise<Result<PageResult<Talk[]>>> {
-  return request({
-    url: "/admin/talk/list",
-    method: "get",
-    params,
-  });
+    return request({
+        url: "/admin/talk/list",
+        method: "get",
+        params,
+    });
 }
 
 /**
@@ -22,11 +22,11 @@ export function getTalkList(params: TalkQuery): AxiosPromise<Result<PageResult<T
  * @returns 说说图片链接
  */
 export function uploadTalkCover(data: FormData): AxiosPromise<Result<String>> {
-  return request({
-    url: "/admin/talk/upload",
-    method: "post",
-    data,
-  });
+    return request({
+        url: "/admin/talk/upload",
+        method: "post",
+        data,
+    });
 }
 
 /**
@@ -35,10 +35,10 @@ export function uploadTalkCover(data: FormData): AxiosPromise<Result<String>> {
  * @returns 说说
  */
 export function editTalk(talkId: number): AxiosPromise<Result<TalkForm>> {
-  return request({
-    url: `/admin/talk/edit/${talkId}`,
-    method: "get",
-  });
+    return request({
+        url: `/admin/talk/edit/${talkId}`,
+        method: "get",
+    });
 }
 
 /**
@@ -46,11 +46,11 @@ export function editTalk(talkId: number): AxiosPromise<Result<TalkForm>> {
  * @param data 说说信息
  */
 export function addTalk(data: TalkForm): AxiosPromise<Result<null>> {
-  return request({
-    url: "/admin/talk/add",
-    method: "post",
-    data,
-  });
+    return request({
+        url: "/admin/talk/add",
+        method: "post",
+        data,
+    });
 }
 
 /**
@@ -58,11 +58,11 @@ export function addTalk(data: TalkForm): AxiosPromise<Result<null>> {
  * @param data 说说信息
  */
 export function updateTalk(data: TalkForm): AxiosPromise<Result<null>> {
-  return request({
-    url: "/admin/talk/update",
-    method: "put",
-    data,
-  });
+    return request({
+        url: "/admin/talk/update",
+        method: "put",
+        data,
+    });
 }
 
 /**
@@ -70,8 +70,8 @@ export function updateTalk(data: TalkForm): AxiosPromise<Result<null>> {
  * @param talkId 说说id
  */
 export function deleteTalk(talkId: number | undefined): AxiosPromise<Result<null>> {
-  return request({
-    url: `/admin/talk/delete/${talkId}`,
-    method: "delete",
-  });
+    return request({
+        url: `/admin/talk/delete/${talkId}`,
+        method: "delete",
+    });
 }

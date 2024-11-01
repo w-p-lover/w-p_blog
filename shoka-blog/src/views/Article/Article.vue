@@ -8,7 +8,7 @@
             <span class="text">发表于 </span>{{ formatDate(article.createTime) }}
           </span>
           <span class="item" v-if="article.updateTime"><svg-icon icon-class="update"
-              style="margin-right:0.15rem;"></svg-icon>
+                                                                 style="margin-right:0.15rem;"></svg-icon>
             <span class="text">更新于 </span>{{ formatDate(article.updateTime) }}
           </span>
           <span class="item"><svg-icon icon-class="eye" style="margin-right:0.15rem;"></svg-icon>
@@ -48,7 +48,8 @@
             </div>
             <div class="reward">
               <button class="btn" :class="isLike(article.id)" @click="like">
-                <svg-icon icon-class="like" size="0.9rem"></svg-icon> 点赞
+                <svg-icon icon-class="like" size="0.9rem"></svg-icon>
+                点赞
                 <span>{{ article.likeCount }}</span>
               </button>
               <n-popover trigger="click" v-if="blog.blogInfo.siteConfig.isReward">
@@ -60,11 +61,11 @@
                 </template>
                 <div class="reward-all">
                   <span>
-                    <img class="reward-img" v-lazy="blog.blogInfo.siteConfig.weiXinCode" />
+                    <img class="reward-img" v-lazy="blog.blogInfo.siteConfig.weiXinCode"/>
                     <div class="reward-desc">微信</div>
                   </span>
                   <span style="margin-left: 0.3rem;">
-                    <img class="reward-img" v-lazy="blog.blogInfo.siteConfig.aliCode" />
+                    <img class="reward-img" v-lazy="blog.blogInfo.siteConfig.aliCode"/>
                     <div class="reward-desc">支付宝</div>
                   </span>
                 </div>
@@ -95,14 +96,14 @@
             <div class="post-nav">
               <div class="item" v-if="article.lastArticle">
                 <router-link :to="`/article/${article.lastArticle?.id}`" class="post-cover"
-                  :style="articleCover(article.lastArticle.articleCover)">
+                             :style="articleCover(article.lastArticle.articleCover)">
                   <span class="post-last-next">上一篇</span>
                   <h3 class="post-title">{{ article.lastArticle.articleTitle }}</h3>
                 </router-link>
               </div>
               <div class="item" v-if="article.nextArticle">
                 <router-link :to="`/article/${article.nextArticle?.id}`" class="post-cover"
-                  :style="articleCover(article.nextArticle.articleCover)">
+                             :style="articleCover(article.nextArticle.articleCover)">
                   <span class="post-last-next">下一篇</span>
                   <h3 class="post-title">{{ article.nextArticle.articleTitle }}</h3>
                 </router-link>
@@ -122,14 +123,15 @@
 </template>
 
 <script setup lang="ts">
-import { getArticle, likeArticle } from "@/api/article";
-import { ArticleInfo, ArticlePagination } from "@/api/article/types";
-import { CategoryVO } from "@/api/category/types";
+import {getArticle, likeArticle} from "@/api/article";
+import {ArticleInfo, ArticlePagination} from "@/api/article/types";
+import {CategoryVO} from "@/api/category/types";
 import useStore from "@/store";
-import { formatDate } from "@/utils/date";
-import { Share } from 'vue3-social-share';
+import {formatDate} from "@/utils/date";
+import {Share} from 'vue3-social-share';
 import 'vue3-social-share/lib/index.css';
-const { app, blog, user } = useStore();
+
+const {app, blog, user} = useStore();
 const articleRef = ref();
 const route = useRoute();
 const articleHref = window.location.href;
@@ -154,7 +156,7 @@ const data = reactive({
     updateTime: ""
   } as ArticleInfo,
 });
-const { articleLoaded, wordNum, readTime, commentType, article } = toRefs(data);
+const {articleLoaded, wordNum, readTime, commentType, article} = toRefs(data);
 const articleCover = computed(() => (cover: string) => 'background-image:url(' + cover + ')');
 const isLike = computed(() => (id: number) => user.articleLikeSet.indexOf(id) != -1 ? "like-btn-active" : "like-btn");
 const count = (value: number) => {
@@ -165,9 +167,9 @@ const count = (value: number) => {
 };
 const deleteHTMLTag = (content: string) => {
   return content
-    .replace(/<\/?[^>]*>/g, "")
-    .replace(/[|]*\n/, "")
-    .replace(/&npsp;/gi, "");
+      .replace(/<\/?[^>]*>/g, "")
+      .replace(/[|]*\n/, "")
+      .replace(/&npsp;/gi, "");
 };
 const like = () => {
   if (!user.id) {
@@ -175,7 +177,7 @@ const like = () => {
     return;
   }
   let id = article.value.id;
-  likeArticle(id).then(({ data }) => {
+  likeArticle(id).then(({data}) => {
     if (data.flag) {
       //判断是否点赞
       if (user.articleLikeSet.indexOf(id) != -1) {
@@ -188,7 +190,7 @@ const like = () => {
   });
 };
 onMounted(() => {
-  getArticle(Number(route.params.id)).then(({ data }) => {
+  getArticle(Number(route.params.id)).then(({data}) => {
     article.value = data.data;
     document.title = article.value.articleTitle;
     wordNum.value = deleteHTMLTag(article.value.articleContent).length;

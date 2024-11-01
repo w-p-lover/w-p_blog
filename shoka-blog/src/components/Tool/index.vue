@@ -15,24 +15,25 @@
 
 <script setup lang="ts">
 import useStore from "@/store";
-import { useEventListener, useScroll } from "@vueuse/core";
+import {useEventListener, useScroll} from "@vueuse/core";
+
 const route = useRoute();
 const process = ref(0);
 const show = reactive({
   transform: "translateX(-45px)"
 });
-const { y } = useScroll(window);
-const { app } = useStore();
+const {y} = useScroll(window);
+const {app} = useStore();
 const commentList = ["article", "friend", "talkInfo"];
 const commentShow = computed(() => (value: string) => commentList.includes(value));
 
 useEventListener(document, "scroll", () => {
   process.value = Number(
-    (
-      (window.pageYOffset /
-        (document.documentElement.scrollHeight - window.innerHeight)) *
-      100
-    ).toFixed(0)
+      (
+          (window.pageYOffset /
+              (document.documentElement.scrollHeight - window.innerHeight)) *
+          100
+      ).toFixed(0)
   )
 });
 const handleSide = () => {

@@ -48,4 +48,10 @@ public class ArticleSearchVO {
      */
     @ApiModelProperty(value = "文章状态")
     private Integer status;
+
+    /**
+     * 索引名
+     */
+    @ApiModelProperty(value = "分类")
+    private Integer categoryId;
 }

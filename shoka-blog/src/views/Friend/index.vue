@@ -1,7 +1,8 @@
 <template>
   <div class="page-header">
     <h1 class="page-title">友情链接</h1>
-    <img class="page-cover" src="https://wangyoupeng-penghong.oss-cn-beijing.aliyuncs.com/avatar/wallhaven-q21drl_2560x1440.png" alt="" />
+    <img class="page-cover"
+         src="https://wangyoupeng-penghong.oss-cn-beijing.aliyuncs.com/avatar/wallhaven-q21drl_2560x1440.png" alt=""/>
     <!-- 波浪 -->
     <Waves></Waves>
   </div>
@@ -31,12 +32,12 @@
       <div class="friends">
         <div class="friend-item" v-animate="['slideUpBigIn']" v-for="friend in friendList" :key="friend.id">
           <a target="_blank" :href="friend.url">
-            <img class="image" v-lazy="friend.avatar" />
+            <img class="image" v-lazy="friend.avatar"/>
           </a>
           <div class="info">
             <a class="name" target="_blank" :href="friend.url" :style="{ color: friend.color }">{{
-              friend.name
-            }}</a>
+                friend.name
+              }}</a>
             <p class="desc">{{ friend.introduction }}</p>
           </div>
         </div>
@@ -47,14 +48,15 @@
 </template>
 
 <script setup lang="ts">
-import { getFriendList } from "@/api/friend";
-import { Friend } from "@/api/friend/types";
+import {getFriendList} from "@/api/friend";
+import {Friend} from "@/api/friend/types";
 import useStore from "@/store";
-const { blog } = useStore();
+
+const {blog} = useStore();
 const commentType = ref(2);
 const friendList = ref<Friend[]>([]);
 onMounted(() => {
-  getFriendList().then(({ data }) => {
+  getFriendList().then(({data}) => {
     friendList.value = data.data;
   });
 });

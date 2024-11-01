@@ -1,6 +1,6 @@
 <template>
   <n-modal class="dialog-wrapper bg" v-model:show="dialogVisible" preset="dialog" :show-icon="false"
-    transform-origin="center" :block-scroll="false">
+           transform-origin="center" :block-scroll="false">
     <template #header>
       <span class="title">本地搜索</span>
     </template>
@@ -9,11 +9,11 @@
       <label for="search">
         <svg-icon icon-class="search"></svg-icon>
       </label>
-      <input id="search" placeholder="输入文章标题或内容..." v-model="keyword" />
+      <input id="search" placeholder="输入文章标题或内容..." v-model="keyword"/>
     </div>
     <!-- 搜索结果 -->
     <div class="search-result-wrapper">
-      <hr class="divider" />
+      <hr class="divider"/>
       <ul v-if="articleList.length">
         <li class="search-result" v-for="article in articleList" :key="article.id">
           <!-- 文章标题 -->
@@ -33,11 +33,12 @@
 </template>
 
 <script setup lang="ts">
-import { searchArticle } from "@/api/article";
-import { ArticleSearch } from "@/api/article/types";
+import {searchArticle} from "@/api/article";
+import {ArticleSearch} from "@/api/article/types";
 import useStore from "@/store";
-import { debouncedWatch } from "@vueuse/core";
-const { app } = useStore();
+import {debouncedWatch} from "@vueuse/core";
+
+const {app} = useStore();
 const dialogVisible = computed({
   get: () => app.searchFlag,
   set: (value) => app.searchFlag = value,
@@ -45,12 +46,12 @@ const dialogVisible = computed({
 const keyword = ref("");
 const articleList = ref<ArticleSearch[]>([]);
 debouncedWatch(
-  keyword,
-  () => keyword.value ? handleSearch() : articleList.value = [],
-  { debounce: 300 },
+    keyword,
+    () => keyword.value ? handleSearch() : articleList.value = [],
+    {debounce: 300},
 );
 const handleSearch = () => {
-  searchArticle(keyword.value).then(({ data }) => {
+  searchArticle(keyword.value).then(({data}) => {
     articleList.value = data.data;
   })
 }

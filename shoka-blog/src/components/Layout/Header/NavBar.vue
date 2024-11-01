@@ -8,16 +8,20 @@
     <template v-for="menu of menuList" :key="menu.name">
       <div v-if="!menu.children" class="menu-item" :class="{ active: route.meta.title === menu.name }">
         <router-link :to="menu.path" class="menu-btn">
-          <svg-icon :icon-class="menu.icon"></svg-icon> {{ menu.name }}
+          <svg-icon :icon-class="menu.icon"></svg-icon>
+          {{ menu.name }}
         </router-link>
       </div>
       <div v-else class="menu-item dropdown">
-        <a class="menu-btn drop"> <svg-icon :icon-class="menu.icon"></svg-icon> {{ menu.name }} </a>
+        <a class="menu-btn drop">
+          <svg-icon :icon-class="menu.icon"></svg-icon>
+          {{ menu.name }} </a>
         <ul class="submenu">
           <li class="subitem" v-for="submenu of menu.children" :key="submenu.name"
-            :class="{ active: route.meta.title === submenu.name }">
+              :class="{ active: route.meta.title === submenu.name }">
             <router-link class="link" :to="submenu.path">
-              <svg-icon :icon-class="submenu.icon"></svg-icon> {{ submenu.name }}
+              <svg-icon :icon-class="submenu.icon"></svg-icon>
+              {{ submenu.name }}
             </router-link>
           </li>
         </ul>
@@ -25,18 +29,22 @@
     </template>
     <div class="menu-item">
       <a v-if="!user.id" @click="app.loginFlag = true" class="menu-btn">
-        <svg-icon icon-class="user"></svg-icon> 登录
+        <svg-icon icon-class="user"></svg-icon>
+        登录
       </a>
       <template v-else>
-        <img class="user-avatar drop" :src="user.avatar" />
+        <img class="user-avatar drop" :src="user.avatar"/>
         <ul class="submenu">
           <li class="subitem" :class="{ active: route.meta.title === '个人中心' }">
             <router-link to="/user" class="link">
-              <svg-icon icon-class="author"></svg-icon> 个人中心
+              <svg-icon icon-class="author"></svg-icon>
+              个人中心
             </router-link>
           </li>
           <li class="subitem">
-            <a class="link" @click="logout"><svg-icon icon-class="logout"></svg-icon> 退出 </a>
+            <a class="link" @click="logout">
+              <svg-icon icon-class="logout"></svg-icon>
+              退出 </a>
           </li>
         </ul>
       </template>
@@ -46,7 +54,8 @@
 
 <script setup lang="ts">
 import useStore from "@/store";
-const { user, app, blog } = useStore();
+
+const {user, app, blog} = useStore();
 const router = useRouter();
 const route = useRoute();
 const menuList = [

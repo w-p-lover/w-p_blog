@@ -27,6 +27,7 @@ public class GlobalExceptionHandler {
 
     @Autowired
     UserService userService;
+
     /**
      * 处理业务异常
      */

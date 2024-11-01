@@ -5,11 +5,11 @@ import usePermissionStore from "./modules/permission";
 import useUserStore from "./modules/user";
 
 const useStore = () => ({
-  tag: useTagStore(),
-  app: useAppStore(),
-  setting: useSettingStore(),
-  user: useUserStore(),
-  permission: usePermissionStore(),
+    tag: useTagStore(),
+    app: useAppStore(),
+    setting: useSettingStore(),
+    user: useUserStore(),
+    permission: usePermissionStore(),
 });
 
 export default useStore;

@@ -2,29 +2,36 @@
   <div class="tags-view-container">
     <scroll-pane ref="scrollPaneRef" class="tags-view-wrapper" @scroll="handleScroll">
       <router-link v-for="item in visitedViews" :key="item.path" :data-path="item.path"
-        :class="isActive(item) ? 'active' : ''" :to="{ path: item.path, query: item.query }" class="tags-view-item"
-        @click.middle="!isAffix(item) ? closeSelectedTag(item) : ''" @contextmenu.prevent="openMenu(item, $event)">
+                   :class="isActive(item) ? 'active' : ''" :to="{ path: item.path, query: item.query }"
+                   class="tags-view-item"
+                   @click.middle="!isAffix(item) ? closeSelectedTag(item) : ''"
+                   @contextmenu.prevent="openMenu(item, $event)">
         {{ item.meta?.title }}
         <span v-if="!isAffix(item)" class="icon-close" @click.prevent.stop="closeSelectedTag(item)">
-          <svg-icon icon-class="close" size="0.9rem" />
+          <svg-icon icon-class="close" size="0.9rem"/>
         </span>
       </router-link>
     </scroll-pane>
     <ul v-show="visible" :style="{ left: left + 'px', top: top + 'px' }" class="contextmenu">
       <li v-if="!isAffix(selectedTag)" @click="closeSelectedTag(selectedTag)">
-        <close style="width: 1em; height: 1em;vertical-align: -0.12em;" /> 关闭当前
+        <close style="width: 1em; height: 1em;vertical-align: -0.12em;"/>
+        关闭当前
       </li>
       <li @click.stop="closeOtherTags">
-        <circle-close style="width: 1em; height: 1em;vertical-align: -0.12em;" /> 关闭其他
+        <circle-close style="width: 1em; height: 1em;vertical-align: -0.12em;"/>
+        关闭其他
       </li>
       <li v-if="!isFirstView()" @click="closeLeftTags">
-        <back style="width: 1em; height: 1em;vertical-align: -0.12em;" /> 关闭左侧
+        <back style="width: 1em; height: 1em;vertical-align: -0.12em;"/>
+        关闭左侧
       </li>
       <li v-if="!isLastView()" @click="closeRightTags">
-        <right style="width: 1em; height: 1em;vertical-align: -0.12em;" /> 关闭右侧
+        <right style="width: 1em; height: 1em;vertical-align: -0.12em;"/>
+        关闭右侧
       </li>
       <li @click.stop="closeAllTags(selectedTag)">
-        <circle-close style="width: 1em; height: 1em;vertical-align: -0.12em;" /> 关闭所有
+        <circle-close style="width: 1em; height: 1em;vertical-align: -0.12em;"/>
+        关闭所有
       </li>
     </ul>
   </div>
@@ -32,15 +39,15 @@
 
 <script setup lang="ts">
 import useStore from "@/store";
-import { TagView } from "@/store/interface";
-import { ComponentInternalInstance, computed, getCurrentInstance, nextTick, onMounted, ref, watch } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import {TagView} from "@/store/interface";
+import {ComponentInternalInstance, computed, getCurrentInstance, nextTick, onMounted, ref, watch} from "vue";
+import {useRoute, useRouter} from "vue-router";
 import ScrollPane from "./ScrollPane.vue";
 
 const router = useRouter();
 const route = useRoute();
-const { proxy } = getCurrentInstance() as ComponentInternalInstance;
-const { tag, permission } = useStore();
+const {proxy} = getCurrentInstance() as ComponentInternalInstance;
+const {tag, permission} = useStore();
 const visible = ref(false);
 const top = ref(0);
 const left = ref(0);
@@ -94,7 +101,7 @@ const toLastView = (visitedViews: TagView[], view?: any) => {
     // you can adjust it according to your needs.
     if (view.name === 'Dashboard') {
       // to reload home page
-      router.replace({ path: '/redirect' + view.fullPath });
+      router.replace({path: '/redirect' + view.fullPath});
     } else {
       router.push('/');
     }
@@ -103,9 +110,9 @@ const toLastView = (visitedViews: TagView[], view?: any) => {
 const isFirstView = () => {
   try {
     return (
-      (selectedTag.value as TagView).fullPath ===
-      tag.visitedViews[1].fullPath ||
-      (selectedTag.value as TagView).fullPath === '/index'
+        (selectedTag.value as TagView).fullPath ===
+        tag.visitedViews[1].fullPath ||
+        (selectedTag.value as TagView).fullPath === '/index'
     );
   } catch (err) {
     return false;
@@ -114,8 +121,8 @@ const isFirstView = () => {
 const isLastView = () => {
   try {
     return (
-      (selectedTag.value as TagView).fullPath ===
-      tag.visitedViews[tag.visitedViews.length - 1].fullPath
+        (selectedTag.value as TagView).fullPath ===
+        tag.visitedViews[tag.visitedViews.length - 1].fullPath
     );
   } catch (err) {
     return false;
@@ -173,7 +180,7 @@ const filterAffixTags = (routes: any[], basePath = '') => {
         fullPath: tagPath,
         path: tagPath,
         name: route.name,
-        meta: { ...route.meta }
+        meta: {...route.meta}
       });
     }
     if (route.children) {
@@ -188,7 +195,8 @@ const filterAffixTags = (routes: any[], basePath = '') => {
 const getNormalPath = (p: string) => {
   if (p.length === 0 || !p || p == 'undefined') {
     return p
-  };
+  }
+  ;
   let res = p.replace('//', '/')
   if (res[res.length - 1] === '/') {
     return res.slice(0, res.length - 1)
@@ -207,15 +215,15 @@ const initTags = () => {
   }
 };
 watch(
-  route,
-  () => {
-    addTags();
-    moveToCurrentTag();
-  },
-  {
-    //初始化立即执行
-    immediate: true
-  }
+    route,
+    () => {
+      addTags();
+      moveToCurrentTag();
+    },
+    {
+      //初始化立即执行
+      immediate: true
+    }
 );
 watch(visible, value => {
   if (value) {

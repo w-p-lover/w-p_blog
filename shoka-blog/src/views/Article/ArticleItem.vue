@@ -3,7 +3,7 @@
     <!-- 文章缩略图 -->
     <div class="article-cover">
       <router-link :to="`/article/${article.id}`" href="">
-        <img class="cover" v-lazy="article.articleCover" />
+        <img class="cover" v-lazy="article.articleCover"/>
       </router-link>
     </div>
     <!-- 文章信息 -->
@@ -15,11 +15,13 @@
         <!-- 发表时间 -->
         <span class="meta-item ml">
           <svg-icon icon-class="calendar" size="0.9rem" style="margin-right: 0.15rem"></svg-icon>{{
-            formatDate(article.createTime) }}
+            formatDate(article.createTime)
+          }}
         </span>
         <!-- 文章标签 -->
         <router-link class="meta-item ml" :to="`/tag/${tag.id}`" v-for="tag in article.tagVOList" :key="tag.id">
-          <svg-icon icon-class="tag" size="0.9rem" style="margin-right: 0.15rem"></svg-icon>{{ tag.tagName }}
+          <svg-icon icon-class="tag" size="0.9rem" style="margin-right: 0.15rem"></svg-icon>
+          {{ tag.tagName }}
         </router-link>
       </div>
       <!-- 文章标题 -->
@@ -34,8 +36,9 @@
       <div class="article-category">
         <svg-icon icon-class="qizhi" size="0.85rem" style="margin-right: 0.15rem"></svg-icon>
         <router-link :to="`/category/${article.category.id}`">{{
-          article.category.categoryName
-        }}</router-link>
+            article.category.categoryName
+          }}
+        </router-link>
       </div>
       <!-- 阅读按钮 -->
       <router-link class="article-btn" :to="`/article/${article.id}`">more...</router-link>
@@ -45,10 +48,11 @@
 </template>
 
 <script setup lang="ts">
-import { getArticleList } from "@/api/article";
-import { Article } from "@/api/article/types";
-import { PageQuery } from "@/model";
-import { formatDate } from "@/utils/date";
+import {getArticleList} from "@/api/article";
+import {Article} from "@/api/article/types";
+import {PageQuery} from "@/model";
+import {formatDate} from "@/utils/date";
+
 const data = reactive({
   count: 0,
   queryParams: {
@@ -57,18 +61,18 @@ const data = reactive({
   } as PageQuery,
   articleList: [] as Article[],
 });
-const { count, queryParams, articleList } = toRefs(data);
+const {count, queryParams, articleList} = toRefs(data);
 watch(
-  () => queryParams.value.current,
-  () => {
-    getArticleList(queryParams.value).then(({ data }) => {
-      articleList.value = data.data.recordList;
-      count.value = data.data.count;
-    });
-  }
+    () => queryParams.value.current,
+    () => {
+      getArticleList(queryParams.value).then(({data}) => {
+        articleList.value = data.data.recordList;
+        count.value = data.data.count;
+      });
+    }
 );
 onMounted(() => {
-  getArticleList(queryParams.value).then(({ data }) => {
+  getArticleList(queryParams.value).then(({data}) => {
     articleList.value = data.data.recordList;
     count.value = data.data.count;
   });

@@ -240,7 +240,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
                         .getUserId();
             }
             // 自己评论自己的作品，不用提醒
-            if(comment.getFromUid().equals(toUid)){
+            if (comment.getFromUid().equals(toUid)) {
                 return;
             }
         } else {

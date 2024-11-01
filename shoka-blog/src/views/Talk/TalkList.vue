@@ -2,19 +2,19 @@
   <div class="page-header">
     <h1 class="page-title">说说</h1>
     <img class="page-cover" src="https://ik.imagekit.io/nicexl/Wallpaper/ba41a32b219e4b40ad055bbb52935896_Y0819msuI.jpg"
-      alt="">
+         alt="">
     <Waves></Waves>
   </div>
   <div class="bg">
     <div class="page-container">
       <router-link :to="`/talk/${talk.id}`" class="talk-item" v-animate="['slideUpBigIn']" v-for="talk in talkList"
-        :key="talk.id">
+                   :key="talk.id">
         <div class="talk-meta">
           <!-- 用户头像 -->
           <img class="user-avatar" :src="talk.avatar">
           <div class="talk-info">
             <span class="talk-user-name">{{ talk.nickname }}<svg-icon icon-class="badge"
-                style="margin-left: 0.4rem;"></svg-icon></span>
+                                                                      style="margin-left: 0.4rem;"></svg-icon></span>
             <span class="talk-time">{{ formatDateTime(talk.createTime) }}</span>
           </div>
         </div>
@@ -23,7 +23,7 @@
         </div>
         <!-- 说说图片 -->
         <div class="talk-image" v-viewer>
-          <img @click.prevent class="image" v-for="(img, index) in talk.imgList" :key="index" v-lazy="img" />
+          <img @click.prevent class="image" v-for="(img, index) in talk.imgList" :key="index" v-lazy="img"/>
         </div>
         <!-- 说说信息 -->
         <div class="info" style="margin-top: 0.5rem;">
@@ -51,10 +51,11 @@
 </template>
 
 <script setup lang="ts">
-import { getTalkList } from "@/api/talk";
-import { Talk } from "@/api/talk/types";
-import { PageQuery } from "@/model";
-import { formatDateTime } from "@/utils/date";
+import {getTalkList} from "@/api/talk";
+import {Talk} from "@/api/talk/types";
+import {PageQuery} from "@/model";
+import {formatDateTime} from "@/utils/date";
+
 const data = reactive({
   count: 0,
   queryParams: {
@@ -69,7 +70,7 @@ const {
   talkList,
 } = toRefs(data);
 const getList = () => {
-  getTalkList(queryParams.value).then(({ data }) => {
+  getTalkList(queryParams.value).then(({data}) => {
     if (queryParams.value.current == 1) {
       talkList.value = data.data.recordList;
     } else {

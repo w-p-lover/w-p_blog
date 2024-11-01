@@ -5,7 +5,7 @@
       <main class="main-wrapper">
         <router-view v-slot="{ Component, route }">
           <keep-alive>
-            <component :is="Component" :key="route.path" />
+            <component :is="Component" :key="route.path"/>
           </keep-alive>
         </router-view>
       </main>
@@ -23,17 +23,18 @@
 </template>
 
 <script setup lang="ts">
-import { getBlogInfo, report } from "@/api/blogInfo";
+import {getBlogInfo, report} from "@/api/blogInfo";
 import useStore from '@/store';
-const { blog } = useStore();
+
+const {blog} = useStore();
 onMounted(() => {
   console.log(
-    "%c Hello World %c By w&p %c",
-    "background:#e9546b ; padding: 1px; border-radius: 3px 0 0 3px;  color: #fff; padding:5px 0;",
-    "background:#ec8c69 ; padding: 1px; border-radius: 0 3px 3px 0;  color: #000; padding:5px 0;",
-    "background:transparent"
+      "%c Hello World %c By w&p %c",
+      "background:#e9546b ; padding: 1px; border-radius: 3px 0 0 3px;  color: #fff; padding:5px 0;",
+      "background:#ec8c69 ; padding: 1px; border-radius: 0 3px 3px 0;  color: #000; padding:5px 0;",
+      "background:transparent"
   );
-  getBlogInfo().then(({ data }) => {
+  getBlogInfo().then(({data}) => {
     blog.setBlogInfo(data.data);
   });
   report();

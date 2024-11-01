@@ -4,7 +4,7 @@
     <span class="pagination-btn" v-if="current !== 1" @click="prePage">上一页</span>
     <template v-for="(number, index) in visibleNumber">
       <span :key="index" @click="changePage(number)" v-if="typeof number == 'number'" class="pagination-page-number"
-        :class="current == number ? 'current-page' : ''">{{ number }}</span>
+            :class="current == number ? 'current-page' : ''">{{ number }}</span>
       <span class="pagination-page-do" v-else :key="number">...</span>
     </template>
     <span class="pagination-btn" v-if="current !== totalPage" @click="nextPage">下一页</span>
@@ -67,7 +67,7 @@ const nextPage = () => {
 const setPaging = (flag: boolean) => {
   show.value = flag;
 };
-defineExpose({ current, setPaging })
+defineExpose({current, setPaging})
 </script>
 
 <style lang="scss" scoped>

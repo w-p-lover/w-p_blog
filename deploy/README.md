@@ -70,7 +70,9 @@ yum remove docker \
 curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 ```
 
-> 如果下载速度较慢或者下载失败，去[Release 1.29.2 · docker/compose (github.com)](https://github.com/docker/compose/releases/tag/1.29.2)选择相应版本，下载 docker-compose-Linux-x86_64 到本地，更名为`docker-compose`，上传到服务器的`/usr/local/bin`目录下
+>
+如果下载速度较慢或者下载失败，去[Release 1.29.2 · docker/compose (github.com)](https://github.com/docker/compose/releases/tag/1.29.2)
+选择相应版本，下载 docker-compose-Linux-x86_64 到本地，更名为`docker-compose`，上传到服务器的`/usr/local/bin`目录下
 
 ### 3.2 修改文件权限
 

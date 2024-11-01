@@ -1,18 +1,18 @@
-import { Result } from "@/model";
+import {Result} from "@/model";
 import request from "@/utils/request";
-import { AxiosPromise } from "axios";
-import { RouteRecordRaw } from "vue-router";
-import { Menu, MenuForm, MenuOption, MenuQuery, MenuTree } from "./types";
+import {AxiosPromise} from "axios";
+import {RouteRecordRaw} from "vue-router";
+import {Menu, MenuForm, MenuOption, MenuQuery, MenuTree} from "./types";
 
 /**
  * 获取登录用户菜单
  * @returns 登录用户菜单
  */
 export function getUserMenu(): AxiosPromise<Result<RouteRecordRaw[]>> {
-  return request({
-    url: "/admin/user/getUserMenu",
-    method: "get",
-  });
+    return request({
+        url: "/admin/user/getUserMenu",
+        method: "get",
+    });
 }
 
 /**
@@ -20,10 +20,10 @@ export function getUserMenu(): AxiosPromise<Result<RouteRecordRaw[]>> {
  * @returns 菜单树
  */
 export function getMenuTree(): AxiosPromise<Result<MenuTree[]>> {
-  return request({
-    url: "/admin/menu/getMenuTree",
-    method: "get",
-  });
+    return request({
+        url: "/admin/menu/getMenuTree",
+        method: "get",
+    });
 }
 
 /**
@@ -31,10 +31,10 @@ export function getMenuTree(): AxiosPromise<Result<MenuTree[]>> {
  * @returns 菜单下拉树
  */
 export function getMenuOptions(): AxiosPromise<Result<MenuOption[]>> {
-  return request({
-    url: "/admin/menu/getMenuOptions",
-    method: "get",
-  });
+    return request({
+        url: "/admin/menu/getMenuOptions",
+        method: "get",
+    });
 }
 
 /**
@@ -43,11 +43,11 @@ export function getMenuOptions(): AxiosPromise<Result<MenuOption[]>> {
  * @returns 菜单列表
  */
 export function getMenuList(params: MenuQuery): AxiosPromise<Result<Menu[]>> {
-  return request({
-    url: "/admin/menu/list",
-    method: "get",
-    params,
-  });
+    return request({
+        url: "/admin/menu/list",
+        method: "get",
+        params,
+    });
 }
 
 /**
@@ -56,10 +56,10 @@ export function getMenuList(params: MenuQuery): AxiosPromise<Result<Menu[]>> {
  * @returns 菜单
  */
 export function editMenu(menuId: number): AxiosPromise<Result<MenuForm>> {
-  return request({
-    url: `/admin/menu/edit/${menuId}`,
-    method: "get",
-  });
+    return request({
+        url: `/admin/menu/edit/${menuId}`,
+        method: "get",
+    });
 }
 
 /**
@@ -67,11 +67,11 @@ export function editMenu(menuId: number): AxiosPromise<Result<MenuForm>> {
  * @param data 菜单
  */
 export function addMenu(data: MenuForm): AxiosPromise<Result<null>> {
-  return request({
-    url: "/admin/menu/add",
-    method: "post",
-    data,
-  });
+    return request({
+        url: "/admin/menu/add",
+        method: "post",
+        data,
+    });
 }
 
 /**
@@ -79,11 +79,11 @@ export function addMenu(data: MenuForm): AxiosPromise<Result<null>> {
  * @param data 菜单
  */
 export function updateMenu(data: MenuForm): AxiosPromise<Result<null>> {
-  return request({
-    url: "/admin/menu/update",
-    method: "put",
-    data,
-  });
+    return request({
+        url: "/admin/menu/update",
+        method: "put",
+        data,
+    });
 }
 
 /**
@@ -91,8 +91,8 @@ export function updateMenu(data: MenuForm): AxiosPromise<Result<null>> {
  * @param menuId 菜单id
  */
 export function deleteMenu(menuId: number): AxiosPromise<Result<null>> {
-  return request({
-    url: `/admin/menu/delete/${menuId}`,
-    method: "delete",
-  });
+    return request({
+        url: `/admin/menu/delete/${menuId}`,
+        method: "delete",
+    });
 }

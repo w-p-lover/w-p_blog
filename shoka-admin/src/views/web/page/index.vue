@@ -1,7 +1,7 @@
 <template>
-    <div class="app-container">
+  <div class="app-container">
 
-    </div>
+  </div>
 </template>
 
 <script setup lang="ts">

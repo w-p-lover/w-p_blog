@@ -12,7 +12,8 @@
 
 <script setup lang="ts">
 import useStore from "@/store";
-const { blog } = useStore();
+
+const {blog} = useStore();
 </script>
 
 <style lang="scss" scoped>

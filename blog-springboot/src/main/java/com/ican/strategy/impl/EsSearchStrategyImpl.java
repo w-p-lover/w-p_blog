@@ -39,6 +39,7 @@ public class EsSearchStrategyImpl implements SearchStrategy {
     private RestHighLevelClient restHighLevelClient;
     @Autowired
     private ArticleMapper articleMapper;
+
     @Override
     public List<ArticleSearchVO> searchArticle(String keyword) {
         if (StringUtils.isBlank(keyword)) {
@@ -94,7 +95,7 @@ public class EsSearchStrategyImpl implements SearchStrategy {
                         articleSearchVO.setArticleContent(highlightFields.get(ARTICLE_CONTENT).fragments()[0].string());
                     } else {
                         // 假设有一个从JSON转换的方法
-                        articleSearchVO = JSON.parseObject(hit.getSourceAsString(),ArticleSearchVO.class);
+                        articleSearchVO = JSON.parseObject(hit.getSourceAsString(), ArticleSearchVO.class);
                         articleSearchVO.setArticleContent(articleSearchVO.getArticleContent().substring(0, 300));
                     }
                     return articleSearchVO;

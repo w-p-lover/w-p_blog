@@ -1,18 +1,18 @@
-import { Result } from "@/model";
+import {Result} from "@/model";
 import request from "@/utils/request";
-import { AxiosPromise } from "axios";
-import { ArticleConditionList, ArticleQuery } from "../article/types";
-import { Category } from "./types";
+import {AxiosPromise} from "axios";
+import {ArticleConditionList, ArticleQuery} from "../article/types";
+import {Category} from "./types";
 
 /**
  * 查看文章分类
  * @returns 文章分类
  */
 export function getCategoryList(): AxiosPromise<Result<Category[]>> {
-  return request({
-    url: "/category/list",
-    method: "get",
-  });
+    return request({
+        url: "/category/list",
+        method: "get",
+    });
 }
 
 /**
@@ -20,11 +20,11 @@ export function getCategoryList(): AxiosPromise<Result<Category[]>> {
  * @returns 文章分类
  */
 export function getCategoryArticleList(
-  params: ArticleQuery
+    params: ArticleQuery
 ): AxiosPromise<Result<ArticleConditionList>> {
-  return request({
-    url: "/category/article",
-    method: "get",
-    params,
-  });
+    return request({
+        url: "/category/article",
+        method: "get",
+        params,
+    });
 }

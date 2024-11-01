@@ -1,4 +1,5 @@
 ## 博客介绍
+
 <p align="center"> 
   <a href="w-love-p.top" style="display: inline-block; text-align: left;">  
     <img src="https://wangyoupeng-penghong.oss-cn-beijing.aliyuncs.com/img202410082058148.jpg" alt="一个比较大的博客" style="border-radius: 50%; width: 40%; height: auto; margin-left: 120px;"> 
@@ -63,7 +64,8 @@
 
 **前端：** Vue3 + Pinia + Vue Router + TypeScript + Axios + Element Plus + Naive UI + Echarts + Swiper
 
-**后端：** SpringBoot + Mysql + Redis + Quartz + Thymeleaf + Nginx + Docker + Sa-Token + Swagger2 + MyBatisPlus + ElasticSearch + RabbitMQ + Canal + EasyExcel
+**后端：** SpringBoot + Mysql + Redis + Quartz + Thymeleaf + Nginx + Docker + Sa-Token + Swagger2 + MyBatisPlus +
+ElasticSearch + RabbitMQ + Canal + EasyExcel
 
 **其他：** 接入 QQ、Gitee、Github 第三方登录，接入TinyPng图片压缩
 
@@ -77,24 +79,22 @@
 
 ## 开发环境
 
-| 开发工具              | 说明               |
-| --------------------- | ------------------ |
-| IDEA                  | Java 开发工具 IDE  |
-| VSCode                | Vue 开发工具 IDE   |
-| Datagrip              | MySQL 远程连接工具 |
-| Redis Desktop Manager | Redis 远程连接工具 |
-| Finalshell            | Linux 远程连接工具 |
-| Xftp                  | Linux 文件上传工具 |
+| 开发工具                  | 说明            |
+|-----------------------|---------------|
+| IDEA                  | Java 开发工具 IDE |
+| VSCode                | Vue 开发工具 IDE  |
+| Datagrip              | MySQL 远程连接工具  |
+| Redis Desktop Manager | Redis 远程连接工具  |
+| Finalshell            | Linux 远程连接工具  |
+| Xftp                  | Linux 文件上传工具  |
 
-| 开发环境      | 版本            |
-| ------------- | --------------- |
+| 开发环境          | 版本              |
+|---------------|-----------------|
 | OpenJDK       | 11              |
 | MySQL         | 8.0.27          |
 | Redis         | 6.2.6           |
 | Elasticsearch | 7.15.3 - 7.17.3 |
 | RabbitMQ      | 3.9.11          |
-
-
 
 ## 后续计划
 

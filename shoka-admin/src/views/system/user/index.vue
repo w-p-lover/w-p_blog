@@ -3,12 +3,13 @@
     <!-- 搜索栏 -->
     <el-form :model="queryParams" :inline="true">
       <el-form-item label="用户昵称">
-        <el-input @keyup.enter="handleQuery" v-model="queryParams.keyword" style="width: 200px" placeholder="请输入用户昵称"
-          clearable />
+        <el-input @keyup.enter="handleQuery" v-model="queryParams.keyword" style="width: 200px"
+                  placeholder="请输入用户昵称"
+                  clearable/>
       </el-form-item>
       <el-form-item label="登录方式">
         <el-select v-model="queryParams.loginType" placeholder="请选择登录方式" clearable style="width: 200px">
-          <el-option v-for="item in typeList" :key="item.value" :label="item.label" :value="item.value" />
+          <el-option v-for="item in typeList" :key="item.value" :label="item.label" :value="item.value"/>
         </el-select>
       </el-form-item>
       <el-form-item>
@@ -20,7 +21,7 @@
       <!-- 用户头像 -->
       <el-table-column prop="avatar" label="头像" align="center" width="100">
         <template #default="scope">
-          <img :src="scope.row.avatar" width="40" height="40" />
+          <img :src="scope.row.avatar" width="40" height="40"/>
         </template>
       </el-table-column>
       <!-- 昵称 -->
@@ -46,7 +47,7 @@
       <el-table-column prop="status" label="状态" align="center" width="100">
         <template #default="scope">
           <el-switch v-model="scope.row.isDisable" active-color="#13ce66" inactive-color="#ff4949" :active-value="0"
-            :inactive-value="1" @change="handleChangeStatus(scope.row)"></el-switch>
+                     :inactive-value="1" @change="handleChangeStatus(scope.row)"></el-switch>
         </template>
       </el-table-column>
       <!-- 登录ip -->
@@ -58,7 +59,7 @@
         <template #default="scope">
           <div class="create-time">
             <el-icon>
-              <clock />
+              <clock/>
             </el-icon>
             <span style="margin-left: 10px">{{ formatDate(scope.row.createTime) }}</span>
           </div>
@@ -69,7 +70,7 @@
         <template #default="scope">
           <div class="create-time">
             <el-icon>
-              <clock />
+              <clock/>
             </el-icon>
             <span style="margin-left: 10px">{{ formatDate(scope.row.loginTime) }}</span>
           </div>
@@ -86,12 +87,12 @@
     </el-table>
     <!-- 分页 -->
     <pagination v-if="count > 0" :total="count" v-model:page="queryParams.current" v-model:limit="queryParams.size"
-      @pagination="getList" />
+                @pagination="getList"/>
     <!-- 添加或修改对话框 -->
     <el-dialog title="修改用户" v-model="update" width="500px" append-to-body>
       <el-form ref="userFormRef" label-width="100px" :model="userForm" :rules="rules">
         <el-form-item label="昵称" prop="nickname">
-          <el-input placeholder="请输入昵称" v-model="userForm.nickname" style="width: 250px;" />
+          <el-input placeholder="请输入昵称" v-model="userForm.nickname" style="width: 250px;"/>
         </el-form-item>
         <el-form-item label="角色" prop="roleIdList">
           <el-checkbox-group v-model="roleIdList">
@@ -112,16 +113,17 @@
 </template>
 
 <script setup lang="ts">
-import { getUserList, getUserRoleList, updateUser, updateUserStatus } from '@/api/user';
-import { User, UserForm, UserQuery, UserRole } from '@/api/user/types';
-import { formatDate } from "@/utils/date";
-import { messageConfirm, notifySuccess } from '@/utils/modal';
-import { FormInstance, FormRules } from 'element-plus';
-import { onMounted, reactive, ref, toRefs } from 'vue';
+import {getUserList, getUserRoleList, updateUser, updateUserStatus} from '@/api/user';
+import {User, UserForm, UserQuery, UserRole} from '@/api/user/types';
+import {formatDate} from "@/utils/date";
+import {messageConfirm, notifySuccess} from '@/utils/modal';
+import {FormInstance, FormRules} from 'element-plus';
+import {onMounted, reactive, ref, toRefs} from 'vue';
+
 const userFormRef = ref<FormInstance>();
 const rules = reactive<FormRules>({
-  nickname: [{ required: true, message: "请输入昵称", trigger: "blur" }],
-  roleIdList: [{ required: true, message: "角色不能为空", trigger: "click" }]
+  nickname: [{required: true, message: "请输入昵称", trigger: "blur"}],
+  roleIdList: [{required: true, message: "角色不能为空", trigger: "click"}]
 });
 const data = reactive({
   count: 0,
@@ -178,20 +180,22 @@ const openModel = (user: User) => {
 const handleChangeStatus = (user: User) => {
   let text = user.isDisable === 0 ? "解封" : "封禁";
   messageConfirm("确定要" + text + user.nickname + "吗?").then(() => {
-    updateUserStatus({ id: user.id, isDisable: user.isDisable }).then(({ data }) => {
+    updateUserStatus({id: user.id, isDisable: user.isDisable}).then(({data}) => {
       if (data.flag) {
         notifySuccess(data.msg);
       } else {
         user.isDisable = user.isDisable === 0 ? 1 : 0;
       }
     })
-  }).catch(() => { user.isDisable = user.isDisable === 0 ? 1 : 0; });
+  }).catch(() => {
+    user.isDisable = user.isDisable === 0 ? 1 : 0;
+  });
 };
 const submitForm = () => {
   userForm.value.roleIdList = roleIdList.value;
   userFormRef.value?.validate((valid) => {
     if (valid) {
-      updateUser(userForm.value).then(({ data }) => {
+      updateUser(userForm.value).then(({data}) => {
         if (data.flag) {
           notifySuccess(data.msg);
           getList();
@@ -203,7 +207,7 @@ const submitForm = () => {
 };
 const getList = () => {
   loading.value = true;
-  getUserList(queryParams.value).then(({ data }) => {
+  getUserList(queryParams.value).then(({data}) => {
     userList.value = data.data.recordList;
     count.value = data.data.count;
     loading.value = false;
@@ -215,7 +219,7 @@ const handleQuery = () => {
 };
 onMounted(() => {
   getList();
-  getUserRoleList().then(({ data }) => {
+  getUserRoleList().then(({data}) => {
     userRoleList.value = data.data;
   })
 });

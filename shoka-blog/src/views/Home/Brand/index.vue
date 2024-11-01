@@ -19,6 +19,7 @@
 <script setup lang="ts">
 import useStore from "@/store";
 import EasyTyper from "easy-typer-js";
+
 const obj = reactive({
   output: "",
   isEnd: false,
@@ -29,7 +30,7 @@ const obj = reactive({
   backSpeed: 100,
   sentencePause: false,
 });
-const { blog } = useStore();
+const {blog} = useStore();
 const scrollDown = () => {
   window.scrollTo({
     behavior: "smooth",
@@ -38,17 +39,19 @@ const scrollDown = () => {
 };
 const fetchData = () => {
   fetch("https://v1.hitokoto.cn/?c=d")
-    .then((res) => {
-      return res.json();
-    })
-    .then(({ hitokoto }) => {
-      new EasyTyper(
-        obj,
-        hitokoto,
-        () => { },
-        () => { }
-      );
-    });
+      .then((res) => {
+        return res.json();
+      })
+      .then(({hitokoto}) => {
+        new EasyTyper(
+            obj,
+            hitokoto,
+            () => {
+            },
+            () => {
+            }
+        );
+      });
 };
 onMounted(() => {
   fetchData();
@@ -76,7 +79,7 @@ onMounted(() => {
 
   .artboard {
     font-family: "Fredericka the Great", Mulish, -apple-system, "PingFang SC", "Microsoft YaHei",
-      sans-serif;
+    sans-serif;
     font-size: 3.5em;
     line-height: 1.2;
     animation: titleScale 1s;

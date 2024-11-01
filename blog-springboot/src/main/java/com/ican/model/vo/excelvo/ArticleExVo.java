@@ -26,21 +26,21 @@ public class ArticleExVo {
     /**
      * 文章id
      */
-    @ExcelProperty(value = "文章id",index = 0)
+    @ExcelProperty(value = "文章id", index = 0)
     @ApiModelProperty(value = "文章id")
     private Integer id;
 
     /**
      * 文章标题
      */
-    @ExcelProperty(value = "文章标题",index = 1)
+    @ExcelProperty(value = "文章标题", index = 1)
     @ApiModelProperty(value = "文章标题")
     private String articleTitle;
 
     /**
      * 文章内容
      */
-    @ExcelProperty(value = "文章内容",index = 2)
+    @ExcelProperty(value = "文章内容", index = 2)
     @ApiModelProperty(value = "文章内容")
     @ColumnWidth(60) // 设置列宽（可以根据需要调整宽度）
     private String articleContent;
@@ -48,35 +48,35 @@ public class ArticleExVo {
     /**
      * 文章类型 (1原创 2转载 3翻译)
      */
-    @ExcelProperty(value = "文章类型",index = 3)
+    @ExcelProperty(value = "文章类型", index = 3)
     @ApiModelProperty(value = "文章类型 (1原创 2转载 3翻译)")
     private String articleType;
 
     /**
      * 是否置顶 (0否 1是)
      */
-    @ExcelProperty(value = "是否置顶",index = 4)
+    @ExcelProperty(value = "是否置顶", index = 4)
     @ApiModelProperty(value = "是否置顶")
     private String isTop;
 
     /**
      * 是否推荐 (0否 1是)
      */
-    @ExcelProperty(value = "文章推荐",index = 5)
+    @ExcelProperty(value = "文章推荐", index = 5)
     @ApiModelProperty(value = "是否推荐 (0否 1是)")
     private String isRecommend;
 
     /**
      * 状态 (1公开 2私密 3草稿)
      */
-    @ExcelProperty(value = "文章状态",index = 6)
+    @ExcelProperty(value = "文章状态", index = 6)
     @ApiModelProperty(value = "状态 (1公开 2私密 3草稿)")
     private String status;
 
     /**
      * 文章缩略图
      */
-    @ExcelProperty(value = "文章缩略图",index = 7)
+    @ExcelProperty(value = "文章缩略图", index = 7)
     @ColumnWidth(90) // 设置列宽（可以根据需要调整宽度）
     @ApiModelProperty(value = "文章缩略图")
     private String articleCover;

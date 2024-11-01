@@ -2,7 +2,7 @@
   <div class="page-header">
     <h1 class="page-title">分类</h1>
     <img class="page-cover" src="https://ik.imagekit.io/nicexl/Wallpaper/ba41a32b219e4b40ad055bbb52935896_Y0819msuI.jpg"
-      alt="">
+         alt="">
     <!-- 波浪 -->
     <Waves></Waves>
   </div>
@@ -20,9 +20,10 @@
 </template>
 
 <script setup lang="ts">
-import { getCategoryList } from "@/api/category";
-import { Category } from "@/api/category/types";
+import {getCategoryList} from "@/api/category";
+import {Category} from "@/api/category/types";
 import Echarts from "@/components/Echarts/index.vue";
+
 let categoryOption = reactive({
   tooltip: {
     trigger: 'item',
@@ -45,8 +46,7 @@ let categoryOption = reactive({
       itemStyle: {
         borderRadius: 6
       },
-      data: [
-      ] as {
+      data: [] as {
         value: number;
         name: string;
       }[],
@@ -55,7 +55,7 @@ let categoryOption = reactive({
 });
 const categoryList = ref<Category[]>([]);
 onMounted(() => {
-  getCategoryList().then(({ data }) => {
+  getCategoryList().then(({data}) => {
     categoryList.value = data.data;
     if (data.data != null) {
       data.data.forEach((item) => {

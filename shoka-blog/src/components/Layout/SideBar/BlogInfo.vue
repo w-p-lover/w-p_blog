@@ -12,11 +12,12 @@
 
 <script setup lang="ts">
 import useStore from "@/store";
-const { blog } = useStore();
+
+const {blog} = useStore();
 const blogInfo = [
-  { path: "/archive", count: blog.blogInfo.articleCount, name: "文章" },
-  { path: "/category", count: blog.blogInfo.categoryCount, name: "分类" },
-  { path: "/tag", count: blog.blogInfo.tagCount, name: "标签" },
+  {path: "/archive", count: blog.blogInfo.articleCount, name: "文章"},
+  {path: "/category", count: blog.blogInfo.categoryCount, name: "分类"},
+  {path: "/tag", count: blog.blogInfo.tagCount, name: "标签"},
 ];
 </script>
 

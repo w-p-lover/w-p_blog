@@ -1,15 +1,15 @@
 <template>
   <svg
-    aria-hidden="true"
-    class="svg-icon"
-    :style="'width:' + size + ';height:' + size"
+      aria-hidden="true"
+      class="svg-icon"
+      :style="'width:' + size + ';height:' + size"
   >
-    <use :xlink:href="symbolId" :fill="color" />
+    <use :xlink:href="symbolId" :fill="color"/>
   </svg>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import {computed} from 'vue';
 
 const props = defineProps({
   prefix: {

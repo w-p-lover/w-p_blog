@@ -26,11 +26,12 @@ public class DictController {
 
     /**
      * 导出文章列标
+     *
      * @param response
      */
     @ApiOperation("导出")
     @GetMapping("/admin/exportData")
-    public void exportData(ExcelDTO excelDTO, HttpServletResponse response){
-        dictService.exportArticle(response,excelDTO);
+    public void exportData(ExcelDTO excelDTO, HttpServletResponse response) {
+        dictService.exportArticle(response, excelDTO);
     }
 }
