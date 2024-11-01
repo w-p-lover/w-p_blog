@@ -102,7 +102,7 @@ search:
 # 文件上传策略 local、oss、cos
 photo:
   apikey:
-    key: pV24nKcJ4bM3YsBg9nh6JPCr8ZQytrZ4
+    key:
 
 upload:
   strategy: local
