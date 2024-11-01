@@ -1,7 +1,7 @@
-import { Result, UserForm } from "@/model";
+import {Result, UserForm} from "@/model";
 import request from "@/utils/request";
-import { AxiosPromise } from "axios";
-import { GitInfo, LoginForm, UserInfo } from "./types";
+import {AxiosPromise} from "axios";
+import {GitInfo, LoginForm, UserInfo} from "./types";
 
 /**
  * 用户登录
@@ -9,11 +9,11 @@ import { GitInfo, LoginForm, UserInfo } from "./types";
  * @returns Token
  */
 export function login(data: LoginForm): AxiosPromise<Result<string>> {
-  return request({
-    url: "/login",
-    method: "post",
-    data,
-  });
+    return request({
+        url: "/login",
+        method: "post",
+        data,
+    });
 }
 
 
@@ -22,11 +22,11 @@ export function login(data: LoginForm): AxiosPromise<Result<string>> {
  * @param data 注册信息
  */
 export function register(data: UserForm): AxiosPromise<Result<null>> {
-  return request({
-    url: "/register",
-    method: "post",
-    data,
-  });
+    return request({
+        url: "/register",
+        method: "post",
+        data,
+    });
 }
 
 /**
@@ -34,10 +34,10 @@ export function register(data: UserForm): AxiosPromise<Result<null>> {
  * @returns 登录用户信息
  */
 export function getUserInfo(): AxiosPromise<Result<UserInfo>> {
-  return request({
-    url: "/user/getUserInfo",
-    method: "get",
-  });
+    return request({
+        url: "/user/getUserInfo",
+        method: "get",
+    });
 }
 
 /**
@@ -45,23 +45,23 @@ export function getUserInfo(): AxiosPromise<Result<UserInfo>> {
  * @param params 邮箱
  */
 export function getCode(username: string): AxiosPromise<Result<null>> {
-  return request({
-    url: "/code",
-    method: "get",
-    params: {
-      username,
-    },
-  });
+    return request({
+        url: "/code",
+        method: "get",
+        params: {
+            username,
+        },
+    });
 }
 
 /**
  * 用户退出
  */
 export function logout(): AxiosPromise<Result<null>> {
-  return request({
-    url: "/logout",
-    method: "get",
-  });
+    return request({
+        url: "/logout",
+        method: "get",
+    });
 }
 
 /**
@@ -70,11 +70,11 @@ export function logout(): AxiosPromise<Result<null>> {
  * @returns Token
  */
 export function giteeLogin(data: GitInfo): AxiosPromise<Result<string>> {
-  return request({
-    url: "/oauth/gitee",
-    method: "post",
-    data,
-  });
+    return request({
+        url: "/oauth/gitee",
+        method: "post",
+        data,
+    });
 }
 
 /**
@@ -83,9 +83,9 @@ export function giteeLogin(data: GitInfo): AxiosPromise<Result<string>> {
  * @returns Token
  */
 export function githubLogin(data: GitInfo): AxiosPromise<Result<string>> {
-  return request({
-    url: "/oauth/github",
-    method: "post",
-    data,
-  });
+    return request({
+        url: "/oauth/github",
+        method: "post",
+        data,
+    });
 }
