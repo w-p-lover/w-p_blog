@@ -12,7 +12,7 @@
         <div class="up">
           <user-avatar class="avatar"></user-avatar>
           <div>
-            <n-button color="#3e8e9e" @click="handleUpdate" style="margin-left: 5%; padding: 10px 50px">
+            <n-button color="#3e8e9e" @click="handleUpdate" class="button">
               修改
             </n-button>
           </div>
@@ -116,9 +116,22 @@ onMounted(() => {
   flex-direction: row;
 }
 
+.button {
+  margin-left: 5%;
+  padding: 10px 50px;
+}
+
 @media (max-width: 850px) {
-  .avatar {
-    justify-content: center;
+  .button {
+    margin-top: 70px;
+  }
+  .info-container {
+    .up {
+      margin-right: 65px;
+      margin-bottom: -30px;
+      display: flex;
+      flex-direction: row;
+    }
   }
 }
 </style>
