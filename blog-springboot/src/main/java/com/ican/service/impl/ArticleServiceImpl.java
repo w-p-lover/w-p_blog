@@ -209,22 +209,27 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         if (count == 0) {
             return new PageResult<>();
         }
-        Integer userId = null;
+        List<ArticleHomeVO> articleHomeVOList;
         String email = null;
         if (StpUtil.isLogin()) {
-            userId = StpUtil.getLoginIdAsInt();
+            int userId = StpUtil.getLoginIdAsInt();
             email = userMapper.selectOne(new LambdaQueryWrapper<User>()
                     .select(User::getEmail).eq(User::getId, userId)).getEmail();
         }
         // 查询用户信息
         if (ObjectUtil.isNotNull(email) && (email.equals(MY_MAIL) || email.equals(MY_RED_MAIL))) {
             // 查询首页文章
-            List<ArticleHomeVO> articleHomeVOList = articleMapper.selectArticleHomeList(PageUtils.getLimit(), PageUtils.getSize());
-            return new PageResult<>(articleHomeVOList, count);
+            articleHomeVOList = articleMapper.selectArticleHomeList(PageUtils.getLimit(), PageUtils.getSize());
         } else {
-            List<ArticleHomeVO> articleHomeVOList = articleMapper.PselectArticleHomeList(PageUtils.getLimit(), PageUtils.getSize());
-            return new PageResult<>(articleHomeVOList, count);
+            articleHomeVOList = articleMapper.PselectArticleHomeList(PageUtils.getLimit(), PageUtils.getSize());
         }
+        //修改非文章界面md格式显示问题
+        //TODO 理论上应该有比较简单的方法直接协调不同界面的显示问题
+        for (ArticleHomeVO articleHomeVO : articleHomeVOList) {
+            String articleContent = articleHomeVO.getArticleContent().replaceAll("#", "");
+            articleHomeVO.setArticleContent(articleContent);
+        }
+        return new PageResult<>(articleHomeVOList, count);
     }
 
     @Override
