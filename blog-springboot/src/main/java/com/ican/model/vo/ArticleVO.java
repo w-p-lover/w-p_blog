@@ -93,4 +93,10 @@ public class ArticleVO {
      */
     @ApiModelProperty(value = "更新时间")
     private LocalDateTime updateTime;
+
+    /**
+     * 浏览量
+     */
+    @ApiModelProperty(value = "浏览量")
+    private Integer views;
 }

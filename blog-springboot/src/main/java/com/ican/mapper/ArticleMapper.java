@@ -5,6 +5,7 @@ import com.ican.entity.Article;
 import com.ican.model.dto.ConditionDTO;
 import com.ican.model.vo.*;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Update;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -136,4 +137,10 @@ public interface ArticleMapper extends BaseMapper<Article> {
      * @return 文章列表
      */
     List<ArticleConditionVO> listArticleByCondition(@Param("limit") Long limit, @Param("size") Long size, @Param("condition") ConditionDTO condition);
+
+    @Update("UPDATE t_article SET views = views + 1 WHERE id = #{articleId}")
+    void incrementViews(@Param("articleId") Long articleId);
+
+    @Update("UPDATE t_article SET views = views + #{i} WHERE id = #{articleId}")
+    void incrementViewsByi(@Param("articleId")Integer id, @Param("i")Double aDouble);
 }
