@@ -87,7 +87,7 @@ public interface ArticleService extends IService<Article> {
      *
      * @return 首页文章列表
      */
-    PageResult<ArticleHomeVO> listArticleHomeVO();
+    PageResult<ArticleHomeVO> listArticleHomeVO(String sort);
 
     /**
      * 查看文章

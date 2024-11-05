@@ -34,6 +34,21 @@ export interface Result<T> {
     data: T;
 }
 
+export interface PageQueryArticle {
+    /**
+     * 当前页
+     */
+    current: number;
+    /**
+     * 每页大小
+     */
+    size: number;
+    /**
+     * 排序方式
+     */
+    sort?: string;    // 排序方式，? 表示可选
+}
+
 /**
  * 分页参数
  */

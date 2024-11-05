@@ -1,4 +1,22 @@
 <template>
+  <!-- 悬浮排序选项卡 -->
+  <div class="sort-options">
+    <span
+        class="sort-option"
+        @click="changeSort('time')"
+        :class="{ active: queryParams.sort === 'time' }"
+    >
+      <svg-icon icon-class="calendar" size="1rem"></svg-icon> 按时间
+    </span>
+    <span
+        class="sort-option"
+        @click="changeSort('popularity')"
+        :class="{ active: queryParams.sort === 'popularity' }"
+    >
+      <svg-icon icon-class="fire" size="1rem"></svg-icon> 按热度
+    </span>
+  </div>
+
   <div class="article-item" v-animate="['slideUpBigIn']" v-for="article of articleList" :key="article.id">
     <!-- 文章缩略图 -->
     <div class="article-cover">
@@ -50,7 +68,7 @@
 <script setup lang="ts">
 import {getArticleList} from "@/api/article";
 import {Article} from "@/api/article/types";
-import {PageQuery} from "@/model";
+import {PageQuery, PageQueryArticle} from "@/model";
 import {formatDate} from "@/utils/date";
 
 const data = reactive({
@@ -58,14 +76,20 @@ const data = reactive({
   queryParams: {
     current: 1,
     size: 5,
-  } as PageQuery,
+    sort: 'time',
+  } as PageQueryArticle,
   articleList: [] as Article[],
 });
+
 const {count, queryParams, articleList} = toRefs(data);
+
+function changeSort(sortType: string) {
+  queryParams.value.sort = sortType;
+}
 watch(
-    () => queryParams.value.current,
+    () => [queryParams.value.current, queryParams.value.sort],
     () => {
-      getArticleList(queryParams.value).then(({data}) => {
+      getArticleList(queryParams.value).then(({ data }) => {
         articleList.value = data.data.recordList;
         count.value = data.data.count;
       });
@@ -80,6 +104,31 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
+.sort-options {
+  display: flex;
+  gap: 0.75rem; /* 选项之间的间隔 */
+  .sort-option {
+    display: flex;
+    align-items: center;
+    padding: 0.1rem 1rem;
+    background-color: var(--background-color);
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: background 0.3s;
+    &.active {
+      background-color: var(--color-light-grey);
+      color: var(--primary-color);
+    }
+    svg-icon {
+      margin-right: 0.5rem; /* 图标与文本之间的间隔 */
+    }
+    &:hover {
+      background-color: var(--color-light-grey);
+    }
+  }
+}
 .article-item {
   display: flex;
   height: 14rem;
@@ -187,6 +236,12 @@ onMounted(() => {
     font-size: 0.875em;
     overflow: hidden;
   }
+}
+
+.sort-options {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
 }
 
 .article-category {

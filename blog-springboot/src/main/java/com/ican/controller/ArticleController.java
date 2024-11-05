@@ -204,8 +204,8 @@ public class ArticleController {
     @VisitLogger(value = "首页")
     @ApiOperation(value = "查看首页文章列表")
     @GetMapping("/article/list")
-    public Result<PageResult<ArticleHomeVO>> listArticleHomeVO() {
-        return Result.success(articleService.listArticleHomeVO());
+    public Result<PageResult<ArticleHomeVO>> listArticleHomeVO(@RequestParam(defaultValue = "time") String sort) {
+        return Result.success(articleService.listArticleHomeVO(sort));
     }
 
     /**

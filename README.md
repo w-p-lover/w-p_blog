@@ -104,3 +104,4 @@ ElasticSearch + RabbitMQ + Canal + EasyExcel
 - [ ] B 站追番页
 - [ ] B 站图床
 - [ ] 聊天室
+- [ ] 添加文章浏览方式，最新，热度，默认
