@@ -3,17 +3,17 @@
   <div class="sort-options">
     <span
         class="sort-option"
-        @click="changeSort('time')"
-        :class="{ active: queryParams.sort === 'time' }"
+        @click="changeSort('id')"
+        :class="{ active: queryParams.sort === 'id' }"
     >
       <svg-icon icon-class="calendar" size="1rem"></svg-icon> 按时间
     </span>
     <span
         class="sort-option"
-        @click="changeSort('popularity')"
-        :class="{ active: queryParams.sort === 'popularity' }"
+        @click="changeSort('views')"
+        :class="{ active: queryParams.sort === 'views' }"
     >
-      <svg-icon icon-class="fire" size="1rem"></svg-icon> 按热度
+      <svg-icon icon-class="fun" size="1rem"></svg-icon> 按热度
     </span>
   </div>
 
@@ -76,7 +76,7 @@ const data = reactive({
   queryParams: {
     current: 1,
     size: 5,
-    sort: 'time',
+    sort: 'id',
   } as PageQueryArticle,
   articleList: [] as Article[],
 });
@@ -85,6 +85,7 @@ const {count, queryParams, articleList} = toRefs(data);
 
 function changeSort(sortType: string) {
   queryParams.value.sort = sortType;
+  console.log("Current sort:", queryParams.value.sort);
 }
 watch(
     () => [queryParams.value.current, queryParams.value.sort],
@@ -107,10 +108,10 @@ onMounted(() => {
 .sort-options {
   display: flex;
   gap: 0.75rem; /* 选项之间的间隔 */
+  margin-left: 10px;
   .sort-option {
-    display: flex;
     align-items: center;
-    padding: 0.1rem 1rem;
+    padding: 0.1rem 1.25rem;
     background-color: var(--background-color);
     color: var(--primary-color);
     border: 1px solid var(--primary-color);
@@ -119,13 +120,11 @@ onMounted(() => {
     transition: background 0.3s;
     &.active {
       background-color: var(--color-light-grey);
-      color: var(--primary-color);
-    }
-    svg-icon {
-      margin-right: 0.5rem; /* 图标与文本之间的间隔 */
+      color: var(--grey-9-a6);
+      border-color: var(--grey-9-a6); // 设置选中状态的边框颜色
     }
     &:hover {
-      background-color: var(--color-light-grey);
+      background-color: var(--color-pink-light-a5);
     }
   }
 }
