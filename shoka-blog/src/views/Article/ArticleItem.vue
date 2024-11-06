@@ -112,16 +112,16 @@ onMounted(() => {
   .sort-option {
     align-items: center;
     padding: 0.1rem 1.25rem;
-    background-color: var(--background-color);
-    color: var(--primary-color);
-    border: 1px solid var(--primary-color);
+    background-color: var(--color-light-grey);
+    color: var(--grey-9-a6);
+    border: 1px solid var(--grey-9-a6);// 设置选中状态的边框颜色
     border-radius: 0.5rem;
     cursor: pointer;
     transition: background 0.3s;
     &.active {
-      background-color: var(--color-light-grey);
-      color: var(--grey-9-a6);
-      border-color: var(--grey-9-a6); // 设置选中状态的边框颜色
+      background-color: var(--background-color);
+      color: var(--primary-color);
+      border: 1px solid var(--primary-color);
     }
     &:hover {
       background-color: var(--color-pink-light-a5);
