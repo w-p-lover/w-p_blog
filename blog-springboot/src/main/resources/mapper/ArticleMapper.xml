@@ -212,14 +212,14 @@
               WHERE is_delete = 0
                 AND `status` = 1
               ORDER BY is_top DESC,
-                       views DESC,
+                       #{sort} DESC,
                        id DESC
               LIMIT #{limit}, #{size}) a
                  INNER JOIN t_category c ON a.category_id = c.id
                  INNER JOIN t_article_tag tat ON a.id = tat.article_id
                  INNER JOIN t_tag t ON t.id = tat.tag_id
         ORDER BY a.is_top DESC,
-                 a.views DESC,
+                 a.#{sort} DESC,
                  a.id DESC
     </select>
 
@@ -253,12 +253,12 @@
                   FROM t_article_tag tat
                            INNER JOIN t_tag t ON tat.tag_id = t.id
                   WHERE t.tag_name NOT IN ('红红专属~', '猫猫出没', 'w&amp;p~'))
-              ORDER BY is_top DESC,  views DESC, id DESC
+              ORDER BY is_top DESC,  ${sort} DESC, id DESC
               LIMIT #{limit}, #{size}) a
                  INNER JOIN t_category c ON a.category_id = c.id
                  INNER JOIN t_article_tag tat ON a.id = tat.article_id
                  INNER JOIN t_tag t ON t.id = tat.tag_id
-        ORDER BY a.is_top DESC, a.views DESC,a.id DESC
+        ORDER BY a.is_top DESC, a.${sort} DESC,a.id DESC
     </select>
 
     <select id="selectArticleHomeById" resultMap="articleVO">

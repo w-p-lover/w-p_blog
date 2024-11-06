@@ -58,18 +58,20 @@ public interface ArticleMapper extends BaseMapper<Article> {
      *
      * @param limit 页码
      * @param size  大小
+     * @param sort
      * @return 首页文章
      */
-    List<ArticleHomeVO> selectArticleHomeList(@Param("limit") Long limit, @Param("size") Long size);
+    List<ArticleHomeVO> selectArticleHomeList(@Param("limit") Long limit, @Param("size") Long size, String sort);
 
     /**
      * 私人浏览，对于非我和老婆的，统一不给看我老婆
      *
      * @param limit
      * @param size
+     * @param sort
      * @return
      */
-    List<ArticleHomeVO> PselectArticleHomeList(@Param("limit") Long limit, @Param("size") Long size);
+    List<ArticleHomeVO> PselectArticleHomeList(@Param("limit") Long limit, @Param("size") Long size, String sort);
 
 
     /**
