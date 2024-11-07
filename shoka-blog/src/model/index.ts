@@ -47,6 +47,14 @@ export interface PageQueryArticle {
      * 排序方式
      */
     sort?: string;    // 排序方式，? 表示可选
+    /**
+     * 时间选择
+     */
+    dateRange: any;
+    /**
+     * 标签ID查询
+     */
+    tagId: any;
 }
 
 /**
