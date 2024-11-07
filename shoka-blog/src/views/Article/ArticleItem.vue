@@ -15,6 +15,31 @@
     >
       <svg-icon icon-class="fun" size="1rem"></svg-icon> 按热度
     </span>
+    <el-select
+        v-model="selectedTag"
+        placeholder="选择标签"
+        size="large"
+        style="width: 238px"
+        @change="filterByTag"
+    >
+      <el-option
+          v-for="tag in tagOptions"
+          :key="tag.id"
+          :label="tag.name"
+          :value="tag.id"
+      />
+    </el-select>
+    <div class="date-picker-container">
+      <el-date-picker
+          v-model="queryParams.dateRange"
+          type="daterange"
+          range-separator="至"
+          start-placeholder="开始日期"
+          end-placeholder="结束日期"
+          @change="filterByDate"
+      ></el-date-picker>
+    </div>
+
   </div>
 
   <div class="article-item" v-animate="['slideUpBigIn']" v-for="article of articleList" :key="article.id">
@@ -71,12 +96,16 @@ import {Article} from "@/api/article/types";
 import {PageQuery, PageQueryArticle} from "@/model";
 import {formatDate} from "@/utils/date";
 
+const selectedTag = ref(null);
+const tagOptions = ref([]);
 const data = reactive({
   count: 0,
   queryParams: {
     current: 1,
     size: 5,
     sort: 'id',
+    dateRange: [],
+    tagId: ''
   } as PageQueryArticle,
   articleList: [] as Article[],
 });
@@ -87,10 +116,23 @@ function changeSort(sortType: string) {
   queryParams.value.sort = sortType;
   console.log("Current sort:", queryParams.value.sort);
 }
+
+function filterByTag() {
+  data.queryParams.tagId = selectedTag.value;
+}
+
+function filterByDate() {
+  // 调用接口，使用新的日期范围
+  getArticleList(queryParams.value).then(({data}) => {
+    articleList.value = data.data.recordList;
+    count.value = data.data.count;
+  });
+}
+
 watch(
-    () => [queryParams.value.current, queryParams.value.sort],
+    () => [queryParams.value.current, queryParams.value.sort, queryParams.value.dateRange],
     () => {
-      getArticleList(queryParams.value).then(({ data }) => {
+      getArticleList(queryParams.value).then(({data}) => {
         articleList.value = data.data.recordList;
         count.value = data.data.count;
       });
@@ -102,32 +144,48 @@ onMounted(() => {
     count.value = data.data.count;
   });
 });
+onMounted(() => {
+  getTagList().then(() => {
+    tagOptions.value = data.tags; // 假设返回的数据结构包含 tags 数组
+  });
+});
 </script>
 
 <style lang="scss" scoped>
+/* 修改日期选择器容器的背景色和圆角 */
+::v-deep .el-date-editor.el-input__wrapper {
+  box-shadow: 0 0 0 1px var(--grey-9-a6) inset;
+  padding: 18.3px 10px;
+  color: var(--grey-9-a6);
+}
+
 .sort-options {
   display: flex;
   gap: 0.75rem; /* 选项之间的间隔 */
   margin-left: 10px;
+
   .sort-option {
     align-items: center;
     padding: 0.1rem 1.25rem;
     background-color: var(--color-light-grey);
     color: var(--grey-9-a6);
-    border: 1px solid var(--grey-9-a6);// 设置选中状态的边框颜色
+    border: 1px solid var(--grey-9-a6); // 设置选中状态的边框颜色
     border-radius: 0.5rem;
     cursor: pointer;
     transition: background 0.3s;
+
     &.active {
       background-color: var(--background-color);
       color: var(--primary-color);
       border: 1px solid var(--primary-color);
     }
+
     &:hover {
       background-color: var(--color-pink-light-a5);
     }
   }
 }
+
 .article-item {
   display: flex;
   height: 14rem;
