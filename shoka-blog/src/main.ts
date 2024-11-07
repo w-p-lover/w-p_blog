@@ -24,12 +24,13 @@ import "swiper/css/pagination";
 import VueViewer from "v-viewer";
 import "viewerjs/dist/viewer.css";
 import "virtual:svg-icons-register";
-
 import {createApp, Directive} from "vue";
 import lazyPlugin from "vue3-lazy";
 import App from "./App.vue";
 import error from "./assets/images/404.gif";
 import loading from "./assets/images/load.gif";
+import 'element-plus/dist/index.css'
+import ElementPlus from "element-plus";
 
 const app = createApp(App);
 Object.keys(directive).forEach((key) => {
@@ -42,6 +43,7 @@ VMdPreview.use(vuepressTheme, {
 })
     .use(createTodoListPlugin())
     .use(createKatexPlugin());
+app.use(ElementPlus);
 app.use(VMdPreview);
 app.use(naive);
 app.use(pinia);
