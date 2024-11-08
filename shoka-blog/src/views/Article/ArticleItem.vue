@@ -16,6 +16,7 @@
       <svg-icon icon-class="fun" size="1rem"></svg-icon> 按热度
     </span>
     <el-select
+        clearable
         v-model="selectedTag"
         placeholder="选择标签"
         size="large"
@@ -23,15 +24,16 @@
         @change="filterByTag"
     >
       <el-option
-          v-for="tag in tagOptions"
+          v-for="tag in tagList"
           :key="tag.id"
-          :label="tag.name"
+          :label="tag.tagName"
           :value="tag.id"
       />
     </el-select>
     <div class="date-picker-container">
       <el-date-picker
-          v-model="queryParams.dateRange"
+          is-range
+          v-model="dateRange"
           type="daterange"
           range-separator="至"
           start-placeholder="开始日期"
@@ -95,17 +97,25 @@ import {getArticleList} from "@/api/article";
 import {Article} from "@/api/article/types";
 import {PageQuery, PageQueryArticle} from "@/model";
 import {formatDate} from "@/utils/date";
+import {formatDateTime} from "@/utils/date";
+import {getTagList} from "@/api/tag";
+import {Tag} from "@/api/tag/types";
 
 const selectedTag = ref(null);
-const tagOptions = ref([]);
+const tagList = ref<Tag[]>([]);
+const dateRange = ref<[Date, Date]>([
+  new Date(2023, 1, 10, 8, 40),
+  new Date(2025, 11, 10, 9, 40),
+])
 const data = reactive({
   count: 0,
   queryParams: {
     current: 1,
     size: 5,
     sort: 'id',
-    dateRange: [],
-    tagId: ''
+    start : null,
+    end : null,
+    tagId: null
   } as PageQueryArticle,
   articleList: [] as Article[],
 });
@@ -122,16 +132,18 @@ function filterByTag() {
 }
 
 function filterByDate() {
-  // 调用接口，使用新的日期范围
-  getArticleList(queryParams.value).then(({data}) => {
-    articleList.value = data.data.recordList;
-    count.value = data.data.count;
-  });
+  if(dateRange.value != null){
+    queryParams.value.start = formatDateTime(dateRange.value[0]);
+    queryParams.value.end = formatDateTime(dateRange.value[1]);
+  }
+  console.log(data.queryParams.start);
 }
 
 watch(
-    () => [queryParams.value.current, queryParams.value.sort, queryParams.value.dateRange],
+    () => [queryParams.value.current, queryParams.value.sort,dateRange.value,queryParams.value.tagId],
     () => {
+      // 调用接口，使用新的日期范围
+      filterByDate();
       getArticleList(queryParams.value).then(({data}) => {
         articleList.value = data.data.recordList;
         count.value = data.data.count;
@@ -143,12 +155,11 @@ onMounted(() => {
     articleList.value = data.data.recordList;
     count.value = data.data.count;
   });
-});
-onMounted(() => {
-  getTagList().then(() => {
-    tagOptions.value = data.tags; // 假设返回的数据结构包含 tags 数组
+  getTagList().then(({data}) => {
+    tagList.value = data.data;
   });
 });
+
 </script>
 
 <style lang="scss" scoped>

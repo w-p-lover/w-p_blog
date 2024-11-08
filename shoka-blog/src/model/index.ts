@@ -50,7 +50,9 @@ export interface PageQueryArticle {
     /**
      * 时间选择
      */
-    dateRange: any;
+    start: any;
+
+    end: any;
     /**
      * 标签ID查询
      */
