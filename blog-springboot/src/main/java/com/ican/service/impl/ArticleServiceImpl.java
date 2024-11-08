@@ -26,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -201,7 +202,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     }
 
     @Override
-    public PageResult<ArticleHomeVO> listArticleHomeVO(String sort) {
+    public PageResult<ArticleHomeVO> listArticleHomeVO(String sort, Integer tagId, String start,String end) {
         // 查询文章数量
         Long count = articleMapper.selectCount(new LambdaQueryWrapper<Article>()
                 .eq(Article::getIsDelete, FALSE)
@@ -209,7 +210,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         if (count == 0) {
             return new PageResult<>();
         }
-
         // 获取登录用户的电子邮件
         String email = null;
         if (StpUtil.isLogin()) {
@@ -221,16 +221,16 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         }
 
         // 确定是否使用特殊邮件进行查询
-
         boolean isSpecialEmail = ObjectUtil.isNotNull(email) && (email.equals(MY_MAIL) || email.equals(MY_RED_MAIL));
-        // 根据邮件条件选择查询方法
+        // 根据条件选择查询方法
         List<ArticleHomeVO> articleHomeVOList = isSpecialEmail
-                ? articleMapper.selectArticleHomeList(PageUtils.getLimit(), PageUtils.getSize(),sort)
-                : articleMapper.PselectArticleHomeList(PageUtils.getLimit(), PageUtils.getSize(),sort);
+                ? articleMapper.selectArticleHomeList(PageUtils.getLimit(), PageUtils.getSize(), sort, tagId, start, end)
+                : articleMapper.PselectArticleHomeList(PageUtils.getLimit(), PageUtils.getSize(), sort, tagId, start, end);
 
         //修改非文章界面md格式显示问题 TODO 理论上应该有比较简单的方法直接协调不同界面的显示问题
         for (ArticleHomeVO articleHomeVO : articleHomeVOList) {
             String articleContent = articleHomeVO.getArticleContent().replaceAll("#", "");
+
             //主动调整tag顺序
             articleHomeVO.getTagVOList().sort(Comparator.comparingInt(TagOptionVO::getId));
             articleHomeVO.setArticleContent(articleContent);

@@ -61,7 +61,7 @@ public interface ArticleMapper extends BaseMapper<Article> {
      * @param sort
      * @return 首页文章
      */
-    List<ArticleHomeVO> selectArticleHomeList(@Param("limit") Long limit, @Param("size") Long size, String sort);
+    List<ArticleHomeVO> selectArticleHomeList(@Param("limit") Long limit, @Param("size") Long size, String sort, Integer tagId, String start, String end);
 
     /**
      * 私人浏览，对于非我和老婆的，统一不给看我老婆
@@ -71,7 +71,7 @@ public interface ArticleMapper extends BaseMapper<Article> {
      * @param sort
      * @return
      */
-    List<ArticleHomeVO> PselectArticleHomeList(@Param("limit") Long limit, @Param("size") Long size, String sort);
+    List<ArticleHomeVO> PselectArticleHomeList(@Param("limit") Long limit, @Param("size") Long size, String sort, Integer tagId, String start, String end);
 
 
     /**
@@ -144,5 +144,5 @@ public interface ArticleMapper extends BaseMapper<Article> {
     void incrementViews(@Param("articleId") Long articleId);
 
     @Update("UPDATE t_article SET views = views + #{i} WHERE id = #{articleId}")
-    void incrementViewsByi(@Param("articleId")Integer id, @Param("i")Double aDouble);
+    void incrementViewsByi(@Param("articleId") Integer id, @Param("i") Double aDouble);
 }
