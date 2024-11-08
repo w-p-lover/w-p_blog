@@ -87,7 +87,7 @@ public interface ArticleService extends IService<Article> {
      *
      * @return 首页文章列表
      */
-    PageResult<ArticleHomeVO> listArticleHomeVO(String sort);
+    PageResult<ArticleHomeVO> listArticleHomeVO(String sort,Integer tagId, String start,String end);
 
     /**
      * 查看文章
@@ -118,4 +118,5 @@ public interface ArticleService extends IService<Article> {
      * @return 文章图片地址
      */
     String saveArticleImages(MultipartFile file);
+
 }
