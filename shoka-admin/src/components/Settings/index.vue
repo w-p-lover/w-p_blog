@@ -87,7 +87,10 @@ defineExpose({
       margin: -3px 8px 0 0;
     }
   }
+}
 
+::v-deep .el-switch__core {
+  background: #494b50;
 }
 
 .theme-style {

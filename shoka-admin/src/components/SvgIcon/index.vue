@@ -37,6 +37,6 @@ const symbolId = computed(() => `#${props.prefix}-${props.iconClass}`);
   vertical-align: -0.25em;
   overflow: hidden;
   fill: currentColor;
-  color: rgba(82, 143, 176, 0.5);
+  color: rgba(109, 175, 211, 0.84);
 }
 </style>
