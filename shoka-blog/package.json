@@ -18,6 +18,7 @@
     "element-plus": "^2.8.7",
     "element-ui": "^2.15.14",
     "js-cookie": "^3.0.1",
+    "mitt": "^3.0.1",
     "nprogress": "^0.2.0",
     "pinia": "^2.0.25",
     "pinia-plugin-persistedstate": "^2.4.0",

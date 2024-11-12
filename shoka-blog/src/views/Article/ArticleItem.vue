@@ -97,6 +97,7 @@ import {getArticleList} from "@/api/article";
 import {Article} from "@/api/article/types";
 import {PageQuery, PageQueryArticle} from "@/model";
 import {formatDate} from "@/utils/date";
+import EventBus from '@/eventBus';
 import {formatDateTime} from "@/utils/date";
 import {getTagList} from "@/api/tag";
 import {Tag} from "@/api/tag/types";
@@ -157,6 +158,13 @@ onMounted(() => {
   });
   getTagList().then(({data}) => {
     tagList.value = data.data;
+  });
+  EventBus.on("refresh-articles", () => {
+    console.log("sda")
+    getArticleList(queryParams.value).then(({ data }) => {
+      articleList.value = data.data.recordList;
+      count.value = data.data.count;
+    });
   });
 });
 
