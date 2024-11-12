@@ -112,7 +112,10 @@ defineExpose({
       margin: -3px 8px 0 0;
     }
   }
+}
 
+::v-deep .el-switch__core {
+  background: #b1c0c0;
 }
 
 .button-container {
@@ -121,13 +124,9 @@ defineExpose({
   margin-top: 20px;
 
   .el-button {
-    background-color: #409EFF !important; /* 设置按钮为蓝色 */
+    background-color: #64b4c5 !important; /* 设置按钮为蓝色 */
     color: #fff !important; /* 设置字体为白色 */
   }
 }
 
-.theme-style {
-  display: flex;
-  justify-content: center;
-}
 </style>
