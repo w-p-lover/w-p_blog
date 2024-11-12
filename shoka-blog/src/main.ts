@@ -26,6 +26,7 @@ import "viewerjs/dist/viewer.css";
 import "virtual:svg-icons-register";
 import {createApp, Directive} from "vue";
 import lazyPlugin from "vue3-lazy";
+
 import App from "./App.vue";
 import error from "./assets/images/404.gif";
 import loading from "./assets/images/load.gif";

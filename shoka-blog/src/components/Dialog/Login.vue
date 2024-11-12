@@ -37,6 +37,7 @@ import {setToken} from "@/utils/token";
 
 //TODO，我搞定的神奇东西，要学习
 import {ref, computed} from "vue";
+import EventBus from "@/eventBus";
 
 const {app, user, blog} = useStore();
 const route = useRoute();
@@ -129,6 +130,7 @@ const handlelogin = (token: string) => {
     }
     showCaptcha.value = false; // 隐藏验证码
     loading.value = false;
+    EventBus.emit("refresh-articles");
     return;
   });
 };

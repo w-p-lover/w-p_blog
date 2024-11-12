@@ -84,7 +84,6 @@ declare module '@vue/runtime-core' {
     Week: typeof import('./src/components/Crontab/week.vue')['default']
     Year: typeof import('./src/components/Crontab/year.vue')['default']
   }
-
   export interface ComponentCustomProperties {
     vLoading: typeof import('element-plus/es')['ElLoadingDirective']
   }

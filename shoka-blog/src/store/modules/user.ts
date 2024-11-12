@@ -1,6 +1,7 @@
 import {getUserInfo, logout} from "@/api/login";
 import {UserInfo} from "@/api/user/types";
 import {removeToken} from "@/utils/token";
+import EventBus from '@/eventBus';
 import {UserState} from "../types";
 
 const useUserStore = defineStore("useUserStore", {
@@ -49,6 +50,8 @@ const useUserStore = defineStore("useUserStore", {
                     .then(() => {
                         this.$reset();
                         removeToken();
+                        // 触发刷新文章列表的事件
+                        EventBus.emit("refresh-articles");
                         resolve(null);
                     })
                     .catch((error) => {
@@ -56,6 +59,7 @@ const useUserStore = defineStore("useUserStore", {
                     });
             });
         },
+
         forceLogOut() {
             this.$reset();
             removeToken();
