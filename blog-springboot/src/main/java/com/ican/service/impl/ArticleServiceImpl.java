@@ -202,41 +202,48 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     }
 
     @Override
-    public PageResult<ArticleHomeVO> listArticleHomeVO(String sort, Integer tagId, String start,String end) {
-        // 查询文章数量
-        Long count = articleMapper.selectCount(new LambdaQueryWrapper<Article>()
-                .eq(Article::getIsDelete, FALSE)
-                .eq(Article::getStatus, PUBLIC.getStatus()));
-        if (count == 0) {
-            return new PageResult<>();
-        }
+    public PageResult<ArticleHomeVO> listArticleHomeVO(String sort, Integer tagId, String start, String end) {
         // 获取登录用户的电子邮件
         String email = null;
         if (StpUtil.isLogin()) {
-            int userId = StpUtil.getLoginIdAsInt();
             User user = userMapper.selectOne(new LambdaQueryWrapper<User>()
                     .select(User::getEmail)
-                    .eq(User::getId, userId));
-            email = user != null ? user.getEmail() : null; // 防止用户为空导致空指针异常
+                    .eq(User::getId, StpUtil.getLoginIdAsInt()));
+            email = user != null ? user.getEmail() : null; // 防止空指针
         }
 
-        // 确定是否使用特殊邮件进行查询
+        // 判断是否使用特殊邮件
         boolean isSpecialEmail = ObjectUtil.isNotNull(email) && (email.equals(MY_MAIL) || email.equals(MY_RED_MAIL));
-        // 根据条件选择查询方法
-        List<ArticleHomeVO> articleHomeVOList = isSpecialEmail
-                ? articleMapper.selectArticleHomeList(PageUtils.getLimit(), PageUtils.getSize(), sort, tagId, start, end)
-                : articleMapper.PselectArticleHomeList(PageUtils.getLimit(), PageUtils.getSize(), sort, tagId, start, end);
 
-        //修改非文章界面md格式显示问题 TODO 理论上应该有比较简单的方法直接协调不同界面的显示问题
-        for (ArticleHomeVO articleHomeVO : articleHomeVOList) {
-            String articleContent = articleHomeVO.getArticleContent().replaceAll("#", "");
+        // 获取文章列表
+        List<ArticleHomeVO> articleHomeVOS = isSpecialEmail
+                ? articleMapper.selectArticleAllList(sort, tagId, start, end)
+                : articleMapper.PselectArticleAllList(sort, tagId, start, end);
 
-            //主动调整tag顺序
-            articleHomeVO.getTagVOList().sort(Comparator.comparingInt(TagOptionVO::getId));
-            articleHomeVO.setArticleContent(articleContent);
+        long count = articleHomeVOS.size();
+        if (count == 0) {
+            return new PageResult<>();
         }
-        return new PageResult<>(articleHomeVOList, count);
+
+        // 处理分页逻辑
+        int itemStart = (int) ((PageUtils.getCurrent() - 1) * PageUtils.getSize());
+        int itemEnd = (int) Math.min(itemStart + PageUtils.getSize(), (int) count);
+        List<ArticleHomeVO> paginatedArticles = articleHomeVOS.subList(itemStart, itemEnd);
+
+        // 如果指定标签 ID，直接返回分页结果
+        if (ObjectUtil.isNotNull(tagId)) {
+            return new PageResult<>(paginatedArticles, count);
+        }
+
+        // 修改非文章界面显示问题，调整标签顺序
+        for (ArticleHomeVO article : paginatedArticles) {
+            article.setArticleContent(article.getArticleContent().replaceAll("#", ""));
+            article.getTagVOList().sort(Comparator.comparingInt(TagOptionVO::getId));
+        }
+
+        return new PageResult<>(paginatedArticles, count);
     }
+
 
     @Override
     public ArticleVO getArticleHomeById(Integer articleId) {
