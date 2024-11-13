@@ -88,7 +88,7 @@ const exportExcel = () => {
   opacity: 0.3;
   width: 100%;
   top: 0;
-  height: 100%;
+  height: 90%;
   position: absolute;
   z-index: 999;
 }
