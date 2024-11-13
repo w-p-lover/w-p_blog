@@ -143,14 +143,26 @@ function filterByDate() {
 watch(
     () => [queryParams.value.current, queryParams.value.sort,dateRange.value,queryParams.value.tagId],
     () => {
-      // 调用接口，使用新的日期范围
-      filterByDate();
       getArticleList(queryParams.value).then(({data}) => {
         articleList.value = data.data.recordList;
         count.value = data.data.count;
       });
     }
 );
+watch(
+    () => [dateRange.value,queryParams.value.tagId],
+    () => {
+      // 调用接口，使用新的日期范围
+      filterByDate();
+      queryParams.value.current = 1;
+      console.log(queryParams.value.current);
+      getArticleList(queryParams.value).then(({data}) => {
+        articleList.value = data.data.recordList;
+        count.value = data.data.count;
+      });
+    }
+);
+
 onMounted(() => {
   getArticleList(queryParams.value).then(({data}) => {
     articleList.value = data.data.recordList;
