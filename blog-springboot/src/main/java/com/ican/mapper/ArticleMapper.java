@@ -53,26 +53,43 @@ public interface ArticleMapper extends BaseMapper<Article> {
      */
     List<ArticleSearchVO> searchArticle(@Param("keyword") String keyword);
 
-    /**
+
+/**
      * 查询首页文章
      *
      * @param limit 页码
      * @param size  大小
      * @param sort
      * @return 首页文章
-     */
+     *//*
     List<ArticleHomeVO> selectArticleHomeList(@Param("limit") Long limit, @Param("size") Long size, String sort, Integer tagId, String start, String end);
-
-    /**
+*/
+/**
      * 私人浏览，对于非我和老婆的，统一不给看我老婆
      *
      * @param limit
      * @param size
      * @param sort
      * @return
-     */
+     *//*
     List<ArticleHomeVO> PselectArticleHomeList(@Param("limit") Long limit, @Param("size") Long size, String sort, Integer tagId, String start, String end);
+*/
 
+    /**
+     * 查询首页文章
+     *
+     * @param sort
+     * @return 公共筛选文章列表
+     */
+    List<ArticleHomeVO> PselectArticleAllList(String sort, Integer tagId, String start, String end);
+
+    /**
+     * 私人浏览，对于非我和老婆的，统一不给看我老婆
+     *
+     * @param sort
+     * @return 私人筛选文章列表
+     */
+    List<ArticleHomeVO> selectArticleAllList(String sort, Integer tagId, String start, String end);
 
     /**
      * 根据id查询首页文章
