@@ -1,26 +1,28 @@
 <template>
   <!-- 悬浮排序选项卡 -->
   <div class="sort-options">
-    <span
-        class="sort-option"
-        @click="changeSort('id')"
-        :class="{ active: queryParams.sort === 'id' }"
-    >
+    <div class="sortList">
+      <span
+          class="sort-option"
+          @click="changeSort('id')"
+          :class="{ active: queryParams.sort === 'id' }"
+      >
       <svg-icon icon-class="calendar" size="1rem"></svg-icon> 按时间
     </span>
-    <span
-        class="sort-option"
-        @click="changeSort('views')"
-        :class="{ active: queryParams.sort === 'views' }"
-    >
+      <span
+          class="sort-option"
+          @click="changeSort('views')"
+          :class="{ active: queryParams.sort === 'views' }"
+      >
       <svg-icon icon-class="fun" size="1rem"></svg-icon> 按热度
     </span>
+    </div>
     <el-select
         clearable
         v-model="selectedTag"
         placeholder="选择标签"
         size="large"
-        style="width: 238px"
+        class="selectWidth"
         @change="filterByTag"
     >
       <el-option
@@ -114,8 +116,8 @@ const data = reactive({
     current: 1,
     size: 5,
     sort: 'id',
-    start : null,
-    end : null,
+    start: null,
+    end: null,
     tagId: null
   } as PageQueryArticle,
   articleList: [] as Article[],
@@ -133,15 +135,18 @@ function filterByTag() {
 }
 
 function filterByDate() {
-  if(dateRange.value != null){
+  if (dateRange.value != null) {
     queryParams.value.start = formatDateTime(dateRange.value[0]);
     queryParams.value.end = formatDateTime(dateRange.value[1]);
+  } else {
+    queryParams.value.start = null;
+    queryParams.value.end = null;
   }
   console.log(data.queryParams.start);
 }
 
 watch(
-    () => [queryParams.value.current, queryParams.value.sort,dateRange.value,queryParams.value.tagId],
+    () => [queryParams.value.current, queryParams.value.sort, queryParams.value.tagId],
     () => {
       getArticleList(queryParams.value).then(({data}) => {
         articleList.value = data.data.recordList;
@@ -150,12 +155,12 @@ watch(
     }
 );
 watch(
-    () => [dateRange.value,queryParams.value.tagId],
+    () => [dateRange.value, queryParams.value.tagId],
     () => {
       // 调用接口，使用新的日期范围
       filterByDate();
       queryParams.value.current = 1;
-      console.log(queryParams.value.current);
+      console.log(dateRange.value);
       getArticleList(queryParams.value).then(({data}) => {
         articleList.value = data.data.recordList;
         count.value = data.data.count;
@@ -172,8 +177,8 @@ onMounted(() => {
     tagList.value = data.data;
   });
   EventBus.on("refresh-articles", () => {
-    console.log("sda")
-    getArticleList(queryParams.value).then(({ data }) => {
+    queryParams.value.current = 1;
+    getArticleList(queryParams.value).then(({data}) => {
       articleList.value = data.data.recordList;
       count.value = data.data.count;
     });
@@ -191,9 +196,17 @@ onMounted(() => {
 }
 
 .sort-options {
-  display: flex;
   gap: 0.75rem; /* 选项之间的间隔 */
   margin-left: 10px;
+
+  .sortList {
+    display: flex;
+    gap: 0.75rem; /* 选项之间的间隔 */
+  }
+
+  .selectWidth {
+    width: 237px;
+  }
 
   .sort-option {
     align-items: center;
@@ -352,6 +365,21 @@ onMounted(() => {
 }
 
 @media (max-width: 767px) {
+  .sort-options {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1.25rem;
+
+    .sort-option {
+      align-items: center;
+      padding: 0.1rem 2.5rem;
+      width: 165px;
+    }
+
+    .selectWidth {
+      width: 350px;
+    }
+  }
   .article-item {
     flex-direction: column;
     height: fit-content;

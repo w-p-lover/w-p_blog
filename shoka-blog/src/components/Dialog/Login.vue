@@ -54,6 +54,7 @@ const showLogin = computed(
     () => (type: string) => blog.blogInfo.siteConfig.loginList.includes(type)
 );
 const showCaptcha = ref(false);
+
 //TODO，我搞定的神奇东西，要学习
 const captchaBox = ref<HTMLElement | null>(null);
 
@@ -68,8 +69,8 @@ const handleForget = () => {
 
 let globalTAC: any;
 const captchaConfig = {
-  requestCaptchaDataUrl: "http://localhost:8080/gen?type=RANDOM",
-  validCaptchaUrl: "http://localhost:8080/check",
+  requestCaptchaDataUrl: "http://121.41.87.40:8080/gen?type=RANDOM",
+  validCaptchaUrl: "http://121.41.87.40:8080/check",
   bindEl: "#captcha-box",
   validSuccess: (res: any, c: any, tac: any) => {
     tac.destroyWindow();
@@ -102,12 +103,12 @@ const handleCaptcha = () => {
     window.$message?.warning("密码不能为空");
     return;
   }
+  console.log("sdasdasd")
   showCaptcha.value = true;
   // 创建 TAC 启动验证码服务
   if (globalTAC) {
     globalTAC.destroyWindow();
   }
-  // @ts-ignore
   setTimeout(() => {
     // @ts-ignore
     globalTAC = new TAC(captchaConfig, captchaStyle).init();
