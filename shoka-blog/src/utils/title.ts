@@ -6,8 +6,7 @@ export function titleChange() {
     let titleTime: NodeJS.Timeout;
     useEventListener(document, "visibilitychange", () => {
         if (document.hidden) {
-            //离开当前页面时标签显示内容
-            document.title = "w(ﾟДﾟ)w 不要走！再看看嘛！";
+            document.title = "(`Д`)！ 再看看嘛！";
             clearTimeout(titleTime);
         } else {
             //返回当前页面时标签显示内容
