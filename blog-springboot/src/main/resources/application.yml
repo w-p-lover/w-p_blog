@@ -1,190 +1,147 @@
+# 服务器配置
 server:
-  # 端口
-  port: 8080
+  port: 8080 # 服务运行端口
+
+# Spring 配置
 spring:
+  config:
+    import: classpath:/secret.yml # 引入外部配置文件
   mvc:
     pathmatch:
-      matching-strategy: ant_path_matcher
-  # 应用名称
+      matching-strategy: ant_path_matcher # 使用 Ant 风格路径匹配
   application:
-    name: BlogApplication
-  # mysql配置
-  datasource:
-    type: com.alibaba.druid.pool.DruidDataSource
-    driver-class-name: com.mysql.jdbc.Driver
-    url: jdbc:mysql://121.41.87.40:3306/blog?serverTimezone=Asia/Shanghai&allowMultiQueries=true&rewriteBatchedStatements=true&useSSL=false&useUnicode=true&characterEncoding=UTF-8
-    username: root
-    password: 1224
-    druid:
-      # 初始连接数
-      initial-size: 10
-      # 最小连接池数量
-      min-idle: 10
-      # 最大连接池数量
-      max-active: 150
-      # 配置获取连接等待超时的时间
-      max-wait: 60000
-      # 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒
-      time-between-eviction-runs-millis: 60000
-      # 配置一个连接在池中最小生存的时间，单位是毫秒
-      min-evictable-idle-time-millis: 600000
-      # 配置一个连接在池中最大生存的时间，单位是毫秒
-      max-evictable-idle-time-millis: 900000
-      # 配置检测连接是否有效
-      validation-query: SELECT 1 FROM DUAL
-      # 配置检测连接是否有效时间
-      validation-query-timeout: 500
-      # 在获取连接后，确定是否要进行连接空间时间的检查
-      test-while-idle: true
-      # 设从连接池获取连接时是否检查连接有效性，true检查，false不检查
-      test-on-borrow: false
-      # 设置从连接池归还连接时是否检查连接有效性，true检查，false不检查
-      test-on-return: false
-  # 文件上传限制
+    name: BlogApplication # 应用名称
   servlet:
     multipart:
-      max-request-size: 100MB
-      max-file-size: 100MB
-  # redis配置
+      max-request-size: 100MB # 最大请求大小
+      max-file-size: 100MB   # 单个文件最大大小
+
+# 数据源配置
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource # 数据源类型
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://${db.host}:3306/blog?serverTimezone=Asia/Shanghai&allowMultiQueries=true&rewriteBatchedStatements=true&useSSL=false&useUnicode=true&characterEncoding=UTF-8
+    username: ${db.username} # 数据库用户名
+    password: ${db.password} # 数据库密码
+    druid:
+      initial-size: 10        # 初始连接数
+      min-idle: 10            # 最小空闲连接数
+      max-active: 150         # 最大连接数
+      max-wait: 60000         # 获取连接最大等待时间（毫秒）
+      time-between-eviction-runs-millis: 60000 # 间隔多久检测空闲连接
+      min-evictable-idle-time-millis: 600000   # 连接最小存活时间（毫秒）
+      max-evictable-idle-time-millis: 900000   # 连接最大存活时间（毫秒）
+      validation-query: SELECT 1 FROM DUAL # 用于检测连接是否有效的SQL
+      validation-query-timeout: 500 # 验证查询超时时间（毫秒）
+      test-while-idle: true   # 空闲时检测连接有效性
+      test-on-borrow: false   # 借用连接时不检测
+      test-on-return: false   # 归还连接时不检测
+
+# Redis 配置
   redis:
-    # Redis服务器地址
-    host: 121.41.87.40
-    # Redis服务器连接端口
-    port: 6379
-    # Redis服务器连接密码（默认为空）
-    password: 1224
-    # 连接超时时间
-    timeout: 10s
+    host: ${web.adress} # Redis 地址
+    port: 6379          # Redis 端口
+    password: ${redis.password} # Redis 密码
+    timeout: 10s        # 超时时间
     lettuce:
       pool:
-        # 连接池最大连接数
-        max-active: 150
-        # 连接池最大阻塞等待时间（使用负值表示没有限制）
-        max-wait: 5000ms
-        # 连接池中的最大空闲连接
-        max-idle: 100
-        # 连接池中的最小空闲连接
-        min-idle: 50
-  # rabbitmq配置
+        max-active: 150 # 最大连接数
+        max-wait: 5s    # 最大等待时间
+        max-idle: 100   # 最大空闲连接数
+        min-idle: 50    # 最小空闲连接数
+
+# RabbitMQ 配置
   rabbitmq:
-    host: 121.41.87.40
+    host: ${web.adress}
     port: 5672
     username: wyp
-    password: 1224
+    password: ${rabbitmq.password}
     listener:
       simple:
         retry:
           enabled: true
-          # 重试间隔时间
-          initial-interval: 3000
-          # 最大重试次数
-          max-attempts: 3
-  # 邮箱配置
+          initial-interval: 3000 # 重试间隔时间（毫秒）
+          max-attempts: 3        # 最大重试次数
+
+# 邮件服务配置
   mail:
     host: smtp.qq.com
-    # 用户名
-    username: 3169468598@qq.com
-    # 授权码
-    password: wzlhkpcerxlwddda
-# 博客链接 域名后面要加/
+    username: ${mail.username} # 邮箱账号
+    password: ${mail.password} # 授权码
+
+# 博客相关配置
 blog:
-  url: 121.41.87.40
+  url: ${web.adress} # 博客的域名地址，末尾需带/
+
 # 线程池配置
 thread:
   pool:
-    core-pool-size: 5
-    max-pool-size: 10
-    queue-capacity: 50
-    keep-alive-seconds: 1000
-# 搜索模式 可选 elasticsearch、mysql
-search:
-  mode: mysql
-# 文件上传策略 local、oss、cos
-photo:
-  apikey:
-    key:
+    core-pool-size: 5    # 核心线程数
+    max-pool-size: 10    # 最大线程数
+    queue-capacity: 50   # 队列容量
+    keep-alive-seconds: 1000 # 线程最大空闲时间（秒）
 
+# 文件上传策略
 upload:
-  strategy: local
+  strategy: local # 上传策略：local、oss、cos
   local:
-    # nginx映射本地文件路径
-    url: https://121.41.87.40/
-    # 本地文件存储路径
-    path: /usr/local/upload/
-  # oss存储
+    url: https://${web.adress}/ # 本地文件访问URL
+    path: /usr/local/upload/    # 本地存储路径
   oss:
     url: https://wangyoupeng-penghong.oss-cn-beijing.aliyuncs.com/
     endpoint: oss-cn-beijing.aliyuncs.com
     bucketName: wangyoupeng-penghong
+    accessKeyId: ${oss.accessKeyId}
+    accesskeySecret: ${oss.accesskeySecret}
 
-  # cos存储
-  cos:
-    url: https://Bucket域名/
-    secretId: COS配置secretId
-    secretKey: COS配置secretKey
-    region: COS配置region
-    bucketName: COS配置bucketName
-# mybatisPlus配置
+# MyBatis-Plus 配置
 mybatis-plus:
-  # mapper映射地址
-  mapper-locations: classpath:mapper/*.xml
-  # 实体类扫描包路径
-  type-aliases-package: com.ican.entity
+  mapper-locations: classpath:mapper/*.xml # Mapper文件路径
+  type-aliases-package: com.ican.entity    # 实体类所在包
   configuration:
-    # sql打印
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-    # 开启驼峰命名
-    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl # SQL日志输出
+    map-underscore-to-camel-case: true # 启用驼峰命名映射
   global-config:
     db-config:
-      # 数据库表前缀
-      table-prefix: t_
-# elasticsearch配置
+      table-prefix: t_ # 数据库表前缀
+
+# Elasticsearch 配置
 elasticsearch:
-  # elasticsearch用户名 这个不用改
   username: elastic
   password: changme
-  hostname: 121.41.87.40
+  hostname: ${web.adress}
   port: 9200
   scheme: http
   connTimeout: 1000
   socketTimeout: 30000
   connectionRequestTimeout: 5000
-# Sa-Token 配置 (文档: https://sa-token.cc)
+
+# 搜索模式配置
+search:
+  mode: mysql # 搜索模式，可选值为 elasticsearch 或 mysql
+
+# Sa-Token 配置
 sa-token:
-  # token名称 (同时也是cookie名称)
-  token-name: Authorization
-  # token前缀
-  token-prefix: Bearer
-  # token有效期，单位s 默认30天, -1代表永不过期
-  timeout: 180
-  # token临时有效期 (指定时间内无操作就视为token过期) 单位: 秒
-  activity-timeout: -1
-  # 关闭自动续签
-  auto-renew: false
-  # 是否允许同一账号并发登录 (为true时允许一起登录, 为false时新登录挤掉旧登录)
-  is-concurrent: true
-  # token风格
-  token-style: uuid
-  # 在多人登录同一账号时，是否共用一个token (为true时所有登录共用一个token, 为false时每次登录新建一个token)
-  is-share: false
-  # 同一账号最大登录数量
-  max-login-count: 20
-  # 是否从cookie中读取token
-  is-read-cookie: true
-  # 是否从请求体里读取token
-  is-read-body: true
-  # 是否从header中读取token
-  is-read-header: true
-  # 是否输出操作日志
-  is-log: false
-# 第三方登录
+  token-name: Authorization      # Token 名称
+  token-prefix: Bearer           # Token 前缀
+  timeout: 180                   # Token 有效期（秒）
+  activity-timeout: -1           # 临时有效期，-1 表示不启用
+  auto-renew: false              # 是否自动续签
+  is-concurrent: true            # 是否允许账号并发登录
+  token-style: uuid              # Token 风格
+  is-share: false                # 是否共用 Token
+  max-login-count: 20            # 最大登录数量
+  is-read-cookie: true           # 是否从 Cookie 读取 Token
+  is-read-body: true             # 是否从请求体读取 Token
+  is-read-header: true           # 是否从 Header 读取 Token
+  is-log: false                  # 是否输出操作日志
+
+# 第三方登录配置
 oauth:
   gitee:
-    client-id: Gitee的client-id
-    client-secret: Gitee的client-secret
-    grant_type: authorization_code
-    redirect-url: Gitee回调地址
+    client-id: 0bf9c2fed0f56f2b872a9bf42feefcb81a1d46aaacc12c9774311d681a76ee34
+    client-secret: 21fb1592278a838700936b30c0de5ab4e47c9ea74fc998709f2371f501e25d4e
+    redirect-url: http://w-love-p.top/oauth/gitee
     access-token-url: https://gitee.com/oauth/token
     user-info-url: https://gitee.com/api/v5/user?access_token={access_token}
   github:
@@ -197,31 +154,19 @@ oauth:
     app-id: QQ的APPID
     check-token-url: https://graph.qq.com/oauth2.0/me?access_token={access_token}
     user-info-url: https://graph.qq.com/user/get_user_info?openid={openid}&access_token={access_token}&oauth_consumer_key={oauth_consumer_key}
-# 滑块验证码配置， 详细请看 cloud.tianai.captcha.autoconfiguration.ImageCaptchaProperties 类
+
+# 验证码配置
 captcha:
-  # 如果项目中使用到了redis，滑块验证码会自动把验证码数据存到redis中， 这里配置redis的key的前缀,默认是captcha:slider
-  prefix: captcha
-  # 验证码过期时间，默认是2分钟,单位毫秒， 可以根据自身业务进行调整
+  prefix: captcha                # Redis 中存储验证码的前缀
   expire:
-    # 默认缓存时间 2分钟
-    default: 10000
-    # 针对 点选验证码 过期时间设置为 2分钟， 因为点选验证码验证比较慢，把过期时间调整大一些
-    WORD_IMAGE_CLICK: 20000
-  # 使用加载系统自带的资源， 默认是 false(这里系统的默认资源包含 滑动验证码模板/旋转验证码模板,如果想使用系统的模板，这里设置为true)
-  init-default-resource: true
-  # 缓存控制， 默认为false不开启
-  local-cache-enabled: true
-  # 验证码会提前缓存一些生成好的验证数据， 默认是20
-  local-cache-size: 20
-  # 缓存拉取失败后等待时间 默认是 5秒钟
-  local-cache-wait-time: 5000
-  # 缓存检查间隔 默认是2秒钟
-  local-cache-period: 2000
-  # 配置字体包，供文字点选验证码使用,可以配置多个，不配置使用默认的字体
+    default: 10000               # 默认过期时间（毫秒）
+    WORD_IMAGE_CLICK: 20000      # 点选验证码过期时间（毫秒）
+  init-default-resource: true    # 是否加载系统内置资源
+  local-cache-enabled: true      # 是否启用本地缓存
+  local-cache-size: 20           # 本地缓存大小
+  local-cache-wait-time: 5000    # 拉取缓存等待时间（毫秒）
+  local-cache-period: 2000       # 缓存检查周期（毫秒）
   secondary:
-    # 二次验证， 默认false 不开启
-    enabled: false
-    # 二次验证过期时间， 默认 2分钟
-    expire: 120000
-    # 二次验证缓存key前缀，默认是 captcha:secondary
-    keyPrefix: "captcha:secondary"
+    enabled: false               # 是否启用二次验证
+    expire: 120000               # 二次验证过期时间（毫秒）
+    keyPrefix: captcha:secondary # 二次验证缓存前缀

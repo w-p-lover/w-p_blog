@@ -1,5 +1,5 @@
 <template>
-  <a href="https://github.com/wangyoupeng2/w-p_blog" target="_blank" class="github-corner"
+  <a href="https://github.com/w-p-lover/w-p_blog" target="_blank" class="github-corner"
      aria-label="View source on Github">
     <svg
         width="80"
