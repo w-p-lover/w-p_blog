@@ -11,7 +11,7 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
-        config.enableSimpleBroker("/topic"); // 消息订阅路径
+        config.enableSimpleBroker("/topic/", "/queue/");
         config.setApplicationDestinationPrefixes("/app"); // 消息发送路径前缀
     }
 
@@ -20,5 +20,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registry.addEndpoint("/chat")
                 .setAllowedOrigins("http://localhost:5173")  // 允许来自前端的连接
                 .withSockJS();  // 允许使用 SockJS 作为回退选项
+
     }
 }
