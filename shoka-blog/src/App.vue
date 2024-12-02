@@ -45,7 +45,8 @@ onMounted(() => {
 .app-wrapper {
   position: relative;
   min-height: 100vh;
-
+  background-color: rgb(103, 130, 161);
+  z-index: 2;
 }
 
 .main-wrapper {
