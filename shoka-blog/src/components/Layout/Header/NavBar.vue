@@ -99,6 +99,11 @@ const menuList = [
         icon: "album",
         path: "/album"
       },
+      {
+        name: "聊天",
+        icon: "trumpet",
+        path: "/chat"
+      }
     ]
   },
   {
