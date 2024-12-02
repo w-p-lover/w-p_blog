@@ -17,7 +17,8 @@ import {formatDate} from "@/utils/date";
 
 const route = useRoute();
 const {blog} = useStore();
-const isMessage = computed(() => route.path == "/message");
+const isMessage = computed(() => route.path === "/message" || route.path === "/chat/ChatHome");
+
 </script>
 
 <style lang="scss" scoped>
