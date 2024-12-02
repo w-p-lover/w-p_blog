@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ican.mapper.ChatMapper">
+
+
+    <select id="selectByCouple" resultType="com.ican.entity.Chat">
+        SELECT *
+        FROM t_chat
+        WHERE sender_id = #{send}
+          AND receiver_id = #{receive}
+        UNION ALL
+        SELECT *
+        FROM t_chat
+        WHERE sender_id = #{receive}
+          AND receiver_id = #{send}
+        order by create_time
+    </select>
+</mapper>
