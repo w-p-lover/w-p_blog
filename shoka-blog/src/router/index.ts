@@ -16,6 +16,23 @@ const routes: RouteRecordRaw[] = [
         },
     },
     {
+        path: "/chat",
+        component: () => import("@/views/Chat/index.vue"),
+        meta: {
+            title: "聊天",
+        },
+        redirect: "/chat/ChatHome", // 重定向到子路由
+        children: [
+            {
+                path: "ChatHome", // 子路径名称
+                component: () => import("@/components/ChatHome/index.vue"),
+                meta: {
+                    title: "聊天主页",
+                },
+            },
+        ],
+    },
+    {
         path: "/about",
         component: () => import("@/views/About/index.vue"),
         meta: {
