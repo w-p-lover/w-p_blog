@@ -32,7 +32,9 @@ import error from "./assets/images/404.gif";
 import loading from "./assets/images/load.gif";
 import 'element-plus/dist/index.css'
 import ElementPlus from "element-plus";
+import axios from "axios";
 
+axios.defaults.withCredentials = true// Cookie跨域
 const app = createApp(App);
 Object.keys(directive).forEach((key) => {
     app.directive(key, (directive as { [key: string]: Directive })[key]);
