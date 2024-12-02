@@ -1,0 +1,458 @@
+<template>
+  <div class="chat-window">
+    <div class="top">
+      <div class="head-pic">
+        <HeadPortrait :imgUrl="friendInfo[2]"/>
+      </div>
+      <div class="info-detail">
+        <div class="name">{{ friendInfo[4]}}</div>
+        <div class="detail">{{ friendInfo[3] }}</div>
+      </div>
+      <div class="other-fun">
+        <span class="iconfont icon-shipin" @click="video"> </span>
+        <span class="iconfont icon-gf-telephone" @click="telephone"></span>
+        <label for="docFile">
+          <span class="iconfont icon-wenjian"></span>
+        </label>
+        <label for="imgFile">
+          <span class="iconfont icon-tupian"></span>
+        </label>
+        <input type="file" id="imgFile" @change="sendImg" accept="image/*"/>
+        <input type="file" id="docFile" @change="sendFile" accept="application/*,text/*"/>
+      </div>
+    </div>
+    <div class="botoom">
+      <div class="chat-content" ref="chatContent">
+        <div class="chat-wrapper" v-for="item in chatList" :key="item.id">
+          <!-- 聊天内容 -->
+          <div class="chat-friend" v-if="item.senderId != friendInfo[0]">
+            <!-- 文字消息 -->
+            <div class="chat-text" v-if="item.messageType === 'text'">{{ item.content }}</div>
+            <!-- 图片消息 -->
+            <div class="chat-img" v-if="item.chatType == 1">
+              <img v-if="item.extend.imgType == 1" :src="item.msg" alt="表情"/>
+              <el-image v-else :src="item.msg" :preview-src-list="srcImgList"/>
+            </div>
+            <div class="chat-img" v-if="item.chatType == 2">
+              <div class="word-file">
+                <FileCard
+                    :fileType="item.extend.fileType"
+                    :file="item.msg"
+                ></FileCard>
+              </div>
+            </div>
+            <div class="info-time">
+              <img :src="item.senderAvatar" alt="" />
+              <span>{{ item.senderName }}</span>
+              <span>{{formatDateTime(item.createTime)}}</span>
+            </div>
+          </div>
+
+          <div class="chat-me" v-else>
+            <!-- 文字消息 -->
+            <div class="chat-text" v-if="item.messageType === 'text'">{{ item.content }}</div>
+            <!-- 图片消息 -->
+            <div class="chat-img" v-if="item.messageType == 1">
+              <img v-if="item.extend.imgType == 1" :src="item.msg" alt="表情"/>
+              <el-image v-else :src="item.msg" :preview-src-list="srcImgList"/>
+            </div>
+            <div class="chat-img" v-if="item.messageType == 2">
+              <div class="word-file">
+                <FileCard
+                    :fileType="item.extend.fileType"
+                    :file="item.msg"
+                ></FileCard>
+              </div>
+            </div>
+            <div class="info-time">
+              <img :src="item.senderAvatar" alt="" />
+              <span>{{ item.senderName }}</span>
+              <span>{{ formatDateTime(item.createTime) }}</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <!-- 输入框 -->
+      <div class="chatInputs">
+        <div class="boxinput emoji" @click="clickEmoji">
+          <Emoji></Emoji>
+        </div>
+        <input v-model="inputMsg" class="inputs" @keyup.enter="sendText"/>
+        <div class="send boxinput" @click="sendText">
+          <img src="../../assets/img/emoji/rocket.png" alt=""/>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import {ref, reactive, onMounted} from "vue";
+import HeadPortrait from "@/components/ChatHome/Chat/HeadPortrait.vue";
+import FileCard from "@/components/ChatHome/Chat/FileCard.vue";
+import {getChatMessage} from "@/api/chat/index.ts";
+import WebSocketService from "@/api/chat/config.ts"
+import {formatDateTime} from "@/utils/date.ts";
+export default {
+  methods: {formatDateTime},
+  components: {HeadPortrait, FileCard},
+  props: {
+    friendInfo: {
+      type: Array,
+      required: true,
+    },
+  },
+
+  setup(props) {
+    //在script定义的变量赋值是没有被template获取的
+    let chatList = reactive([]); // 使用 reactive 定义聊天列表
+    const inputMsg = ref(""); // 输入框绑定值
+    const srcImgList = reactive([]); // 图片列表
+    const chatContent = ref(null); // 聊天内容 DOM 引用
+    const webSocketService = new WebSocketService(); // WebSocket 服务实例
+
+    const getFriendChatMsg = async () => {
+      try {
+        const {data} = await getChatMessage(props.friendInfo); // 调用接口获取数据
+        chatList.splice(0, chatList.length, ...data); // 更新 chatList 数据
+        srcImgList.splice(0, srcImgList.length); // 清空 srcImgList
+        scrollBottom(); // 滚动到底部
+      } catch (error) {
+        console.error("Failed to fetch chat messages:", error);
+      }
+    };
+
+    const onMessageReceived = (message) => {
+      if (message.senderId == props.friendInfo[1]) {
+        // 接收到。消息不是自己发的，添加到聊天列表
+        console.log("接收消息");
+        chatList.push(message);
+        scrollBottom(); // 滚动到底部
+      }
+    };
+
+    const scrollBottom = () => {
+      if (chatContent.value) {
+        chatContent.value.scrollTop = chatContent.value.scrollHeight;
+      }
+    };
+
+    const sendText = () => {
+      if (inputMsg.value) {
+        const message = {
+          id: chatList.length + 1,
+          content: inputMsg.value,
+          messageType: 'text', // 文字消息
+          name:props.friendInfo[4],
+          createTime: new Date(),
+          senderId: props.friendInfo[0], // 当前用户 ID
+          receiveId: props.friendInfo[1],
+          senderAvatar: props.friendInfo[2],
+        };
+        //发送的。在这里添加到聊天列表
+        chatList.push(message);
+        webSocketService.sendMessage(message);
+        inputMsg.value = "";
+        scrollBottom();
+      }
+    };
+    watch(
+        () => props.friendInfo[1],
+        (newFriendInfo, oldFriendInfo) => {
+          if (newFriendInfo !== oldFriendInfo) {
+            getFriendChatMsg(); // 重新获取聊天信息
+          }
+        },
+        {immediate: true} // 在组件加载时立即执行一次
+    );
+
+    onMounted(() => {
+      webSocketService.connect(onMessageReceived);
+      getFriendChatMsg();
+    });
+
+    onUnmounted(() => {
+      webSocketService.disconnect();
+    });
+
+    return {
+      chatList,
+      inputMsg,
+      chatContent,
+      srcImgList,
+      sendText,
+    };
+  },
+};
+</script>
+
+<style scoped>
+@import url('@/assets/fonts/iconfont.css');
+.iconfont {
+  font-family: "iconfont" !important;
+  font-style: normal;
+  font-size: 25px;
+  vertical-align: middle;
+  color: rgb(117,120,137);
+  transition: .3s;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+.chat-window {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  background-color: rgb(39, 42, 55);
+
+  .top {
+    margin-bottom: 40px;
+    display: flex; /* 使用 Flexbox 布局 */
+    align-items: center; /* 垂直居中对齐 */
+
+    &::after {
+      content: "";
+      display: block;
+      clear: both;
+    }
+
+    .head-pic {
+      float: left;
+    }
+
+    .info-detail {
+      float: left;
+      margin: 5px 20px 0;
+
+      .name {
+        font-size: 20px;
+        font-weight: 600;
+        color: #fff;
+      }
+
+      .detail {
+        color: #9e9e9e;
+        font-size: 12px;
+        margin-top: -5.5px;
+      }
+    }
+
+    .other-fun {
+      float: right;
+      margin-top: 20px;
+
+      span {
+        margin-left: 30px;
+        cursor: pointer;
+      }
+
+      input {
+        display: none;
+      }
+    }
+  }
+
+  .botoom {
+    margin-left: 15px;
+    width: 97.5%;
+    height: 66vh;
+    background-color: rgb(56, 60, 75);
+    border-radius: 20px;
+    padding: 20px;
+    box-sizing: border-box;
+    position: relative;
+
+    .chat-content {
+      width: 100%;
+      height: 85%;
+      overflow-y: scroll;
+      padding: 20px;
+      box-sizing: border-box;
+
+      &::-webkit-scrollbar {
+        width: 0; /* Safari,Chrome 隐藏滚动条 */
+        height: 0; /* Safari,Chrome 隐藏滚动条 */
+        display: none; /* 移动端、pad 上Safari，Chrome，隐藏滚动条 */
+      }
+
+      .chat-wrapper {
+        position: relative;
+        word-break: break-all;
+
+        .chat-friend {
+          width: 100%;
+          float: left;
+          margin-bottom: 20px;
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-start;
+          align-items: flex-start;
+
+          .chat-text {
+            max-width: 90%;
+            padding: 20px;
+            border-radius: 20px 20px 20px 5px;
+            background-color: rgb(82, 85, 97);
+            color: #fff;
+
+            &:hover {
+              background-color: rgb(68, 69, 78);
+            }
+          }
+
+          .chat-img {
+            img {
+              width: 100px;
+              height: 100px;
+            }
+          }
+
+          .info-time {
+            margin: 10px 0;
+            color: #fff;
+            font-size: 14px;
+
+            img {
+              width: 30px;
+              height: 30px;
+              border-radius: 50%;
+              vertical-align: middle;
+              margin-right: 10px;
+            }
+
+            span:last-child {
+              color: rgb(101, 104, 115);
+              margin-left: 10px;
+              vertical-align: middle;
+            }
+          }
+        }
+
+        .chat-me {
+          width: 100%;
+          float: right;
+          margin-bottom: 20px;
+          position: relative;
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-end;
+          align-items: flex-end;
+
+          .chat-text {
+            float: right;
+            max-width: 90%;
+            padding: 20px;
+            border-radius: 20px 20px 5px 20px;
+            background-color: rgb(29, 144, 245);
+            color: #fff;
+
+            &:hover {
+              background-color: rgb(26, 129, 219);
+            }
+          }
+
+          .chat-img {
+            img {
+              max-width: 300px;
+              max-height: 200px;
+              border-radius: 10px;
+            }
+          }
+
+          .info-time {
+            margin: 10px 0;
+            color: #fff;
+            font-size: 14px;
+            display: flex;
+            justify-content: flex-end;
+
+            img {
+              width: 30px;
+              height: 30px;
+              border-radius: 50%;
+              vertical-align: middle;
+              margin-left: 10px;
+            }
+
+            span {
+              line-height: 30px;
+            }
+
+            span:last-child {
+              color: rgb(101, 104, 115);
+              margin-left: 10px;
+              vertical-align: middle;
+            }
+          }
+        }
+      }
+    }
+
+    .chatInputs {
+      width: 90%;
+      position: absolute;
+      bottom: 0;
+      margin: 3%;
+      display: flex;
+
+      .boxinput {
+        width: 50px;
+        height: 50px;
+        background-color: rgb(66, 70, 86);
+        border-radius: 15px;
+        border: 1px solid rgb(80, 85, 103);
+        position: relative;
+        cursor: pointer;
+
+        img {
+          width: 30px;
+          height: 30px;
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          transform: translate(-50%, -50%);
+        }
+      }
+
+      .emoji {
+        transition: 0.3s;
+
+        &:hover {
+          background-color: rgb(46, 49, 61);
+          border: 1px solid rgb(71, 73, 82);
+        }
+      }
+
+      .inputs {
+        width: 90%;
+        height: 50px;
+        background-color: rgb(66, 70, 86);
+        border-radius: 15px;
+        border: 2px solid rgb(34, 135, 225);
+        padding: 10px;
+        box-sizing: border-box;
+        transition: 0.2s;
+        font-size: 20px;
+        color: #fff;
+        font-weight: 100;
+        margin: 0 20px;
+
+        &:focus {
+          outline: none;
+        }
+      }
+
+      .send {
+        background-color: rgb(29, 144, 245);
+        border: 0;
+        transition: 0.3s;
+        box-shadow: 0px 0px 5px 0px rgba(0, 136, 255);
+
+        &:hover {
+          box-shadow: 0px 0px 10px 0px rgba(0, 136, 255);
+        }
+      }
+    }
+  }
+}
+</style>
