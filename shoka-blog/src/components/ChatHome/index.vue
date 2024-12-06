@@ -55,18 +55,12 @@ export default {
       personList: [],
       showChatWindow: false,
       chatWindowInfo: [],
-      UserUid : ""
     };
   },
   mounted() {
-    //聊天室登录要求
-    if(!user.id){
-      app.setLoginFlag(true);
-    }
-    console.log(user.id);
-    getFriendList().then(({data}) => {
-      this.personList = data;
-    });
+      getFriendList(user.id).then(({data}) => {
+        this.personList = data;
+      });
   },
   methods: {
     clickPerson(info) {
@@ -78,6 +72,8 @@ export default {
       this.chatWindowInfo[2] = info.headImg;
       this.chatWindowInfo[3] = info.detail;
       this.chatWindowInfo[4] = info.name;
+      this.chatWindowInfo[5] = user.avatar;
+      this.chatWindowInfo[6] = user.nickname
       console.log(this.chatWindowInfo);
       this.pcCurrent = info.id;
     },
@@ -129,7 +125,7 @@ export default {
     }
 
     .online-person {
-      margin-top: 80px;
+      margin-top: 60px;
 
       .onlin-text {
         padding-left: 10px;
@@ -139,24 +135,30 @@ export default {
 
       .person-cards-wrapper {
         padding-left: 10px;
-        height: 65vh; /* 设置聊天列表容器的最大高度 */
-        margin-top: 20px;
-        overflow-y: auto; /* 启用滚动条 */
+        max-height: 550px; /* 根据页面调整最大高度 */
+        overflow-y: auto; /* 启用垂直滚动条 */
         box-sizing: border-box;
 
         &::-webkit-scrollbar {
-          width: 8px; /* 设置滚动条宽度 */
+          width: 6px; /* 滚动条宽度 */
+          background-color: #f1f1f1; /* 背景颜色 */
         }
 
         &::-webkit-scrollbar-thumb {
-          background-color: #888;
-          border-radius: 10px;
+          background-color: #aaa; /* 滚动条颜色 */
+          border-radius: 10px; /* 滚动条圆角 */
+          transition: background-color 0.3s ease;
         }
 
         &::-webkit-scrollbar-thumb:hover {
-          background-color: #555;
+          background-color: #888; /* 鼠标悬停时颜色 */
+        }
+
+        &::-webkit-scrollbar-track {
+          background-color: #eaeaea; /* 滚动条轨道颜色 */
         }
       }
+
     }
   }
 
