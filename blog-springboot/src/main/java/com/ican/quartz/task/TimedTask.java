@@ -2,6 +2,7 @@ package com.ican.quartz.task;
 
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
+import com.ican.mapper.ChatMapper;
 import com.ican.mapper.VisitLogMapper;
 import com.ican.service.RedisService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,10 @@ public class TimedTask {
     @Autowired
     private VisitLogMapper visitLogMapper;
 
+    @Autowired
+    private ChatMapper chatMapper;
+
+
     /**
      * 清除博客访问记录
      */
@@ -46,4 +51,13 @@ public class TimedTask {
         DateTime endTime = DateUtil.beginOfDay(DateUtil.offsetDay(new Date(), -7));
         visitLogMapper.deleteVisitLog(endTime);
     }
+
+    /**
+     * 清除一周前的聊天日志
+     */
+    public void clearChatRecord() {
+        DateTime endTime = DateUtil.beginOfDay(DateUtil.offsetDay(new Date(), -15));
+        chatMapper.deleteChatRecord(endTime);
+    }
+
 }
