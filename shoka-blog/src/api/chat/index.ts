@@ -7,16 +7,16 @@ import { AxiosPromise } from "axios";
  * 获取好友列表
  * @returns 好友列表
  */
-export function getFriendList(): AxiosPromise<Result<Friend[]>> {
+export function getFriendList(userId: number): AxiosPromise<Result<Friend[]>> {
     return request({
-        url: "/friend/friendList",
+        url: `/chat/friendList/${userId}`,
         method: "post",
     });
 }
 
 export function getCurrentUserUid(): AxiosPromise<any> {
     return request({
-        url: "/friend/getUserUid",
+        url: "/chat/getUserUid",
         method: "get",
     });
 }
@@ -29,7 +29,7 @@ export function getCurrentUserUid(): AxiosPromise<any> {
  */
 export function getChatMessage(params: Record<any, any>): AxiosPromise<Result<ChatMessage[]>> {
     return request({
-        url: "/friend/chatMsg",
+        url: "/chat/chatMsg",
         method: "post",
         data: params,
     });

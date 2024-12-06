@@ -2,7 +2,7 @@
   <n-popover trigger="click" placement="bottom-start" style="max-height: 200px;" content-style="padding: 0.5rem;"
              :width="250" scrollable>
     <template #trigger>
-      <span><svg-icon icon-class="emoji" size="1.1rem"></svg-icon></span>
+      <span><svg-icon :icon-class= "emojiIco" size="1.4rem"></svg-icon></span>
     </template>
     <div class="emoji-content">
             <span class="emoji-item" v-for="(value, key, index) of emojiList" :key="index" @click="addEmoji(key)">
@@ -14,6 +14,13 @@
 
 <script setup lang="ts">
 import emojiList from "@/utils/emoji";
+
+const props = defineProps({
+  emojiIco: {
+    type: String,
+    default: 'emoji'
+  },
+});
 
 const emit = defineEmits(['addEmoji']);
 const addEmoji = (key: string) => {
