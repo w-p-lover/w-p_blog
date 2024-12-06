@@ -14,7 +14,7 @@
       </div>
     </div>
     <div class="box-expand">
-      <Emoji @add-emoji="handleEmoji"></Emoji>
+      <Emoji emoji-ico="emoji" @add-emoji="handleEmoji"></Emoji>
     </div>
   </div>
 </template>

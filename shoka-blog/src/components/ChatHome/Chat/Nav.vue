@@ -14,14 +14,16 @@
       </ul>
     </div>
     <div class="own-pic">
-      <HeadPortrait :imgUrl="imgUrl" />
+      <HeadPortrait :imgUrl="imgUrl"/>
     </div>
   </div>
 </template>
 
 <script>
 import HeadPortrait from './HeadPortrait.vue';
-import defaultImage from '@/assets/img/head_portrait.jpg';
+import useStore from "@/store";
+import defaultImage from "@/assets/img/head_portrait.jpg"
+const {user, app} = useStore();
 export default {
   components: {
     HeadPortrait,
@@ -36,14 +38,16 @@ export default {
         "icon-shezhi",
       ],
       current: 0,
-      imgUrl:defaultImage, // 确保路径正确
+      //TODO 逻辑实现，缓存有时候会出小毛病，有时间再说
+      imgUrl: user.id? user.avatar : defaultImage, // 确保路径正确
     };
   },
+
   methods: {
     changeMenu(index) {
       this.current = index;
       if (index === 0) {
-        this.$router.push({ name: 'ChatHome' });
+        this.$router.push({name: 'ChatHome'});
       } else {
         this.showMessage('该功能还没有开发哦，敬请期待一下吧~🥳');
       }
@@ -58,12 +62,13 @@ export default {
 <style lang="scss" scoped>
 
 @import url('@/assets/fonts/iconfont.css');
+
 .iconfont {
   font-family: "iconfont" !important;
   font-style: normal;
   font-size: 25px;
   vertical-align: middle;
-  color: rgb(117,120,137);
+  color: rgb(117, 120, 137);
   transition: .3s;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

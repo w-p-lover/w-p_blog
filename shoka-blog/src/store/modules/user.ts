@@ -3,6 +3,7 @@ import {UserInfo} from "@/api/user/types";
 import {removeToken} from "@/utils/token";
 import EventBus from '@/eventBus';
 import {UserState} from "../types";
+import defaultImage from "@/assets/img/head_portrait.jpg"
 
 const useUserStore = defineStore("useUserStore", {
     state: (): UserState => ({
@@ -52,6 +53,7 @@ const useUserStore = defineStore("useUserStore", {
                         removeToken();
                         // 触发刷新文章列表的事件
                         EventBus.emit("refresh-articles");
+                        EventBus.emit("refresh-chat");
                         resolve(null);
                     })
                     .catch((error) => {
