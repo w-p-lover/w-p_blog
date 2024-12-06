@@ -1,5 +1,6 @@
 package com.ican.mapper;
 
+import cn.hutool.core.date.DateTime;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.ican.entity.Chat;
 import org.apache.ibatis.annotations.Param;
@@ -19,4 +20,5 @@ public interface ChatMapper extends BaseMapper<Chat> {
 
     List<Chat> selectByCouple(@Param("send") Integer s, @Param("receive") Integer s1);
 
+    void deleteChatRecord(@Param("endTime") DateTime endTime);
 }

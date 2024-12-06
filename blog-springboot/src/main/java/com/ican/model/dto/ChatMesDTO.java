@@ -20,7 +20,7 @@ public class ChatMesDTO {
     private String senderAvatar;
 
     @ApiModelProperty(value = "发送者名称")
-    private String name;
+    private String senderName;
 
     @ApiModelProperty(value = "发送时间")
     private String time;
