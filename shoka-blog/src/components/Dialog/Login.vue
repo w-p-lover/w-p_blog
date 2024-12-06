@@ -132,6 +132,7 @@ const handlelogin = (token: string) => {
     showCaptcha.value = false; // 隐藏验证码
     loading.value = false;
     EventBus.emit("refresh-articles");
+    EventBus.emit("refresh-chat");
     return;
   });
 };
