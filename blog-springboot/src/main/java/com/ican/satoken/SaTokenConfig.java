@@ -19,6 +19,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import java.util.Arrays;
+import java.util.List;
+
 import static com.ican.enums.StatusCodeEnum.UNAUTHORIZED;
 
 /**
@@ -39,7 +42,6 @@ public class SaTokenConfig implements WebMvcConfigurer {
             "/v2/api-docs",
             "/doc.html",
             "/favicon.ico",
-            "/login",
             "/oauth/*",
     };
 
@@ -54,7 +56,14 @@ public class SaTokenConfig implements WebMvcConfigurer {
         // 注册 Sa-Token 的注解拦截器，打开注解式鉴权功能
         registry.addInterceptor(new SaInterceptor()).addPathPatterns("/**");
     }
-
+    private final List<String> ALLOWED_ORIGINS = Arrays.asList(
+            "http://localhost:5173",  // 允许的前端1
+            "http://localhost:5174",  // 允许的前端2
+            "http://121.41.87.40",
+            "http://121.41.87.40:30",
+            "http://w-love-p.top/",
+            "http://w-love-p.top:30/"
+    );
     @Bean
     public SaServletFilter getSaServletFilter() {
         return new SaServletFilter()
@@ -65,15 +74,20 @@ public class SaTokenConfig implements WebMvcConfigurer {
                 // 前置函数：在每次认证函数之前执行
                 .setBeforeAuth(obj -> {
                     SaHolder.getResponse()
-                            // 允许指定域访问跨域资源
-                            .setHeader("Access-Control-Allow-Origin", "*")
                             // 允许所有请求方式
                             .setHeader("Access-Control-Allow-Methods", "*")
+                            .setHeader("Access-Control-Allow-Credentials", "true")
                             // 有效时间
                             .setHeader("Access-Control-Max-Age", "3600")
                             // 允许的header参数
                             .setHeader("Access-Control-Allow-Headers", "*");
                     // 如果是预检请求，则立即返回到前端
+                    String origin = SaHolder.getRequest().getHeader("Origin");
+
+                    // 如果 Origin 在允许的域名列表中，动态设置 Access-Control-Allow-Origin
+                    if (origin != null && ALLOWED_ORIGINS.contains(origin)) {
+                        SaHolder.getResponse().setHeader("Access-Control-Allow-Origin", origin);
+                    }
                     SaRouter.match(SaHttpMethod.OPTIONS)
                             .free(r -> System.out.println("--------OPTIONS预检请求，不做处理"))
                             .back();
