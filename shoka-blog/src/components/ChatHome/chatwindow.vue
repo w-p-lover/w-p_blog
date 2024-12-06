@@ -9,16 +9,43 @@
         <div class="detail">{{ shortDetail }}</div>
       </div>
       <div class="other-fun">
-        <span class="iconfont icon-shipin" @click="video"> </span>
-        <span class="iconfont icon-gf-telephone" @click="telephone"></span>
-        <label for="docFile">
-          <span class="iconfont icon-wenjian"></span>
-        </label>
-        <label for="imgFile">
-          <span class="iconfont icon-tupian"></span>
-        </label>
-        <input type="file" id="imgFile" @change="sendImg" accept="image/*"/>
-        <input type="file" id="docFile" @change="sendFile" accept="application/*,text/*"/>
+        <el-row type="flex" justify="space-between" align="middle">
+          <!-- 视频按钮 -->
+          <el-col :span="4">
+            <span class="iconfont icon-shipin" @click="video"></span>
+          </el-col>
+
+          <!-- 电话按钮 -->
+          <el-col :span="4">
+            <span class="iconfont icon-gf-telephone" @click="telephone"></span>
+          </el-col>
+
+          <!-- 文件上传按钮 -->
+          <el-col :span="4">
+            <el-upload
+                accept="doc/*"
+                multiple
+                action="http://localhost:8080/chat/upload?type=doc"
+                :before-upload="beforeUpload"
+                :on-success="sendFile"
+                :show-file-list="false">
+              <span class="iconfont icon-wenjian"></span>
+            </el-upload>
+          </el-col>
+
+          <!-- 图片上传按钮 -->
+          <el-col :span="4">
+            <el-upload
+                accept="image/*"
+                multiple
+                action="http://localhost:8080/chat/upload?type=img"
+                :before-upload="beforeUpload"
+                :on-success="sendImg"
+                :show-file-list="false">
+              <span class="iconfont icon-tupian"></span>
+            </el-upload>
+          </el-col>
+        </el-row>
       </div>
     </div>
     <div class="botoom">
@@ -29,15 +56,15 @@
             <!-- 文字消息 -->
             <div class="chat-text" v-if="item.messageType === 'text'" v-html = item.content></div>
             <!-- 图片消息 -->
-            <div class="chat-img" v-if="item.chatType == 1">
-              <img v-if="item.extend.imgType == 1" :src="item.msg" alt="表情"/>
-              <el-image v-else :src="item.msg" :preview-src-list="srcImgList"/>
+            <div class="chat-img" v-if="item.messageType === 'image'">
+              <!--              <img  :src="item.content" alt="表情"/>-->
+              <el-image  :src="item.content" :preview-src-list="srcImgList"/>
             </div>
             <div class="chat-img" v-if="item.chatType == 2">
               <div class="word-file">
                 <FileCard
                     :fileType="item.extend.fileType"
-                    :file="item.msg"
+                    :file="item.content"
                 ></FileCard>
               </div>
             </div>
@@ -52,15 +79,15 @@
             <!-- 文字消息 -->
             <div class="chat-text" v-if="item.messageType === 'text'" v-html = item.content></div>
             <!-- 图片消息 -->
-            <div class="chat-img" v-if="item.messageType == 1">
-              <img v-if="item.extend.imgType == 1" :src="item.msg" alt="表情"/>
-              <el-image v-else :src="item.msg" :preview-src-list="srcImgList"/>
+            <div class="chat-img" v-if="item.messageType == 'image'">
+              <img  :src="item.content" alt="表情"/>
+              <!--              <el-image  :src="item.content" :preview-src-list="srcImgList"/>-->
             </div>
             <div class="chat-img" v-if="item.messageType == 2">
               <div class="word-file">
                 <FileCard
                     :fileType="item.extend.fileType"
-                    :file="item.msg"
+                    :file="item.content"
                 ></FileCard>
               </div>
             </div>
@@ -95,6 +122,7 @@ import {getChatMessage} from "@/api/chat/index.ts";
 import WebSocketService from "@/api/chat/config.ts"
 import {formatDateTime} from "@/utils/date.ts";
 import emojiList from "@/utils/emoji";
+import * as imageConversion from 'image-conversion';
 
 export default {
   computed: {
@@ -108,7 +136,6 @@ export default {
   methods: {
     formatDateTime,
     handleEmoji(emoji) {
-      // 将表情添加到输入框中
       this.inputMsg += emoji;
     }
   },
@@ -182,6 +209,63 @@ export default {
       }
     };
 
+    // 发送图片
+    const sendImg = async (response) => {
+      console.log(response);
+      const message = {
+        id: chatList.length + 1,
+        content: "<img src='" + response + "' alt='图片' />", // 使用返回的 URL
+        messageType: 'image', // 图片消息
+        senderName: props.friendInfo[6],
+        name: props.friendInfo[4],
+        createTime: new Date(),
+        senderId: props.friendInfo[0],
+        receiveId: props.friendInfo[1],
+        senderAvatar: props.friendInfo[2],
+        chatType: 1, // 图片类型
+        extend: { imgType: 0 }, // 可根据实际情况处理 imgType
+        msg: response,
+      };
+      chatList.push(message); // 将消息推入聊天列表
+      webSocketService.sendMessage(message); // 发送 WebSocket 消息
+      scrollBottom(); // 滚动到底部
+    };
+
+    // 发送文件
+    const sendFile = async (response) => {
+      const message = {
+        id: chatList.length + 1,
+        content: response.url, // 文件链接
+        messageType: 'file', // 文件消息
+        senderName: props.friendInfo[6],
+        name: props.friendInfo[4],
+        createTime: new Date(),
+        senderId: props.friendInfo[0],
+        receiveId: props.friendInfo[1],
+        senderAvatar: props.friendInfo[2],
+        chatType: 2, // 文件类型
+        extend: { fileType: file.type },
+        msg: response.url,
+      };
+      chatList.push(message); // 将文件消息推入聊天列表
+      webSocketService.sendMessage(message); // 发送 WebSocket 消息
+      scrollBottom(); // 滚动到底部
+    };
+    const beforeUpload = (rawFile) => {
+      return new Promise(resolve => {
+        if (rawFile.size / 1024 < 200) {
+          console.log(rawFile.type);
+          resolve(rawFile);
+        }
+        // 压缩到200KB,这里的200就是要压缩的大小,可自定义
+        imageConversion
+            .compressAccurately(rawFile, 200)
+            .then(res => {
+              resolve(res);
+            });
+      });
+    };
+
     watch(
         () => props.friendInfo[1],
         (newFriendInfo, oldFriendInfo) => {
@@ -207,6 +291,9 @@ export default {
       chatContent,
       srcImgList,
       sendText,
+      sendImg,
+      sendFile,
+      beforeUpload
     };
   },
 };
@@ -214,6 +301,7 @@ export default {
 
 <style scoped>
 @import url('@/assets/fonts/iconfont.css');
+
 .iconfont {
   font-family: "iconfont" !important;
   font-style: normal;
