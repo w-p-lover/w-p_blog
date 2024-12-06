@@ -5,8 +5,8 @@
         <HeadPortrait :imgUrl="friendInfo[2]"/>
       </div>
       <div class="info-detail">
-        <div class="name">{{ friendInfo[4]}}</div>
-        <div class="detail">{{ friendInfo[3] }}</div>
+        <div class="name">{{ shortName }}</div>
+        <div class="detail">{{ shortDetail }}</div>
       </div>
       <div class="other-fun">
         <span class="iconfont icon-shipin" @click="video"> </span>
@@ -27,7 +27,7 @@
           <!-- 聊天内容 -->
           <div class="chat-friend" v-if="item.senderId != friendInfo[0]">
             <!-- 文字消息 -->
-            <div class="chat-text" v-if="item.messageType === 'text'">{{ item.content }}</div>
+            <div class="chat-text" v-if="item.messageType === 'text'" v-html = item.content></div>
             <!-- 图片消息 -->
             <div class="chat-img" v-if="item.chatType == 1">
               <img v-if="item.extend.imgType == 1" :src="item.msg" alt="表情"/>
@@ -42,15 +42,15 @@
               </div>
             </div>
             <div class="info-time">
-              <img :src="item.senderAvatar" alt="" />
+              <img :src="friendInfo[2]" alt=""/>
               <span>{{ item.senderName }}</span>
-              <span>{{formatDateTime(item.createTime)}}</span>
+              <span>{{ formatDateTime(item.createTime) }}</span>
             </div>
           </div>
 
           <div class="chat-me" v-else>
             <!-- 文字消息 -->
-            <div class="chat-text" v-if="item.messageType === 'text'">{{ item.content }}</div>
+            <div class="chat-text" v-if="item.messageType === 'text'" v-html = item.content></div>
             <!-- 图片消息 -->
             <div class="chat-img" v-if="item.messageType == 1">
               <img v-if="item.extend.imgType == 1" :src="item.msg" alt="表情"/>
@@ -65,7 +65,7 @@
               </div>
             </div>
             <div class="info-time">
-              <img :src="item.senderAvatar" alt="" />
+              <img :src="friendInfo[5]" alt=""/>
               <span>{{ item.senderName }}</span>
               <span>{{ formatDateTime(item.createTime) }}</span>
             </div>
@@ -75,11 +75,11 @@
       </div>
       <!-- 输入框 -->
       <div class="chatInputs">
-        <div class="boxinput emoji" @click="clickEmoji">
-          <Emoji></Emoji>
+        <div class="emoji_box emoji">
+          <Emoji emoji-ico="red" @add-emoji="handleEmoji"></Emoji>
         </div>
         <input v-model="inputMsg" class="inputs" @keyup.enter="sendText"/>
-        <div class="send boxinput" @click="sendText">
+        <div class="send box_input" @click="sendText">
           <img src="../../assets/img/emoji/rocket.png" alt=""/>
         </div>
       </div>
@@ -94,8 +94,24 @@ import FileCard from "@/components/ChatHome/Chat/FileCard.vue";
 import {getChatMessage} from "@/api/chat/index.ts";
 import WebSocketService from "@/api/chat/config.ts"
 import {formatDateTime} from "@/utils/date.ts";
+import emojiList from "@/utils/emoji";
+
 export default {
-  methods: {formatDateTime},
+  computed: {
+    shortName() {
+      return this.friendInfo[4].length > 4 ? this.friendInfo[4].slice(0, 4) + '...' : this.friendInfo[4];
+    },
+    shortDetail() {
+      return this.friendInfo[3].length > 6 ? this.friendInfo[3].slice(0, 6) + '...' : this.friendInfo[3];
+    }
+  },
+  methods: {
+    formatDateTime,
+    handleEmoji(emoji) {
+      // 将表情添加到输入框中
+      this.inputMsg += emoji;
+    }
+  },
   components: {HeadPortrait, FileCard},
   props: {
     friendInfo: {
@@ -140,11 +156,19 @@ export default {
 
     const sendText = () => {
       if (inputMsg.value) {
+        inputMsg.value = inputMsg.value.replace(/\[.+?\]/g, (str) => {
+          return (
+              "<img src= '" +
+              emojiList[str] +
+              "' width='21' height='21' style='margin: 0 1px;vertical-align: text-bottom'/>"
+          );
+        });
         const message = {
           id: chatList.length + 1,
           content: inputMsg.value,
           messageType: 'text', // 文字消息
-          name:props.friendInfo[4],
+          senderName: props.friendInfo[6],
+          name: props.friendInfo[4],
           createTime: new Date(),
           senderId: props.friendInfo[0], // 当前用户 ID
           receiveId: props.friendInfo[1],
@@ -157,6 +181,7 @@ export default {
         scrollBottom();
       }
     };
+
     watch(
         () => props.friendInfo[1],
         (newFriendInfo, oldFriendInfo) => {
@@ -194,11 +219,12 @@ export default {
   font-style: normal;
   font-size: 25px;
   vertical-align: middle;
-  color: rgb(117,120,137);
+  color: rgb(117, 120, 137);
   transition: .3s;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
 .chat-window {
   position: relative;
   height: 100%;
@@ -225,7 +251,7 @@ export default {
       margin: 5px 20px 0;
 
       .name {
-        font-size: 20px;
+        font-size: 16px;
         font-weight: 600;
         color: #fff;
       }
@@ -240,7 +266,7 @@ export default {
     .other-fun {
       float: right;
       margin-top: 20px;
-
+      display: table-column;
       span {
         margin-left: 30px;
         cursor: pointer;
@@ -395,7 +421,14 @@ export default {
       margin: 3%;
       display: flex;
 
-      .boxinput {
+      .emoji_box{
+        width: 24.5px;
+        height: 25.5px;
+        background-color: rgb(66, 70, 86);
+        border-radius: 15px;
+        border: 1px solid rgb(80, 85, 103);
+      }
+      .box_input {
         width: 50px;
         height: 50px;
         background-color: rgb(66, 70, 86);
@@ -416,7 +449,6 @@ export default {
 
       .emoji {
         transition: 0.3s;
-
         &:hover {
           background-color: rgb(46, 49, 61);
           border: 1px solid rgb(71, 73, 82);
@@ -454,5 +486,11 @@ export default {
       }
     }
   }
+  @media (max-width: 900px) {
+    .info-detail .detail {
+      display: none;
+    }
+  }
+
 }
 </style>
