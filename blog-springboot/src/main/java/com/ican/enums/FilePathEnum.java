@@ -12,6 +12,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum FilePathEnum {
 
+
     /**
      * 头像路径
      */
@@ -35,7 +36,15 @@ public enum FilePathEnum {
     /**
      * 照片路径
      */
-    PHOTO("photo/", "/photo", "相册路径");
+    PHOTO("photo/", "/photo", "相册路径"),
+    /**
+     * 聊天记录文件
+     */
+    CHATDOC("chatDoc/","/chatDoc","聊天记录文件路径"),
+    /**
+     * 聊天记录图片
+     */
+    CHAT("chat/","/chat","聊天记录图片路径");
 
     /**
      * 路径

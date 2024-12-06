@@ -1,8 +1,9 @@
 package com.ican.service;
 
 import com.ican.model.dto.ChatMesDTO;
+import com.ican.model.vo.FriendshipVO;
 import com.ican.model.vo.ChatRecordVO;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -19,4 +20,8 @@ public interface ChatService {
     String getUserUid();
 
     void addChat(ChatMesDTO message);
+
+    List<FriendshipVO> getFriendList(Integer userId);
+
+    String uploadTalkFile(String type, MultipartFile file);
 }
