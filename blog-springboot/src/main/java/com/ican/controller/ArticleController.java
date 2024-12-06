@@ -204,7 +204,6 @@ public class ArticleController {
     @VisitLogger(value = "首页")
     @ApiOperation(value = "查看首页文章列表")
     @GetMapping("/article/list")
-    @CrossOrigin(value = {"http://121.41.87.40", "http://121.41.87.40:30", "http://w-love-p.top/", "http://localhost:5173", "http://localhost:5174"})
     public Result<PageResult<ArticleHomeVO>> listArticleHomeVO(
             @RequestParam(defaultValue = "time") String sort,
             @RequestParam(required = false) Integer tagId,
@@ -212,7 +211,7 @@ public class ArticleController {
             @RequestParam(required = false) String end
             // 接收数组参数
     ) {
-        return Result.success(articleService.listArticleHomeVO(sort,tagId,start,end));
+        return Result.success(articleService.listArticleHomeVO(sort, tagId, start, end));
     }
 
     /**

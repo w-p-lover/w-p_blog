@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-@Component
 public class CorsFilter implements Filter {
 
     // 定义允许的来源
