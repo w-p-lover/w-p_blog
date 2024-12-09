@@ -31,7 +31,7 @@
 
 **测试账号：** test@qq.com，**密码**：123456
 
-**Github 地址：**[ https://github.com/w-p-lover/w-p_blog/]
+**Github 地址：**[http://w-love-p.top:8080/doc.html](api接口文档)
 
 **接口文档：** [http://w-love-p.top:8080/doc.html](api接口文档)
 
@@ -51,6 +51,7 @@
 - 前后端分离，客户服务端分离，提供部署文件，支持Docker Compose 一键部署
 - 采用 RABC 权限模型，使用 Sa-Token 进行权限管理，接入第三方登录，减少注册成本
 - 说说、友链、相册、留言弹幕墙、音乐播放器，发布评论、回复评论、表情包
+- 聊天室，支持图片，表情，文件发送
 - 支持动态权限修改、动态菜单和路由
 - 支持代码高亮、图片预览、黑夜模式、点赞、取消点赞等功能
 - 发送 HTML 邮件评论回复提醒，内容详细，异步实现
@@ -64,10 +65,9 @@
 
 **前端：** Vue3 + Pinia + Vue Router + TypeScript + Axios + Element Plus + Naive UI + Echarts + Swiper
 
-**后端：** SpringBoot + Mysql + Redis + Quartz + Thymeleaf + Nginx + Docker + Sa-Token + Swagger2 + MyBatisPlus +
-ElasticSearch + RabbitMQ + Canal + EasyExcel
+**后端：** SpringBoot + Mysql + Redis + Quartz + WebSocket + Thymeleaf + Nginx + Docker + Sa-Token + Swagger2 + MyBatisPlus + ElasticSearch + RabbitMQ + Canal + EasyExcel
 
-**其他：** 接入 QQ、Gitee、Github 第三方登录，接入TinyPng图片压缩
+**其他：** 接入 QQ、Gitee、Github 第三方登录，TinyPng图片压缩
 
 ## 运行环境
 
@@ -101,7 +101,7 @@ ElasticSearch + RabbitMQ + Canal + EasyExcel
 - [ ] 第三方登录使用 JustAuth
 - [ ] 移动端文章目录
 - [ ] 图片瀑布流布局
-- [ ] B 站追番页
-- [ ] B 站图床
-- [ ] 聊天室
-- [ ] 添加文章浏览方式，最新，热度，默认
+- [ ] 网页端图床
+- [x] 缓存处理，构建整体的缓存结构
+- [x] 聊天室，各种消息形式发送（图片，文件，文本等等）
+- [x] 添加文章浏览方式，最新，热度，默认
