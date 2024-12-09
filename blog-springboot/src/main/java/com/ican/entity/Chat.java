@@ -34,6 +34,8 @@ public class Chat {
 
     private Integer isRead; // 接收者用户 ID
 
+    private Integer fileId; // 文件 ID
+
     private String content; // 消息内容
 
     private String senderName; // 发送者姓名
