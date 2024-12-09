@@ -68,9 +68,6 @@ public class OptLogAspect {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         // 获取切入点所在的方法
         Method method = signature.getMethod();
-        if(method.getName().equals("uploadTalkFile")){
-            return;
-        }
         // 获取操作
         Api api = (Api) signature.getDeclaringType().getAnnotation(Api.class);
         ApiOperation apiOperation = method.getAnnotation(ApiOperation.class);
