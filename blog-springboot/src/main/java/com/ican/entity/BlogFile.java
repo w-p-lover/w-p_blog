@@ -48,6 +48,11 @@ public class BlogFile {
     private String extendName;
 
     /**
+     * 文件初始名称
+     */
+    private String originalName;
+
+    /**
      * 文件路径
      */
     private String filePath;

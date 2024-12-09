@@ -15,7 +15,7 @@ import java.util.List;
  * @Filename：ChatService
  */
 public interface ChatService {
-    List<ChatRecordVO> getByCouple(String s, String s1);
+    List<ChatRecordVO> getChatRecordByCouple(String s, String s1);
 
     String getUserUid();
 
