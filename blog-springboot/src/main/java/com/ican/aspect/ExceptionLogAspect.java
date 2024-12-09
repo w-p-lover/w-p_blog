@@ -1,6 +1,5 @@
 package com.ican.aspect;
 
-import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson2.JSON;
 import com.ican.entity.ExceptionLog;
 import com.ican.manager.AsyncManager;
@@ -9,7 +8,6 @@ import com.ican.utils.IpUtils;
 import com.ican.utils.UserAgentUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
@@ -30,7 +28,6 @@ import java.util.Objects;
  *
  * @author ican
  */
-@Slf4j
 @Aspect
 @Component
 public class ExceptionLogAspect {
@@ -56,13 +53,7 @@ public class ExceptionLogAspect {
         Method method = signature.getMethod();
         // 获取request
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-        HttpServletRequest request = null;
-        if(ObjectUtil.isNotNull(attributes)){
-            request = Objects.requireNonNull(attributes).getRequest();
-        }else{
-            log.error("无上下文错误：" + e.getMessage());
-            return;
-        }
+        HttpServletRequest request = Objects.requireNonNull(attributes).getRequest();
         // 获取操作
         Api api = (Api) signature.getDeclaringType().getAnnotation(Api.class);
         ApiOperation apiOperation = method.getAnnotation(ApiOperation.class);
