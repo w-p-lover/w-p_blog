@@ -54,11 +54,11 @@
           <!-- 聊天内容 -->
           <div class="chat-friend" v-if="item.senderId != friendInfo[0]">
             <!-- 文字消息 -->
-            <div class="chat-text" v-if="item.messageType === 'text'" v-html = item.content></div>
+            <div class="chat-text" v-if="item.messageType === 'text'" v-html=item.content></div>
             <!-- 图片消息 -->
             <div class="chat-img" v-if="item.messageType === 'image'">
-              <!--              <img  :src="item.content" alt="表情"/>-->
-              <el-image  :src="item.content" :preview-src-list="srcImgList"/>
+              <img :src="item.content" alt="表情"/>
+              <!-- <el-image  :src="item.content" :preview-src-list="srcImgList"/>-->
             </div>
             <div class="chat-img" v-if="item.chatType == 2">
               <div class="word-file">
@@ -77,10 +77,10 @@
 
           <div class="chat-me" v-else>
             <!-- 文字消息 -->
-            <div class="chat-text" v-if="item.messageType === 'text'" v-html = item.content></div>
+            <div class="chat-text" v-if="item.messageType === 'text'" v-html=item.content></div>
             <!-- 图片消息 -->
             <div class="chat-img" v-if="item.messageType == 'image'">
-              <img  :src="item.content" alt="表情"/>
+              <img :src="item.content" alt="表情"/>
               <!--              <el-image  :src="item.content" :preview-src-list="srcImgList"/>-->
             </div>
             <div class="chat-img" v-if="item.messageType == 2">
@@ -176,9 +176,13 @@ export default {
     };
 
     const scrollBottom = () => {
-      if (chatContent.value) {
-        chatContent.value.scrollTop = chatContent.value.scrollHeight;
-      }
+      //保证dom更新后调用，避免异步渲染导致的渲染不到位
+      nextTick(() => {
+        if (chatContent.value) {
+          // 直接将 scrollTop 设置为 scrollHeight，确保滚动到最底部
+          chatContent.value.scrollTop = chatContent.value.scrollHeight;
+        }
+      });
     };
 
     const sendText = () => {
@@ -214,7 +218,7 @@ export default {
       console.log(response);
       const message = {
         id: chatList.length + 1,
-        content: "<img src='" + response + "' alt='图片' />", // 使用返回的 URL
+        content: response, // 使用返回的 URL
         messageType: 'image', // 图片消息
         senderName: props.friendInfo[6],
         name: props.friendInfo[4],
@@ -222,9 +226,6 @@ export default {
         senderId: props.friendInfo[0],
         receiveId: props.friendInfo[1],
         senderAvatar: props.friendInfo[2],
-        chatType: 1, // 图片类型
-        extend: { imgType: 0 }, // 可根据实际情况处理 imgType
-        msg: response,
       };
       chatList.push(message); // 将消息推入聊天列表
       webSocketService.sendMessage(message); // 发送 WebSocket 消息
@@ -244,7 +245,7 @@ export default {
         receiveId: props.friendInfo[1],
         senderAvatar: props.friendInfo[2],
         chatType: 2, // 文件类型
-        extend: { fileType: file.type },
+        extend: {fileType: file.type},
         msg: response.url,
       };
       chatList.push(message); // 将文件消息推入聊天列表
@@ -355,6 +356,7 @@ export default {
       float: right;
       margin-top: 20px;
       display: table-column;
+
       span {
         margin-left: 30px;
         cursor: pointer;
@@ -379,7 +381,7 @@ export default {
     .chat-content {
       width: 100%;
       height: 85%;
-      overflow-y: scroll;
+      overflow-y: auto;
       padding: 20px;
       box-sizing: border-box;
 
@@ -416,8 +418,9 @@ export default {
 
           .chat-img {
             img {
-              width: 100px;
-              height: 100px;
+              max-width: 300px;
+              max-height: 200px;
+              border-radius: 10px;
             }
           }
 
@@ -509,13 +512,14 @@ export default {
       margin: 3%;
       display: flex;
 
-      .emoji_box{
+      .emoji_box {
         width: 24.5px;
         height: 25.5px;
         background-color: rgb(66, 70, 86);
         border-radius: 15px;
         border: 1px solid rgb(80, 85, 103);
       }
+
       .box_input {
         width: 50px;
         height: 50px;
@@ -537,6 +541,7 @@ export default {
 
       .emoji {
         transition: 0.3s;
+
         &:hover {
           background-color: rgb(46, 49, 61);
           border: 1px solid rgb(71, 73, 82);
@@ -574,6 +579,7 @@ export default {
       }
     }
   }
+
   @media (max-width: 900px) {
     .info-detail .detail {
       display: none;

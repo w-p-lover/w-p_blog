@@ -38,7 +38,7 @@ public class ChatController {
     @OptLogger(value = UPLOAD)
     @ApiOperation(value = "上传聊天文件")
     @ApiImplicitParam(name = "file", value = "聊天文件", required = true, dataType = "MultipartFile")
-    @PostMapping("/upload")
+    @PostMapping("/chat/upload")
     public String uploadTalkFile(@RequestParam("type") String type,@RequestParam("file") MultipartFile file) {
         return chatService.uploadTalkFile(type,file);
     }
