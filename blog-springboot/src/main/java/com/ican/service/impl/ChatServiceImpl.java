@@ -117,33 +117,34 @@ public class ChatServiceImpl implements ChatService {
         switch (type){
             case "img":
                 url = uploadStrategyContext.executeUploadStrategy(file, FilePathEnum.CHAT.getPath());
-                try {
-                    // 获取文件md5值
-                    String md5 = FileUtils.getMd5(file.getInputStream());
-                    // 获取文件扩展名
-                    String extName = FileUtils.getExtension(file);
-                    BlogFile existFile = blogFileMapper.selectOne(new LambdaQueryWrapper<BlogFile>()
-                            .select(BlogFile::getId)
-                            .eq(BlogFile::getFileName, md5)
-                            .eq(BlogFile::getFilePath, FilePathEnum.CHAT.getFilePath()));
-                    if (Objects.isNull(existFile)) {
-                        // 保存文件信息
-                        BlogFile newFile = BlogFile.builder()
-                                .fileUrl(url)
-                                .fileName(md5)
-                                .filePath(FilePathEnum.CHAT.getFilePath())
-                                .extendName(extName)
-                                .fileSize((int) file.getSize())
-                                .isDir(FALSE)
-                                .build();
-                        blogFileMapper.insert(newFile);
-                    }
-                    break;
-                } catch (IOException e) {
-                    log.error("文件上传持久化错误:" + e.getMessage());
-                }
-            case "doc":
                 break;
+            case "doc":
+                url = uploadStrategyContext.executeUploadStrategy(file, FilePathEnum.CHATDOC.getPath());
+                break;
+        }
+        try {
+            // 获取文件md5值
+            String md5 = FileUtils.getMd5(file.getInputStream());
+            // 获取文件扩展名
+            String extName = FileUtils.getExtension(file);
+            BlogFile existFile = blogFileMapper.selectOne(new LambdaQueryWrapper<BlogFile>()
+                    .select(BlogFile::getId)
+                    .eq(BlogFile::getFileName, md5)
+                    .eq(BlogFile::getFilePath, FilePathEnum.CHAT.getFilePath()));
+            if (Objects.isNull(existFile)) {
+                // 保存文件信息
+                BlogFile newFile = BlogFile.builder()
+                        .fileUrl(url)
+                        .fileName(md5)
+                        .filePath(FilePathEnum.CHAT.getFilePath())
+                        .extendName(extName)
+                        .fileSize((int) file.getSize())
+                        .isDir(FALSE)
+                        .build();
+                blogFileMapper.insert(newFile);
+            }
+        } catch (IOException e) {
+            log.error("文件上传持久化错误:" + e.getMessage());
         }
         return url;
     }
