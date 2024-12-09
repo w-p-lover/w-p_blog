@@ -60,11 +60,13 @@
               <img :src="item.content" alt="表情"/>
               <!-- <el-image  :src="item.content" :preview-src-list="srcImgList"/>-->
             </div>
-            <div class="chat-img" v-if="item.chatType == 2">
+            <div class="chat-img" v-if="item.messageType === 'doc'">
               <div class="word-file">
                 <FileCard
-                    :fileType="item.extend.fileType"
+                    :fileType="item.fileInfo.fileType"
                     :file="item.content"
+                    :fileName="item.fileInfo.fileName"
+                    :fileSize="item.fileInfo.fileSize"
                 ></FileCard>
               </div>
             </div>
@@ -83,11 +85,13 @@
               <img :src="item.content" alt="表情"/>
               <!--              <el-image  :src="item.content" :preview-src-list="srcImgList"/>-->
             </div>
-            <div class="chat-img" v-if="item.messageType == 2">
+            <div class="chat-img" v-if="item.messageType == 'doc'">
               <div class="word-file">
                 <FileCard
-                    :fileType="item.extend.fileType"
+                    :fileType="item.fileInfo.fileType"
                     :file="item.content"
+                    :fileName="item.fileInfo.fileName"
+                    :fileSize="item.fileInfo.fileSize"
                 ></FileCard>
               </div>
             </div>
@@ -150,6 +154,8 @@ export default {
   setup(props) {
     //在script定义的变量赋值是没有被template获取的
     let chatList = reactive([]); // 使用 reactive 定义聊天列表
+    const fileName = ref("");
+    const fileSize = ref("");
     const inputMsg = ref(""); // 输入框绑定值
     const srcImgList = reactive([]); // 图片列表
     const chatContent = ref(null); // 聊天内容 DOM 引用
@@ -234,19 +240,22 @@ export default {
 
     // 发送文件
     const sendFile = async (response) => {
+      console.log(response);
       const message = {
         id: chatList.length + 1,
-        content: response.url, // 文件链接
-        messageType: 'file', // 文件消息
+        content: response, // 文件链接
+        messageType: 'doc', // 文件消息
         senderName: props.friendInfo[6],
         name: props.friendInfo[4],
         createTime: new Date(),
         senderId: props.friendInfo[0],
         receiveId: props.friendInfo[1],
         senderAvatar: props.friendInfo[2],
-        chatType: 2, // 文件类型
-        extend: {fileType: file.type},
-        msg: response.url,
+        fileInfo: {
+          fileType: 1,
+          fileName: fileName.value,
+          fileSize: fileSize.value,
+        },
       };
       chatList.push(message); // 将文件消息推入聊天列表
       webSocketService.sendMessage(message); // 发送 WebSocket 消息
@@ -254,14 +263,18 @@ export default {
     };
     const beforeUpload = (rawFile) => {
       return new Promise(resolve => {
-        if (rawFile.size / 1024 < 200) {
-          console.log(rawFile.type);
+        let size = rawFile.size / 1024;
+        if (size / 1024 < 200) {
+          fileName.value = rawFile.name;
+          fileSize.value = size.toFixed(2) + 'KB';
           resolve(rawFile);
         }
         // 压缩到200KB,这里的200就是要压缩的大小,可自定义
         imageConversion
             .compressAccurately(rawFile, 200)
             .then(res => {
+              fileName.value = rawFile.name;
+              fileSize.value = size.toFixed(2) + 'KB';
               resolve(res);
             });
       });
