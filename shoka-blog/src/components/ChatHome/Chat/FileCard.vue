@@ -25,7 +25,7 @@ export default defineComponent({
       required: true,
     },
     file: {
-      type: Object, // File 对象类型
+      type: String, // File 对象类型
       required: true,
     },
     fileName: {

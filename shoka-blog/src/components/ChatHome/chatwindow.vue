@@ -25,7 +25,7 @@
             <el-upload
                 accept="doc/*"
                 multiple
-                action="http://localhost:8080/chat/upload?type=doc"
+                action="http://localhost:8080/chat/upload?type=file"
                 :before-upload="beforeUpload"
                 :on-success="sendFile"
                 :show-file-list="false">
@@ -60,7 +60,7 @@
               <img :src="item.content" alt="表情"/>
               <!-- <el-image  :src="item.content" :preview-src-list="srcImgList"/>-->
             </div>
-            <div class="chat-img" v-if="item.messageType === 'doc'">
+            <div class="chat-img" v-if="item.messageType === 'file'">
               <div class="word-file">
                 <FileCard
                     :fileType="item.fileInfo.fileType"
@@ -84,8 +84,9 @@
             <div class="chat-img" v-if="item.messageType == 'image'">
               <img :src="item.content" alt="表情"/>
               <!--              <el-image  :src="item.content" :preview-src-list="srcImgList"/>-->
+              <!--              <el-image  :src="item.content" :preview-src-list="srcImgList"/>-->
             </div>
-            <div class="chat-img" v-if="item.messageType == 'doc'">
+            <div class="chat-img" v-if="item.messageType == 'file'">
               <div class="word-file">
                 <FileCard
                     :fileType="item.fileInfo.fileType"
@@ -156,6 +157,7 @@ export default {
     let chatList = reactive([]); // 使用 reactive 定义聊天列表
     const fileName = ref("");
     const fileSize = ref("");
+    const extension = ref("");
     const inputMsg = ref(""); // 输入框绑定值
     const srcImgList = reactive([]); // 图片列表
     const chatContent = ref(null); // 聊天内容 DOM 引用
@@ -238,13 +240,41 @@ export default {
       scrollBottom(); // 滚动到底部
     };
 
-    // 发送文件
+    //上传文件
     const sendFile = async (response) => {
-      console.log(response);
+      let fileType;
+      switch (extension.value) {
+        case "application/msword":
+        case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+          fileType = 1;
+          break;
+        case "application/vnd.ms-excel":
+        case "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
+          fileType = 2;
+          break;
+        case "application/vnd.ms-powerpoint":
+        case "application/vnd.openxmlformats-officedocument.presentationml.presentation":
+          fileType = 3;
+          break;
+        case "application/pdf":
+          fileType = 4;
+          break;
+        case "application/zip":
+        case "application/x-zip-compressed":
+          fileType = 5;
+          break;
+        case "text/plain":
+          fileType = 6;
+          break;
+        default:
+          fileType = 0;
+      }
+      console.log('文件类型' + extension.value);
+      // 构造消息对象
       const message = {
         id: chatList.length + 1,
         content: response, // 文件链接
-        messageType: 'doc', // 文件消息
+        messageType: 'file', // 文件消息
         senderName: props.friendInfo[6],
         name: props.friendInfo[4],
         createTime: new Date(),
@@ -252,12 +282,14 @@ export default {
         receiveId: props.friendInfo[1],
         senderAvatar: props.friendInfo[2],
         fileInfo: {
-          fileType: 1,
+          fileType: fileType, // 动态设置 fileType
           fileName: fileName.value,
           fileSize: fileSize.value,
         },
       };
-      chatList.push(message); // 将文件消息推入聊天列表
+
+      // 将文件消息推入聊天列表
+      chatList.push(message);
       webSocketService.sendMessage(message); // 发送 WebSocket 消息
       scrollBottom(); // 滚动到底部
     };
@@ -267,6 +299,7 @@ export default {
         if (size / 1024 < 200) {
           fileName.value = rawFile.name;
           fileSize.value = size.toFixed(2) + 'KB';
+          extension.value = rawFile.type;
           resolve(rawFile);
         }
         // 压缩到200KB,这里的200就是要压缩的大小,可自定义
@@ -275,6 +308,7 @@ export default {
             .then(res => {
               fileName.value = rawFile.name;
               fileSize.value = size.toFixed(2) + 'KB';
+              extension.value = rawFile.type;
               resolve(res);
             });
       });
