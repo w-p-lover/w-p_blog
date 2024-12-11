@@ -9,6 +9,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -18,6 +20,27 @@ import java.util.Objects;
  */
 @Log4j2
 public class FileUtils {
+
+    private static final Map<String, Integer> fileTypeMap = new HashMap<>();
+
+    static {
+        fileTypeMap.put("doc", 1);  // Word 文件
+        fileTypeMap.put("docx", 1); // Word 文件
+        fileTypeMap.put("xls", 2);  // Excel 文件
+        fileTypeMap.put("xlsx", 2); // Excel 文件
+        fileTypeMap.put("ppt", 3);  // PPT 文件
+        fileTypeMap.put("pptx", 3); // PPT 文件
+        fileTypeMap.put("pdf", 4);  // PDF 文件
+        fileTypeMap.put("zip", 5);  // 压缩文件
+        fileTypeMap.put("rar", 5);  // 压缩文件
+        fileTypeMap.put("7z", 5);   // 压缩文件
+        fileTypeMap.put("txt", 6);  // 文本文件
+    }
+
+    public static int getFileTypeByExtension(String extension) {
+        String[] parts = extension.split("\\.");
+        return fileTypeMap.getOrDefault(parts[parts.length-1].toLowerCase(), 0);
+    }
 
     /**
      * 获取文件md5值

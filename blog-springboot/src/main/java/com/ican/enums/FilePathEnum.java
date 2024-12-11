@@ -37,10 +37,11 @@ public enum FilePathEnum {
      * 照片路径
      */
     PHOTO("photo/", "/photo", "相册路径"),
+
     /**
      * 聊天记录文件
      */
-    CHATDOC("chatDoc/","/chatDoc","聊天记录文件路径"),
+    CHAT_FILE("chatFile/","/chatFile","聊天记录文件路径"),
     /**
      * 聊天记录图片
      */

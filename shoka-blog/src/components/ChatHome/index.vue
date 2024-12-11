@@ -167,8 +167,8 @@ export default {
     padding-right: 30px;
     .showIcon {
       position: absolute;
-      top: calc(50% - 150px); /*垂直居中 */
-      left: calc(50% - 50px); /*水平居中 */
+      top: calc(15%); /*垂直居中 */
+      left: calc(50%); /*水平居中 */
       .icon-snapchat {
         width: 300px;
         height: 300px;

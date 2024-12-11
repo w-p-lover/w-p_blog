@@ -3,7 +3,6 @@ package com.ican.service.impl;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.alibaba.druid.sql.visitor.functions.Lcase;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.ican.entity.BlogFile;
 import com.ican.entity.Chat;
@@ -60,15 +59,18 @@ public class ChatServiceImpl implements ChatService {
         int senderId = Integer.parseInt(send);
         int receiverId = Integer.parseInt(receive);
         List<Chat> chatRecords = chatRecordMapper.selectByCouple(senderId, receiverId);
+
         for (Chat chatRecord : chatRecords) {
             ChatRecordVO chatRecordVO = new ChatRecordVO();
             BeanUtil.copyProperties(chatRecord, chatRecordVO);
-            if (Objects.equals(chatRecord.getMessageType(), "doc")) {
+
+            if (Objects.equals(chatRecord.getMessageType(), "file")) {
                 BlogFile blogFile = blogFileMapper.selectOne(new LambdaQueryWrapper<BlogFile>()
                         .eq(BlogFile::getFileUrl, chatRecord.getContent()));
+
                 double fileSize = blogFile.getFileSize() / 1024.0;
                 ChatRecordVO.FileInfo fileInfo = ChatRecordVO.FileInfo.builder()
-                        .fileType(1)
+                        .fileType(FileUtils.getFileTypeByExtension(blogFile.getFileUrl()))
                         .fileName(blogFile.getOriginalName())
                         .fileSize(String.format("%.2f", fileSize) + "KB")
                         .build();
@@ -102,7 +104,7 @@ public class ChatServiceImpl implements ChatService {
                     .senderName(message.getSenderName())
                     .fileId(-1)
                     .build();
-            if (message.getMessageType().equals("doc")) {
+            if (message.getMessageType().equals("file")) {
                 String fileUrl = message.getContent();
                 BlogFile blogFile = blogFileMapper.selectOne(new LambdaQueryWrapper<BlogFile>()
                         .eq(BlogFile::getFileUrl, fileUrl));
@@ -140,8 +142,8 @@ public class ChatServiceImpl implements ChatService {
             case "img":
                 filePath = FilePathEnum.CHAT.getPath();
                 break;
-            case "doc":
-                filePath = FilePathEnum.CHATDOC.getPath();
+            case "file":
+                filePath = FilePathEnum.CHAT_FILE.getPath();
                 break;
             default:
                 throw new IllegalArgumentException("不支持的文件类型: " + type);
