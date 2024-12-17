@@ -3,6 +3,8 @@ package com.ican.service.impl;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
@@ -31,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.ican.constant.CommonConstant.FALSE;
@@ -102,6 +105,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
         return new PageResult<>(articleBackVOList, count);
     }
+
+
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -201,6 +206,25 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         return searchStrategyContext.executeSearchStrategy(keyword);
     }
 
+
+    /**
+     * 缓存热点文章内容
+     *
+     * @param articleId 文章ID
+     */
+    private void cacheHotArticleContent(Integer articleId) {
+        // 检查是否已缓存
+        String cacheKey = HOT_ARTICLE;
+        if (redisService.hasHashValue(cacheKey, articleId.toString())) {
+            redisService.setExpire(cacheKey, 1, TimeUnit.HOURS);
+            return;
+        }
+        ArticleVO article = articleMapper.selectArticleHomeById(articleId);
+        if (article != null) {
+            updateArticleStatsFromRedis(articleId,article);
+            redisService.setHash(cacheKey, articleId.toString(), JSONUtil.toJsonStr(article), 1, TimeUnit.HOURS);
+        }
+    }
     @Override
     public PageResult<ArticleHomeVO> listArticleHomeVO(String sort, Integer tagId, String start, String end) {
         // 获取登录用户的电子邮件
@@ -234,43 +258,67 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         if (ObjectUtil.isNotNull(tagId)) {
             return new PageResult<>(paginatedArticles, count);
         }
-
-        // 修改非文章界面显示问题，调整标签顺序
-        for (ArticleHomeVO article : paginatedArticles) {
-            article.setArticleContent(article.getArticleContent().replaceAll("#", ""));
-            article.getTagVOList().sort(Comparator.comparingInt(TagOptionVO::getId));
-        }
-
+        // 浏览量
+        Map<Object, Double> viewCountMap = redisService.getZsetAllScore(ARTICLE_VIEW_COUNT);
+        paginatedArticles.forEach(item -> {
+            item.setArticleContent(item.getArticleContent().replaceAll("#", ""));
+            item.getTagVOList().sort(Comparator.comparingInt(TagOptionVO::getId));
+            Double viewCount = Optional.ofNullable(viewCountMap.get(item.getId())).orElse((double) 0);
+            if (viewCount >= 20 || item.getIsTop() == 1) { // 热点文章阈值
+                cacheHotArticleContent(item.getId());
+            }
+        });
         return new PageResult<>(paginatedArticles, count);
     }
 
-
+    // 查询文章信息
     @Override
     public ArticleVO getArticleHomeById(Integer articleId) {
-        // 查询文章信息
-        ArticleVO article = articleMapper.selectArticleHomeById(articleId);
-        if (Objects.isNull(article)) {
-            return null;
+        // Redis 缓存 Key
+        String cacheKey = HOT_ARTICLE;
+        String articleJsonStr = redisService.getHash(cacheKey,articleId.toString());
+        // 热点文章和常规文章划分
+        if (StrUtil.isEmpty(articleJsonStr)) {
+            cacheKey = USUAL_ARTICLE;
+            articleJsonStr = redisService.getHash(cacheKey,articleId.toString());
         }
-        // 浏览量+1
-        articleMapper.incrementViews(Long.valueOf(articleId));
-        redisService.incrZet(ARTICLE_VIEW_COUNT, articleId, 1D);
-        // 查询上一篇文章
-        ArticlePaginationVO lastArticle = articleMapper.selectLastArticle(articleId);
-        // 查询下一篇文章
-        ArticlePaginationVO nextArticle = articleMapper.selectNextArticle(articleId);
-        article.setLastArticle(lastArticle);
-        article.setNextArticle(nextArticle);
-        // 查询浏览量
-        Double viewCount = Optional.ofNullable(redisService.getZsetScore(ARTICLE_VIEW_COUNT, articleId))
-                .orElse((double) 0);
-        article.setViewCount(viewCount.intValue());
-        // 查询点赞量
-        Integer likeCount = redisService.getHash(ARTICLE_LIKE_COUNT, articleId.toString());
-        article.setLikeCount(Optional.ofNullable(likeCount).orElse(0));
+        ArticleVO article = JSONUtil.toBean(articleJsonStr, ArticleVO.class);
+        if (Objects.isNull(articleJsonStr)) {
+            // 2. 缓存未命中，从数据库加载文章信息
+            article = articleMapper.selectArticleHomeById(articleId);
+            if (Objects.isNull(article)) {
+                return null;
+            }
+            updateArticleStatsFromRedis(articleId,article);
+            // 3. 缓存文章基本信息
+            cacheArticleDetails(cacheKey, article);
+        }
         return article;
     }
 
+    private void updateArticleStatsFromRedis(Integer articleId,ArticleVO articleVO) {
+        Double viewCount = Optional.ofNullable(redisService
+                        .getZsetScore(ARTICLE_VIEW_COUNT, articleId)).orElse((double) 0);
+        // 浏览量+1
+        articleMapper.incrementViews(Long.valueOf(articleId));
+        redisService.incrZet(ARTICLE_VIEW_COUNT, articleId, 1D);
+        Integer likeCount = redisService.getHash(ARTICLE_LIKE_COUNT, articleId.toString());
+        // 查询下一篇文章
+        ArticlePaginationVO lastArticle = articleMapper.selectLastArticle(articleId);
+        ArticlePaginationVO nextArticle = articleMapper.selectNextArticle(articleId);
+        articleVO.setLikeCount(Optional.ofNullable(likeCount).orElse(0));
+        articleVO.setLastArticle(lastArticle);
+        articleVO.setNextArticle(nextArticle);
+        articleVO.setViewCount(viewCount.intValue());
+    }
+
+    private void cacheArticleDetails(String cacheKey, ArticleVO article) {
+        // 缓存文章信息（1小时TTL）
+        if(redisService.hasHashValue(cacheKey,article.getId().toString())){
+            redisService.setExpire(cacheKey, 15, TimeUnit.MINUTES);
+        }
+        redisService.setHash(cacheKey, article.getId().toString(), JSONUtil.toJsonStr(article), 15, TimeUnit.MINUTES);
+    }
     @Override
     public PageResult<ArchiveVO> listArchiveVO() {
         // 查询文章数量
@@ -329,7 +377,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 blogFileMapper.insert(newFile);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("文件上传持久化错误:" + e.getMessage());
         }
         return url;
     }

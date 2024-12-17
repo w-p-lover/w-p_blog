@@ -53,6 +53,16 @@ public class RedisConstant {
     public static final String USER_TALK_LIKE = "user_talk_like:";
 
     /**
+     * 热点文章
+     */
+    public static final String HOT_ARTICLE = "hot_articles_content";
+
+    /**
+     * 常规访问文章
+     */
+    public static final String USUAL_ARTICLE = "usual_articles_content";
+
+    /**
      * 网站配置
      */
     public static final String SITE_SETTING = "site_setting";
