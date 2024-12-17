@@ -3,6 +3,7 @@ package com.ican.service.impl;
 import com.alibaba.fastjson2.JSON;
 import com.ican.model.vo.ArticleSearchVO;
 import com.ican.service.ElasticsearchService;
+import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.update.UpdateRequest;
@@ -23,6 +24,7 @@ import static com.ican.constant.ElasticConstant.ARTICLE_INDEX;
  * @author ican
  **/
 @Service
+@Slf4j
 public class ElasticsearchServiceImpl implements ElasticsearchService {
 
     @Autowired
@@ -38,7 +40,7 @@ public class ElasticsearchServiceImpl implements ElasticsearchService {
                     .source(json, XContentType.JSON);
             elasticsearchClient.index(indexRequest, RequestOptions.DEFAULT);
         } catch (IOException e) {
-            e.printStackTrace();
+           log.error(e.getMessage());
         }
     }
 
@@ -51,7 +53,8 @@ public class ElasticsearchServiceImpl implements ElasticsearchService {
                     .id(article.getId().toString());
             elasticsearchClient.update(request, RequestOptions.DEFAULT);
         } catch (IOException e) {
-            e.printStackTrace();
+           log.error(e.getMessage());
+
         }
     }
 
@@ -64,7 +67,7 @@ public class ElasticsearchServiceImpl implements ElasticsearchService {
             // 2.发送请求
             elasticsearchClient.delete(request, RequestOptions.DEFAULT);
         } catch (IOException e) {
-            e.printStackTrace();
+           log.error(e.getMessage());
         }
     }
 }
