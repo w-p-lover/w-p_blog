@@ -3,12 +3,13 @@ package com.ican.service.impl;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.ican.entity.*;
 import com.ican.mapper.*;
 import com.ican.model.dto.*;
@@ -22,18 +23,26 @@ import com.ican.utils.BeanCopyUtils;
 import com.ican.utils.FileUtils;
 import com.ican.utils.PageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Comparator;
-import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 import static com.ican.constant.CommonConstant.FALSE;
@@ -82,6 +91,16 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     @Autowired
     private BlogFileMapper blogFileMapper;
 
+    @Autowired
+    private ThreadPoolTaskExecutor hotArticleExecutor;
+
+    private static final ConcurrentHashMap<Integer, ReentrantLock> articleLocks = new ConcurrentHashMap<>();
+
+    Cache<Integer, ArticleVO> localCache = Caffeine.newBuilder()
+            .maximumSize(200)
+            .expireAfterWrite(5, TimeUnit.MINUTES)
+            .build();
+
     @Override
     public PageResult<ArticleBackVO> listArticleBackVO(ConditionDTO condition) {
         // 查询文章数量
@@ -105,7 +124,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
         return new PageResult<>(articleBackVOList, count);
     }
-
 
 
     @Transactional(rollbackFor = Exception.class)
@@ -214,93 +232,181 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
      */
     private void cacheHotArticleContent(Integer articleId) {
         // 检查是否已缓存
-        String cacheKey = HOT_ARTICLE;
-        if (redisService.hasHashValue(cacheKey, articleId.toString())) {
-            redisService.setExpire(cacheKey, 1, TimeUnit.HOURS);
-            return;
-        }
-        ArticleVO article = articleMapper.selectArticleHomeById(articleId);
-        if (article != null) {
-            updateArticleStatsFromRedis(articleId,article);
-            redisService.setHash(cacheKey, articleId.toString(), JSONUtil.toJsonStr(article), 1, TimeUnit.HOURS);
-        }
     }
+
     @Override
     public PageResult<ArticleHomeVO> listArticleHomeVO(String sort, Integer tagId, String start, String end) {
-        // 获取登录用户的电子邮件
-        String email = null;
-        if (StpUtil.isLogin()) {
-            User user = userMapper.selectOne(new LambdaQueryWrapper<User>()
-                    .select(User::getEmail)
-                    .eq(User::getId, StpUtil.getLoginIdAsInt()));
-            email = user != null ? user.getEmail() : null; // 防止空指针
-        }
 
-        // 判断是否使用特殊邮件
-        boolean isSpecialEmail = ObjectUtil.isNotNull(email) && (email.equals(MY_MAIL) || email.equals(MY_RED_MAIL));
-
-        // 获取文章列表
-        List<ArticleHomeVO> articleHomeVOS = isSpecialEmail
-                ? articleMapper.selectArticleAllList(sort, tagId, start, end)
-                : articleMapper.PselectArticleAllList(sort, tagId, start, end);
-
-        long count = articleHomeVOS.size();
-        if (count == 0) {
+        String email = getCurrentUserEmail();
+        boolean isSpecialEmail = checkSpecialEmail(email);
+        List<ArticleHomeVO> articles = queryArticles(sort, tagId, start, end, isSpecialEmail);
+        if (CollectionUtils.isEmpty(articles)) {
             return new PageResult<>();
         }
+        PageResult<ArticleHomeVO> result = paginateResults(articles);
+        processHotArticles(articles);
+        return result;
+    }
 
-        // 处理分页逻辑
-        int itemStart = (int) ((PageUtils.getCurrent() - 1) * PageUtils.getSize());
-        int itemEnd = (int) Math.min(itemStart + PageUtils.getSize(), (int) count);
-        List<ArticleHomeVO> paginatedArticles = articleHomeVOS.subList(itemStart, itemEnd);
-
-        // 如果指定标签 ID，直接返回分页结果
-        if (ObjectUtil.isNotNull(tagId)) {
-            return new PageResult<>(paginatedArticles, count);
-        }
-        // 浏览量
+    // 处理热点文章逻辑
+    private void processHotArticles(List<ArticleHomeVO> articles) {
+        // 批量获取所有文章的浏览数
         Map<Object, Double> viewCountMap = redisService.getZsetAllScore(ARTICLE_VIEW_COUNT);
-        paginatedArticles.forEach(item -> {
-            item.setArticleContent(item.getArticleContent().replaceAll("#", ""));
-            item.getTagVOList().sort(Comparator.comparingInt(TagOptionVO::getId));
-            Double viewCount = Optional.ofNullable(viewCountMap.get(item.getId())).orElse((double) 0);
-            if (viewCount >= 20 || item.getIsTop() == 1) { // 热点文章阈值
-                cacheHotArticleContent(item.getId());
+        Set<Integer> hotCandidates = new HashSet<>(); // 线程安全集合：收集需要异步处理的热点文章ID
+        // 顺序流处理文章，保证线程安全
+        for (ArticleHomeVO article : articles) {
+            article.setArticleContent(article.getArticleContent().replaceAll("#", ""));
+            sortTags(article.getTagVOList());
+            Double viewCount = viewCountMap.getOrDefault(article.getId(), 0D);
+            // 判断是否为热点文章（浏览数≥20 或 置顶文章）
+            if (viewCount >= 20 || article.getIsTop() == 1) {
+                hotCandidates.add(article.getId());  // 将热点文章ID加入集合
+            }
+        }
+        if (!hotCandidates.isEmpty()) { // 批量异步处理热点文章
+            CompletableFuture.runAsync(() -> batchProcessHotArticles(hotCandidates), hotArticleExecutor);
+        }
+    }
+
+    // 批量处理热点文章
+    private void batchProcessHotArticles(Set<Integer> articleIds) {
+        articleIds.forEach(id -> {
+            if (needCacheUpdate(id)) {  // 检查是否需要更新缓存
+                asyncCacheHotArticle(id);  // 异步缓存热点文章
             }
         });
-        return new PageResult<>(paginatedArticles, count);
+    }
+
+    // 判断是否需要更新缓存的逻辑
+    private boolean needCacheUpdate(Integer articleId) {
+        // 获取当前文章的缓存
+        String cacheKey = HOT_ARTICLE;
+        if (!redisService.hasHashValue(cacheKey, articleId.toString())) {  // 1. 检查缓存是否存在
+            return true;
+        }
+        Long ttl = redisService.getExpire(cacheKey, TimeUnit.MINUTES);// 2. 检查缓存是否过期（TTL）
+        if (ttl != null && ttl < 5) {
+            return true;
+        }
+        Double viewCount = redisService.getZsetScore(ARTICLE_VIEW_COUNT, articleId); // 3. 检查浏览量是否变化（假设超过某个阈值就认为需要更新缓存）
+        if (viewCount != null && viewCount > 1000) {
+            return true;
+        }
+        ArticleVO article = articleMapper.selectArticleHomeById(articleId);// 4. 检查数据库中的文章内容是否有更新
+        if (article == null) {
+            return false;
+        }
+        return false;
+    }
+
+
+    // 异步缓存热点文章（保持哈希结构）
+    @Async("cacheRefreshPool")
+    protected void asyncCacheHotArticle(Integer articleId) {
+        try {
+            final String cacheKey = HOT_ARTICLE;
+            // 第一层快速检查（非原子性检查，允许少量重复）
+            if (redisService.hasHashValue(cacheKey, articleId.toString())) {
+                // 动态延长哈希整体过期时间（30±5分钟）
+                redisService.setExpire(cacheKey, 25 + (int) (Math.random() * 10), TimeUnit.MINUTES);
+                return;
+            }
+            // 使用本地锁（ReentrantLock）
+            ReentrantLock lock = articleLocks.computeIfAbsent(articleId, k -> new ReentrantLock());
+            lock.lock();  // 获取锁
+            try {
+                // 第二层精确检查
+                if (redisService.hasHashValue(cacheKey, articleId.toString())) {
+                    return;
+                }
+                // 查询数据库并更新缓存
+                ArticleVO article = articleMapper.selectArticleHomeById(articleId);
+                if (article != null) {
+                    // 缓存数据并设置动态TTL
+                    redisService.setHash(
+                            cacheKey,
+                            articleId.toString(),
+                            JSONUtil.toJsonStr(article)
+                    );
+                    redisService.setExpire(cacheKey,
+                            getDynamicTTL(articleId),
+                            TimeUnit.MINUTES);
+                }
+            } finally {
+                lock.unlock();  // 释放锁
+            }
+        } catch (Exception e) {
+            log.error("异步缓存哈希结构热点文章失败", e);
+        }
+    }
+
+    // 根据文章的阅读量来计算动态TTL
+    private int getDynamicTTL(Integer articleId) {
+        int baseTTL = 30;
+        int maxTTL = 60;
+        int maxViewCount = 1000;
+
+        // 获取文章的浏览量
+        Double viewCount = redisService.getZsetScore(ARTICLE_VIEW_COUNT, articleId);
+        if (viewCount == null) {
+            viewCount = 0D; // 如果缓存中没有浏览量，则默认值为 0
+        }
+        int dynamicTTL = baseTTL + (int) ((viewCount / maxViewCount) * maxTTL);
+
+        // 随机增加偏移量（避免缓存雪崩）
+        int randomOffset = new Random().nextInt(10);  // 随机增加 0 到 10 分钟
+        return dynamicTTL + randomOffset;
     }
 
     // 查询文章信息
     @Override
     public ArticleVO getArticleHomeById(Integer articleId) {
-        // Redis 缓存 Key
-        String cacheKey = HOT_ARTICLE;
-        String articleJsonStr = redisService.getHash(cacheKey,articleId.toString());
-        // 热点文章和常规文章划分
-        if (StrUtil.isEmpty(articleJsonStr)) {
-            cacheKey = USUAL_ARTICLE;
-            articleJsonStr = redisService.getHash(cacheKey,articleId.toString());
+        // 1. 加入本地缓存层
+        String nullCacheKey = "NULL_" + articleId.toString();
+        String cachedNullValue = redisService.getObject(nullCacheKey);
+        // 如果缓存了空值，直接返回 null
+        if ("EMPTY".equals(cachedNullValue)) {
+            return null;
         }
-        ArticleVO article = JSONUtil.toBean(articleJsonStr, ArticleVO.class);
-        if (Objects.isNull(articleJsonStr)) {
-            // 2. 缓存未命中，从数据库加载文章信息
-            article = articleMapper.selectArticleHomeById(articleId);
-            if (Objects.isNull(article)) {
-                return null;
+        ArticleVO article = localCache.get(articleId, Id -> {
+            // 2. 使用 ReentrantLock 来替代 synchronized，提升性能
+            ReentrantLock lock = articleLocks.computeIfAbsent(articleId, id -> new ReentrantLock());
+            lock.lock();  // 获取锁
+            try {
+                // 3. 检查 Redis 缓存
+                String articleJson = redisService.getHash(HOT_ARTICLE, articleId.toString());
+                if (articleJson != null)
+                    return JSONUtil.toBean(articleJson, ArticleVO.class);
+                ;
+
+                // 4. 从数据库查询
+                ArticleVO dbArticle = articleMapper.selectArticleHomeById(articleId);
+                if (dbArticle == null) {
+                    redisService.setObject(nullCacheKey, "EMPTY", 5, TimeUnit.MINUTES);
+                    return null;
+                }
+                // 5. 更新本地缓存和 Redis
+                updateArticleStatsFromRedis(articleId, dbArticle);
+                localCache.put(articleId, dbArticle);  // 更新本地缓存
+                redisService.setHash(HOT_ARTICLE, articleId.toString(), JSONUtil.toJsonStr(dbArticle));  // 更新 Redis
+
+                return dbArticle;
+            } finally {
+                lock.unlock();
             }
-            updateArticleStatsFromRedis(articleId,article);
-            // 3. 缓存文章基本信息
-            cacheArticleDetails(cacheKey, article);
-        }
-        return article;
+        });
+        return Optional.ofNullable(article)
+                .map(a -> {
+                    updateArticleStatsFromRedis(articleId, a);
+                    return a;  // 返回更新后的 article
+                })
+                .orElse(null);
     }
 
-    private void updateArticleStatsFromRedis(Integer articleId,ArticleVO articleVO) {
+    private void updateArticleStatsFromRedis(Integer articleId, ArticleVO articleVO) {
         Double viewCount = Optional.ofNullable(redisService
-                        .getZsetScore(ARTICLE_VIEW_COUNT, articleId)).orElse((double) 0);
-        // 浏览量+1
-        articleMapper.incrementViews(Long.valueOf(articleId));
+                .getZsetScore(ARTICLE_VIEW_COUNT, articleId)).orElse((double) 0);
+        // 缓存中浏览量+1
         redisService.incrZet(ARTICLE_VIEW_COUNT, articleId, 1D);
         Integer likeCount = redisService.getHash(ARTICLE_LIKE_COUNT, articleId.toString());
         // 查询下一篇文章
@@ -309,16 +415,20 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         articleVO.setLikeCount(Optional.ofNullable(likeCount).orElse(0));
         articleVO.setLastArticle(lastArticle);
         articleVO.setNextArticle(nextArticle);
-        articleVO.setViewCount(viewCount.intValue());
+        articleVO.setViewCount(viewCount.intValue() + 1);
+        //异步对数据库数据更新，实现 优先更新 Redis，异步更新数据库的策略。
+        CompletableFuture.runAsync(() ->
+                articleMapper.incrementViews(Long.valueOf(articleId)), hotArticleExecutor);
     }
 
     private void cacheArticleDetails(String cacheKey, ArticleVO article) {
-        // 缓存文章信息（1小时TTL）
-        if(redisService.hasHashValue(cacheKey,article.getId().toString())){
+        // 缓存文章信息（15分钟TTL）
+        if (redisService.hasHashValue(cacheKey, article.getId().toString())) {
             redisService.setExpire(cacheKey, 15, TimeUnit.MINUTES);
         }
         redisService.setHash(cacheKey, article.getId().toString(), JSONUtil.toJsonStr(article), 15, TimeUnit.MINUTES);
     }
+
     @Override
     public PageResult<ArchiveVO> listArchiveVO() {
         // 查询文章数量
@@ -446,6 +556,66 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             }
             // 将所有的标签绑定到文章标签关联表
             articleTagMapper.saveBatchArticleTag(articleId, existTagIdList);
+        }
+
+    }
+
+    // ----------- 辅助方法 ----------- //
+
+    // 获取当前用户邮箱
+    private String getCurrentUserEmail() {
+        try {
+
+            if (StpUtil.isLogin()) {
+                User user = userMapper.selectOne(new LambdaQueryWrapper<User>()
+                        .select(User::getEmail)
+                        .eq(User::getId, StpUtil.getLoginIdAsInt()));
+                return user != null ? user.getEmail() : null;
+            }
+            return null;
+        } catch (Exception e) {
+            log.error("获取用户邮箱失败", e);
+            return null;
+        }
+    }
+
+    // 判断是否特权邮箱
+    private boolean checkSpecialEmail(String email) {
+        return ObjectUtil.isNotNull(email) && (email.equals(MY_MAIL) || email.equals(MY_RED_MAIL));
+    }
+
+    // 查询文章列表（核心查询方法）
+    private List<ArticleHomeVO> queryArticles(String sort, Integer tagId, String start,
+                                              String end, boolean isSpecial) {
+        if (isSpecial) {
+            // 特权用户查询所有文章（包括未发布）
+            return articleMapper.selectArticleAllList(sort, tagId, start, end);
+        } else {
+            // 普通用户只能查询已发布文章
+            return articleMapper.PselectArticleAllList(sort, tagId, start, end);
+        }
+    }
+
+    // 内存分页处理
+    private PageResult<ArticleHomeVO> paginateResults(List<ArticleHomeVO> articles) {
+        int total = articles.size();
+        int pageSize = Math.toIntExact(PageUtils.getSize());
+        int currentPage = Math.toIntExact(PageUtils.getCurrent());
+
+        // 计算分页区间
+        int start = (currentPage - 1) * pageSize;
+        int end = Math.min(start + pageSize, total);
+
+        if (start >= total) {
+            return new PageResult<>(List.of(), (long) total);
+        }
+        return new PageResult<>(articles.subList(start, end), (long) total);
+    }
+
+    // 标签排序
+    private void sortTags(List<TagOptionVO> tags) {
+        if (!CollectionUtils.isEmpty(tags)) {
+            tags.sort(Comparator.comparingInt(TagOptionVO::getId));
         }
     }
 }
