@@ -1,5 +1,6 @@
 package com.ican;
 
+import com.github.xiaoymin.knife4j.spring.annotations.EnableKnife4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
@@ -14,6 +15,7 @@ import org.springframework.web.client.RestTemplate;
  **/
 @SpringBootApplication
 @EnableCaching
+@EnableKnife4j
 public class BlogApplication {
 
     public static void main(String[] args) {

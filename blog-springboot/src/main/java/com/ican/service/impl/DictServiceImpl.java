@@ -20,6 +20,7 @@ import com.ican.model.vo.excelvo.TalkExVo;
 import com.ican.model.vo.excelvo.UserExVo;
 import com.ican.model.vo.excelvo.VisitExVo;
 import com.ican.service.DictService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -41,6 +42,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @Filename：DictServiceImpl
  */
 @Service
+@Slf4j
 public class DictServiceImpl implements DictService {
 
     @Autowired
@@ -168,7 +170,7 @@ public class DictServiceImpl implements DictService {
             response.flushBuffer();
 
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
     }
 
