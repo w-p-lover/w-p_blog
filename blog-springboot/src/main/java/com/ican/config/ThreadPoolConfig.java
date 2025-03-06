@@ -60,5 +60,34 @@ public class ThreadPoolConfig {
             }
         };
     }
+    @Bean(name = "hotArticleExecutor")
+    public ThreadPoolTaskExecutor hotArticleExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+
+        // 配置hotArticleExecutor线程池
+        executor.setCorePoolSize(4);  // 核心线程数
+        executor.setMaxPoolSize(10);  // 最大线程数
+        executor.setQueueCapacity(100);  // 队列容量
+        executor.setKeepAliveSeconds(60);  // 线程空闲时间
+        executor.setThreadNamePrefix("hotArticleExecutor-");  // 线程名前缀
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());  // 拒绝策略
+
+        return executor;
+    }
+
+    @Bean(name = "cacheRefreshPool")
+    public ThreadPoolTaskExecutor cacheRefreshPool() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+
+        // 配置cacheRefreshPool线程池
+        executor.setCorePoolSize(4);  // 核心线程数
+        executor.setMaxPoolSize(10);  // 最大线程数
+        executor.setQueueCapacity(100);  // 队列容量
+        executor.setKeepAliveSeconds(60);  // 线程空闲时间
+        executor.setThreadNamePrefix("cacheRefreshPool-");  // 线程名前缀
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());  // 拒绝策略
+
+        return executor;
+    }
 
 }
