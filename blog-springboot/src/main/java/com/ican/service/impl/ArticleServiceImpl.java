@@ -22,6 +22,7 @@ import com.ican.strategy.context.UploadStrategyContext;
 import com.ican.utils.BeanCopyUtils;
 import com.ican.utils.FileUtils;
 import com.ican.utils.PageUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -59,6 +60,7 @@ import static com.ican.enums.FilePathEnum.ARTICLE;
  * @date 2022/12/04 22:31
  **/
 @Service
+@Slf4j
 public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> implements ArticleService {
 
     @Autowired
@@ -377,8 +379,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 String articleJson = redisService.getHash(HOT_ARTICLE, articleId.toString());
                 if (articleJson != null)
                     return JSONUtil.toBean(articleJson, ArticleVO.class);
-                ;
-
                 // 4. 从数据库查询
                 ArticleVO dbArticle = articleMapper.selectArticleHomeById(articleId);
                 if (dbArticle == null) {
@@ -387,9 +387,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 }
                 // 5. 更新本地缓存和 Redis
                 updateArticleStatsFromRedis(articleId, dbArticle);
-                localCache.put(articleId, dbArticle);  // 更新本地缓存
+/*                localCache.put(articleId, dbArticle);  // 更新本地缓存*/
                 redisService.setHash(HOT_ARTICLE, articleId.toString(), JSONUtil.toJsonStr(dbArticle));  // 更新 Redis
-
                 return dbArticle;
             } finally {
                 lock.unlock();
@@ -416,7 +415,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         articleVO.setLastArticle(lastArticle);
         articleVO.setNextArticle(nextArticle);
         articleVO.setViewCount(viewCount.intValue() + 1);
-        //异步对数据库数据更新，实现 优先更新 Redis，异步更新数据库的策略。
+        //异步对数据库数据更新，实现 优先更新 Redis，异步更新数据库 的策略。
         CompletableFuture.runAsync(() ->
                 articleMapper.incrementViews(Long.valueOf(articleId)), hotArticleExecutor);
     }
