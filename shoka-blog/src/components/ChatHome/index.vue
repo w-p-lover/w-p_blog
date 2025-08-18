@@ -2,7 +2,7 @@
   <div class="chatHome">
     <div class="chatLeft">
       <div class="title">
-        <h1>大猫聊天室</h1>
+        <h1>辞书</h1>
       </div>
       <div class="online-person">
         <span class="onlin-text">聊天列表</span>
@@ -37,7 +37,7 @@
 
 <script>
 import PersonCard from "@/components/ChatHome/Chat/PersonCard.vue";
-import ChatWindow from "./chatwindow.vue";
+import ChatWindow from "./ChatWindow.vue";
 import {getFriendList} from "@/api/chat/index.ts";
 import useStore from "@/store";
 const {user, app} = useStore();
@@ -120,7 +120,7 @@ export default {
 
     .title {
       color: #fff;
-      padding-left: 10px;
+      padding-left: 20px;
       margin-top: 20px;
     }
 

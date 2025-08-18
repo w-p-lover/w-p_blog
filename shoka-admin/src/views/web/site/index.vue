@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <el-tabs type="border-card" class="demo-tabs">
+    <el-tabs type="border-card" class="demo-tabs" >
       <!-- 网站信息 -->
       <el-tab-pane>
         <template #label>
