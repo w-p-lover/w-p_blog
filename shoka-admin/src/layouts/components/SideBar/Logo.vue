@@ -37,7 +37,6 @@ const {logo, isCollapse} = toRefs(state);
   line-height: 50px;
   text-align: center;
   overflow: hidden;
-
   & .sidebar-logo-link {
     height: 100%;
     width: 100%;
@@ -50,7 +49,6 @@ const {logo, isCollapse} = toRefs(state);
 
     & .sidebar-title {
       display: inline-block;
-      margin: 0;
       color: #fff;
       font-weight: 600;
       line-height: 50px;
@@ -61,10 +59,6 @@ const {logo, isCollapse} = toRefs(state);
     }
   }
 
-  &.collapse {
-    .sidebar-logo {
-      margin-right: 0px;
-    }
-  }
+
 }
 </style>
