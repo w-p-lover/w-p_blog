@@ -239,57 +239,73 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .tags-view-container {
-  height: 34px;
+  height: 38px;
   width: 100%;
   background-color: var(--el-bg-color);
-  border: 1px solid var(--el-border-color-light);
-  box-shadow: 0px 1px 1px var(--el-box-shadow-light);
+  /* 顶部边框修饰 - 渐变线条 */
+  border-top: 2px solid transparent;
+  border-image: linear-gradient(90deg, #84a374 0%, #8f9de1 50%, #ab7de4 100%) 0.5;
+  border-bottom: 2px solid #e5e7eb;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
 
   .tags-view-wrapper {
+    height: 100%;
+    padding: 0 12px;
+
     .tags-view-item {
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
       position: relative;
       cursor: pointer;
-      height: 26px;
-      line-height: 26px;
-      border: 1px solid var(--el-border-color-light);
-      padding: 0 8px;
-      font-size: 12px;
-      margin-left: 5px;
-      margin-top: 4px;
-
+      height: 27px;
+      line-height: 27px;
+      padding: 0 12px;
+      margin: 4px 4px 0;
+      font-size: 13px;
+      border-radius: 4px;
+      color: #193a68;
+      border: 1px solid transparent;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      background-color: rgba(109, 171, 232, 0.16);
       &:first-of-type {
-        margin-left: 15px;
+        margin-left: 0;
       }
 
-      &:last-of-type {
-        margin-right: 15px;
+      &:hover {
+        background-color: #f3f4f6;
+        border-color: #ffffff;
       }
 
       &.active {
-        background-color: #42b983;
-        color: #fff;
-        border-color: #42b983;
+        background: linear-gradient(135deg, #2f437e 0%, #7c94cc 100%);
+        color: #ffffff;
+        border-color: #2563eb;
+        box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+        font-weight: 500;
 
-        &::before {
-          content: "";
-          background: #fff;
-          display: inline-block;
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-          position: relative;
-          margin-right: 5px;
+        &:hover {
+          background: linear-gradient(135deg, #7c94cc 0%, #2f437e 100%);
+          border-color: #1d4ed8;
         }
       }
 
       .icon-close {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 16px;
+        height: 16px;
+        margin-left: 6px;
         border-radius: 50%;
-        text-align: center;
+        opacity: 0.8;
+        transition: all 0.2s ease;
 
         &:hover {
-          background-color: #ccc;
-          color: #fff;
+          background-color: rgba(255, 255, 255, 0.2);
+          opacity: 1;
+          transform: scale(1.1);
         }
       }
     }
@@ -297,26 +313,74 @@ onMounted(() => {
 
   .contextmenu {
     margin: 0;
-    background: #fff;
+    background: #ffffff;
     z-index: 3000;
     position: absolute;
     list-style-type: none;
-    padding: 5px 0;
-    border-radius: 4px;
-    font-size: 12px;
+    padding: 4px 0;
+    border-radius: 6px;
+    font-size: 13px;
     font-weight: 400;
-    color: #333;
-    box-shadow: 2px 2px 3px 0 rgba(0, 0, 0, 0.3);
+    color: #374151;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border: 1px solid #e5e7eb;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    transform-origin: top left;
+    transform: scale(1);
+    opacity: 1;
+
+    &:before {
+      content: '';
+      position: absolute;
+      top: -5px;
+      left: 12px;
+      width: 10px;
+      height: 10px;
+      background: #ffffff;
+      border-top: 1px solid #e5e7eb;
+      border-left: 1px solid #e5e7eb;
+      transform: rotate(45deg);
+    }
 
     li {
       margin: 0;
-      padding: 7px 16px;
+      padding: 6px 16px;
       cursor: pointer;
+      transition: background-color 0.2s ease;
 
       &:hover {
-        background: #eee;
+        background: #f3f4f6;
+        color: #1e40af;
+      }
+
+      svg {
+        margin-right: 6px;
       }
     }
   }
+}
+
+// 标签切换和关闭动画
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.tags-view-item {
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+.tags-view-item.active {
+  z-index: 10;
+}
+
+// 右键菜单显示动画
+.contextmenu {
+  animation: menuFadeIn 0.15s ease-out forwards;
+}
+
+@keyframes menuFadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
 }
 </style>

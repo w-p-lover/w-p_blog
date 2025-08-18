@@ -104,77 +104,182 @@ const exportExcel = () => {
 
 <style lang="scss" scoped>
 .navbar {
-  height: 50px;
+  height: 56px;
   overflow: hidden;
   position: relative;
   display: flex;
+  align-items: center;
   background-color: var(--el-bg-color);
+  border-bottom: 1px solid #e5e7eb;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  z-index: 100;
 
   .hamburger-container {
-    line-height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
     height: 100%;
-    float: left;
     cursor: pointer;
+    transition: background-color 0.2s ease;
 
     &:hover {
-      background: rgba(0, 0, 0, 0.025);
+      background-color: #f3f4f6;
     }
   }
 
   .breadcrumb-container {
-    float: left;
+    padding: 0 16px;
+    height: 100%;
+    display: flex;
+    align-items: center;
   }
 
   .right-menu {
     margin-left: auto;
     height: 100%;
-    line-height: 50px;
+    display: flex;
+    align-items: center;
 
     &:focus {
       outline: none;
     }
 
     .right-menu-item {
-      display: inline-block;
-      padding: 0 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 48px;
       height: 100%;
-      font-size: 18px;
-      color: #5a5e66;
-      vertical-align: text-bottom;
+      color: #6b7280;
+      transition: all 0.2s ease;
 
       &.hover-effect {
         cursor: pointer;
-        transition: background 0.3s;
 
         &:hover {
-          background: rgba(0, 0, 0, 0.025);
+          color: #2563eb;
+          background-color: #f3f4f6;
         }
       }
     }
 
     .avatar-container {
-      margin-right: 30px;
+      position: relative;
+      padding: 0 16px;
+      width: auto;
 
       .avatar-wrapper {
-        margin-top: 5px;
-        position: relative;
+        display: flex;
+        align-items: center;
 
         .user-avatar {
           cursor: pointer;
           width: 40px;
           height: 40px;
-          border-radius: 10px;
+          border-radius: 50%;
+          object-fit: cover;
+          border: 2px solid transparent;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+          transition: all 0.2s ease;
+
+          &:hover {
+            transform: scale(1.05);
+            border-color: rgba(37, 99, 235, 0.2);
+          }
         }
 
         .el-icon-caret-bottom {
           cursor: pointer;
-          position: absolute;
-          right: -20px;
-          top: 25px;
-          font-size: 12px;
+          margin-left: 8px;
+          font-size: 14px;
+          color: #9ca3af;
+          transition: all 0.2s ease;
         }
+      }
+
+      &:hover .el-icon-caret-bottom {
+        color: #2563eb;
       }
     }
   }
+}
+
+/* 下拉菜单样式优化 */
+::v-deep .el-dropdown-menu {
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  padding: 4px 0;
+  overflow: hidden;
+  animation: dropdownFadeIn 0.2s ease-out;
+}
+
+::v-deep .el-dropdown-item {
+  padding: 8px 16px;
+  font-size: 14px;
+  color: #374151;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: #f3f4f6;
+    color: #2563eb;
+  }
+
+  &.is-disabled {
+    color: #d1d5db;
+    cursor: not-allowed;
+  }
+}
+
+::v-deep .el-dropdown-item.divided {
+  border-top: 1px dashed #e5e7eb;
+}
+
+/* 动画效果 */
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* 面包屑样式优化 */
+::v-deep .el-breadcrumb {
+  font-size: 14px;
+
+  .el-breadcrumb__item {
+    .el-breadcrumb__inner {
+      color: #6b7280;
+      font-weight: 400;
+      transition: color 0.2s ease;
+
+      &:hover {
+        color: #2563eb;
+      }
+
+      &.is-link {
+        color: #2563eb;
+      }
+    }
+
+    .el-breadcrumb__separator {
+      color: #d1d5db;
+      margin: 0 8px;
+    }
+  }
+}
+
+/* tooltip样式优化 */
+::v-deep .el-tooltip__popper {
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 </style>
