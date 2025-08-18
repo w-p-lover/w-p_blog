@@ -19,8 +19,10 @@ import com.ican.utils.BeanCopyUtils;
 import com.ican.utils.PageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -48,16 +50,13 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
 
     @Override
     public PageResult<CategoryBackVO> listCategoryBackVO(ConditionDTO condition) {
-        // 查询分类数量
-        Long count = categoryMapper.selectCount(new LambdaQueryWrapper<Category>()
-                .like(StringUtils.hasText(condition.getKeyword()), Category::getCategoryName,
-                        condition.getKeyword()));
-        if (count == 0) {
-            return new PageResult<>();
-        }
         // 分页查询分类列表
         List<CategoryBackVO> categoryList = categoryMapper.selectCategoryBackVO(PageUtils.getLimit(),
                 PageUtils.getSize(), condition.getKeyword());
+        long count =  categoryList.size();
+        if (count == 0) {
+            return new PageResult<>();
+        }
         return new PageResult<>(categoryList, count);
     }
 
@@ -111,18 +110,39 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
 
     @Override
     public List<CategoryVO> listCategoryVO() {
-        //DONE 对于用户角色进行选择性掩饰
+        // 1. 查询所有分类VO
+        List<CategoryVO> categoryVos = categoryMapper.selectCategoryVO();
+        if (CollectionUtils.isEmpty(categoryVos)) {
+            return Collections.emptyList(); // 避免后续空列表操作
+        }
+
+        // 2. 获取当前登录用户的邮箱（权限判断依据）
         String email = null;
-        List<CategoryVO> categoryVOS = categoryMapper.selectCategoryVO();
         if (StpUtil.isLogin()) {
             int userId = StpUtil.getLoginIdAsInt();
-            email = userMapper.selectOne(new LambdaQueryWrapper<User>()
-                    .select(User::getEmail).eq(User::getId, userId)).getEmail();
+            User user = userMapper.selectOne(new LambdaQueryWrapper<User>()
+                    .select(User::getEmail)
+                    .eq(User::getId, userId));
+            if (user != null) {
+                email = user.getEmail();
+            }
         }
-        if (!ObjectUtil.isNotNull(email) || (!email.equals(MY_MAIL) && !email.equals(MY_RED_MAIL))) {
-            categoryVOS.removeIf(category -> category.getCategoryName().equals("宝宝~"));
-        }
-        return categoryVOS;
+
+        // 3. 过滤分类：移除文章数为0的分类，且非管理员隐藏“宝宝~”分类
+        String finalEmail = email;
+        categoryVos.removeIf(category -> {
+            boolean isEmptyArticle = Objects.equals(category.getArticleCount(), 0);
+            if (isEmptyArticle) {
+                return true;
+            }
+
+            boolean isPrivateCategory = "宝宝~".equals(category.getCategoryName());
+            boolean isAdmin = ObjectUtil.isNotNull(finalEmail)
+                    && (finalEmail.equals(MY_MAIL) || finalEmail.equals(MY_RED_MAIL));
+            return isPrivateCategory && !isAdmin;
+        });
+
+        return categoryVos;
     }
 
     @Override
