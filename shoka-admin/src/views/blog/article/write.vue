@@ -7,7 +7,7 @@
     </div>
     <!-- 文章内容 -->
     <md-editor ref="editorRef" v-model="articleForm.articleContent" :theme="isDark ? 'dark' : 'light'"
-               class="md-container" :toolbars="toolbars" @on-upload-img="uploadImg" placeholder="请输入文章内容...">
+               class="md-container" :toolbars="toolbars" @on-upload-img="uploadImg" placeholder="请输入文章内容..."  previewTheme = "smart-blue">
       <template #defToolbars>
         <emoji-extension :on-insert="insert"/>
       </template>
