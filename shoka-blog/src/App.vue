@@ -18,6 +18,7 @@
       <Email></Email>
       <Drawer></Drawer>
       <MusicPlayer></MusicPlayer>
+      <Live2d></Live2d>>
     </div>
   </Provider>
 </template>
@@ -25,6 +26,7 @@
 <script setup lang="ts">
 import {getBlogInfo, report} from "@/api/blogInfo";
 import useStore from '@/store';
+import Live2d from "@/components/Live2d/Live2d.vue";
 
 const {blog} = useStore();
 onMounted(() => {
@@ -53,6 +55,6 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   width: 100%;
-  padding: 0 0 8rem;
+  padding: 0 0 6rem;
 }
 </style>
