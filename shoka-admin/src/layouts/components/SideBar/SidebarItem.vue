@@ -5,15 +5,18 @@
             (!onlyOneChild.children || onlyOneChild.noShowingChildren) &&
             (!item.alwaysShow)">
       <app-link v-if="onlyOneChild.meta" :to="resolvePath(onlyOneChild.path)">
-        <el-menu-item :index="resolvePath(onlyOneChild.path)" :class="{ 'submenu-title-noDropdown': !isNest }">
-          <el-icon>
-            <svg-icon v-if="onlyOneChild.meta && onlyOneChild.meta.icon"
-                      :icon-class="onlyOneChild.meta.icon"/>
-          </el-icon>
-          <template #title>
-            {{ onlyOneChild.meta.title }}
-          </template>
-        </el-menu-item>
+        <div class="title">
+          <el-menu-item :index="resolvePath(onlyOneChild.path)" :class="{ 'submenu-title-noDropdown': !isNest }">
+            <el-icon>
+              <svg-icon v-if="onlyOneChild.meta && onlyOneChild.meta.icon"
+                        :icon-class="onlyOneChild.meta.icon"/>
+            </el-icon>
+            <template #title>
+              {{ onlyOneChild.meta.title }}
+            </template>
+          </el-menu-item>
+        </div>
+
       </app-link>
     </template>
     <el-sub-menu v-else :index="resolvePath(item.path)">
@@ -88,5 +91,11 @@ const getNormalPath = (p: string) => {
 </script>
 
 <style scoped>
-
+.title{
+  padding: 0 1px!important;
+  margin: 1px 1px 1px 0 !important;
+  border-radius: 8px;
+  overflow: hidden;
+  max-width: 190px;
+}
 </style>
