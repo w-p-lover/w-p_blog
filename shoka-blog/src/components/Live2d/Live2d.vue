@@ -14,7 +14,6 @@
 </template>
 
 <script setup>
-// 保持原有逻辑不变...
 import { onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { initializeLive2D } from 'live2d-render';
@@ -25,7 +24,7 @@ const messageTimer = ref(null);
 const route = useRoute();
 
 const pageMessages = {
-  '/': '欢迎来到主页，愿您在此寻得片刻安宁。',
+  '/': '愿您在此寻得片刻安宁。',
   '/message': '笔墨传情，静待您的留言。',
   '/chat': '此处可畅所欲言，以言会友。',
   '/chat/ChatHome': '聊天主页，期待您的分享。',
