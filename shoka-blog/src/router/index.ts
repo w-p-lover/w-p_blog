@@ -63,6 +63,20 @@ const routes: RouteRecordRaw[] = [
         },
     },
     {
+        path: "/weather",
+        component: () => import("@/views/Weather/index.vue"),
+        meta: {
+            title: "天气",
+        },
+    },
+    {
+        path: "/book",
+        component: () => import("@/views/Book/index.vue"),
+        meta: {
+            title: "书表",
+        },
+    },
+    {
         path: "/user",
         component: () => import("@/views/User/index.vue"),
         meta: {

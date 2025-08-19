@@ -90,6 +90,22 @@ const menuList = [
     ]
   },
   {
+    name: "工具",
+    icon: "flower",
+    children: [
+      {
+        name: "天气",
+        icon: "edit",
+        path: "/weather"
+      },
+      {
+        name: "书目",
+        icon: "qizhi",
+        path: "/book"
+      },
+    ]
+  },
+  {
     name: "娱乐",
     icon: "fun",
     children: [
