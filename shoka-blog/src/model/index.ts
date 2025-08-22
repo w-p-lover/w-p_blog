@@ -62,15 +62,15 @@ export interface PageQueryArticle {
 /**
  * 分页参数
  */
-export interface PageQuery {
+export interface BookQuery {
     /**
-     * 当前页
+     * 关键字
      */
-    current: number;
+    keyword?: string;
     /**
-     * 每页大小
+     * 排序字段
      */
-    size: number;
+    sortType?: string;
 }
 
 /**
