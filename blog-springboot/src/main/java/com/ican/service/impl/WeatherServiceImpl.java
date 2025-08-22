@@ -32,6 +32,13 @@ public class WeatherServiceImpl implements WeatherService {
     @Value("${seniverse.base-url}")
     private String baseUrl;
 
+    // 从配置文件读取心知天气密钥（application.yml中配置）
+    @Value("${hefeng.api-key}")
+    private String hefengApiKey;
+
+    @Value("${hefeng.base-url}")
+    private String hefengBaseUrl;
+
     // 日志实例（类级别声明）
     private static final Logger log = LoggerFactory.getLogger(WeatherServiceImpl.class);
     /**
@@ -48,15 +55,15 @@ public class WeatherServiceImpl implements WeatherService {
         String ipSource = IpUtils.getIpSource(clientIp);
         ipSource  = ipSource.isEmpty() ? "北京" : ipSource;
 
-        String url = baseUrl + "/location/search.json";
+        String url = hefengBaseUrl + "geo/v2/city/lookup";
         Map<String, String> params = new HashMap<>();
-        params.put("key", apiKey);
-        params.put("q", ipSource);
-        params.put("language", "zh-Hans");
+        params.put("key", hefengApiKey);
+        params.put("location", ipSource);
+        params.put("lang", "zh-hans");
 
         String result = HttpUtil.get(url, params);
         JSONObject json = JSON.parseObject(result);
-        JSONArray locations = json.getJSONArray("results"); // 获取数组
+        JSONArray locations = json.getJSONArray("location"); // 获取数组
 
         if (locations.isEmpty()) {
             throw new RuntimeException("未获取到定位信息");
@@ -66,7 +73,7 @@ public class WeatherServiceImpl implements WeatherService {
         WeatherData.CityInfo city = new WeatherData.CityInfo();
         city.setId(loc.getString("id")); // 获取字符串字段
         city.setName(loc.getString("name"));
-        city.setAdm2(loc.getString("path").split(",")[1]);
+        city.setAdm2(loc.getString("adm2"));
         return city;
     }
 
@@ -76,15 +83,15 @@ public class WeatherServiceImpl implements WeatherService {
      */
     @Override
     public List<WeatherData.CityInfo> searchCity(String keyword) {
-        String url = baseUrl + "/location/search.json";
+        String url = hefengBaseUrl + "geo/v2/city/lookup";
         Map<String, String> params = new HashMap<>();
-        params.put("key", apiKey);
-        params.put("q", keyword); // 搜索关键词
-        params.put("language", "zh-Hans");
+        params.put("key", hefengApiKey);
+        params.put("location", keyword);
+        params.put("lang", "zh-hans");
 
         String result = HttpUtil.get(url, params);
         JSONObject json = JSONObject.parseObject(result);
-        JSONArray locations = json.getJSONArray("results");
+        JSONArray locations = json.getJSONArray("location");
 
         List<WeatherData.CityInfo> cities = new ArrayList<>();
         for (Object obj : locations) {
@@ -281,7 +288,7 @@ public class WeatherServiceImpl implements WeatherService {
         Map<String, String> params = new HashMap<>();
         params.put("key", apiKey);
         params.put("location", cityId);
-        params.put("day", String.valueOf(1));
+        params.put("days", String.valueOf(1));
 
         String result = HttpUtil.get(url, params);
         JSONObject firstResult = parseFirstResult(result);
@@ -290,10 +297,16 @@ public class WeatherServiceImpl implements WeatherService {
         }
 
         // 解析真正的JSON返回结构
-        JSONObject sunTime = firstResult.getJSONObject("sun");
+        JSONArray sunTime = firstResult.getJSONArray("sun");
         if (sunTime == null) {
             return null;
         }
+        JSONObject sunTimeObject = sunTime.getJSONObject(0);
+        WeatherData.Sun sun = new WeatherData.Sun();
+        sun.setDate(sunTimeObject.getString("date"));
+        sun.setSunset(sunTimeObject.getString("sunset"));
+        sun.setSunrise(sunTimeObject.getString("sunrise"));
+        return sun;
     }
 
 
