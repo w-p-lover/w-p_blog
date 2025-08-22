@@ -18,6 +18,8 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static cn.dev33.satoken.SaManager.log;
@@ -107,37 +109,43 @@ public class WeatherServiceImpl implements WeatherService {
 
 
     /**
-     * 3. 获取当前天气（适配FastJSON2）
+     * 3. 获取当前天气（适配和风天气接口 + FastJSON2）
      */
     @Override
     public WeatherData.NowWeather getWeatherNow(String cityId) {
-        String url = baseUrl + "/weather/now.json";
+        String url = hefengBaseUrl + "v7/weather/now";
         Map<String, String> params = new HashMap<>();
-        params.put("key", apiKey);
+        params.put("key", hefengApiKey);
         params.put("location", cityId);
-        params.put("language", "zh-Hans");
-        params.put("unit", "c");
+        params.put("lang", "zh-hans");
+        params.put("unit", "m");
 
         String result = HttpUtil.get(url, params);
         JSONObject json = JSON.parseObject(result);
-        // 链式获取嵌套字段：results[0].now
-        JSONObject now = json.getJSONArray("results")
-                .getJSONObject(0)
-                .getJSONObject("now");
+
+        // 1. 先判断接口是否返回成功（和风天气code=200表示成功）
+        if (!"200".equals(json.getString("code"))) {
+            throw new RuntimeException("获取天气失败：" + json.getString("code"));
+        }
+        JSONObject now = json.getJSONObject("now");
+        if (now == null) {
+            throw new RuntimeException("天气数据为空");
+        }
 
         WeatherData.NowWeather weatherNow = new WeatherData.NowWeather();
-        weatherNow.setTemp(now.getString("temperature"));
+
+        // 3. 字段映射（严格对应和风天气的JSON字段）
+        weatherNow.setTemp(now.getString("temp"));
         weatherNow.setText(now.getString("text"));
-        // 获取最后更新时间（results[0].last_update）
-        weatherNow.setObsTime(json.getJSONArray("results")
-                .getJSONObject(0)
-                .getString("last_update"));
+        weatherNow.setObsTime(now.getString("obsTime"));
         weatherNow.setHumidity(now.getString("humidity"));
-        weatherNow.setWindDir(now.getString("wind_direction"));
-        weatherNow.setWindSpeed(now.getString("wind_speed"));
-        weatherNow.setIcon("weather/" + now.getString("code") + "@1x.png");
+        weatherNow.setWindDir(now.getString("windDir"));
+        weatherNow.setWindSpeed(now.getString("windSpeed"));
+        weatherNow.setIcon("weather/" + now.getString("icon") + "-fill.svg");
+
         return weatherNow;
     }
+
 
 
     /**
@@ -150,24 +158,16 @@ public class WeatherServiceImpl implements WeatherService {
             log.warn("无效的请求参数：cityId={}, days={}", cityId, days);
             return Collections.emptyList();
         }
-
-        String url = baseUrl + "/weather/daily.json";
+        String url = hefengBaseUrl + "v7/weather/" + days + "d";
         Map<String, String> params = new HashMap<>();
-        params.put("key", apiKey);
+        params.put("key", hefengApiKey);
         params.put("location", cityId);
-        params.put("language", "zh-Hans");
-        params.put("unit", "c");
-        params.put("days", String.valueOf(days));
+        params.put("language", "zh-hans");
+        params.put("unit", "m");
 
         String result = HttpUtil.get(url, params);
-        JSONObject firstResult = parseFirstResult(result);
-        if (firstResult == null) {
-            log.warn("未获取到城市[{}]的预报数据", cityId);
-            return Collections.emptyList();
-        }
-
-        // 安全获取daily数组（避免字段不存在导致的空指针）
-        JSONArray daily = firstResult.getJSONArray("daily");
+        JSONObject firstResult = JSON.parseObject(result);
+        JSONArray daily = firstResult.getJSONArray("daily"); // 改用optJSONArray更安全
         return getForecasts(daily);
     }
 
@@ -191,25 +191,24 @@ public class WeatherServiceImpl implements WeatherService {
             JSONObject day = (JSONObject) obj;
             WeatherData.Forecast forecast = new WeatherData.Forecast();
 
-            // 基础字段（原代码已使用）
-            forecast.setDate(day.getString("date")); // 日期，缺省值"未知日期"
+            // 基础字段（修正字段映射，使用optString避免字段不存在抛异常）
+            forecast.setDate(day.getString("fxDate")); // 日期：对应接口的fxDate
 
-            forecast.setTempMin(day.getString("low"));     // 最低温
-            forecast.setTempMax(day.getString("high"));    // 最高温
-            forecast.setText(day.getString("text_day")); // 白天天气文本
+            forecast.setTempMin(day.getString("tempMin"));    // 最低温：对应tempMin
+            forecast.setTempMax(day.getString("tempMax"));    // 最高温：对应tempMax
+            forecast.setText(day.getString("textDay"));      // 白天天气文本：对应textDay
 
-            String codeDay = day.getString("code_day");
-            forecast.setIcon("weather/" + codeDay + "@1x.png");
+            String codeDay = day.getString("iconDay");
+            forecast.setIcon("weather/" + codeDay + "-fill.svg");      // 白天天气图标：对应iconDay
 
-            // 补充未使用的字段解析
-            forecast.setTextNight(day.getString("text_night")); // 夜间天气文本
-            forecast.setCodeNight(day.getString("code_night"));     // 夜间天气代码
-            forecast.setRainfall(day.getString("rainfall"));       // 降雨量（mm）
-            forecast.setPrecip(day.getString("precip"));           // 降水概率
-            forecast.setWindDirection(day.getString("wind_direction")); // 风向
-            forecast.setWindSpeed(day.getString("wind_speed"));     // 风速（km/h）
-            forecast.setWindScale(day.getString("wind_scale"));     // 风力等级
-            forecast.setHumidity(day.getString("humidity"));       // 湿度（%）
+            // 补充未使用的字段解析（修正字段映射）
+            forecast.setTextNight(day.getString("textNight")); // 夜间天气文本：对应textNight
+            forecast.setCodeNight(day.getString("iconNight"));      // 夜间天气代码：对应iconNight
+            forecast.setPrecip(day.getString("precip"));        // 降水概率：对应precip
+            forecast.setWindDirection(day.getString("windDirDay")); // 风向（白天）：对应windDirDay
+            forecast.setWindSpeed(day.getString("windSpeedDay"));   // 风速（白天，km/h）：对应windSpeedDay
+            forecast.setWindScale(day.getString("windScaleDay"));   // 风力等级（白天）：对应windScaleDay
+            forecast.setHumidity(day.getString("humidity"));        // 湿度（%）：对应humidity
 
             forecasts.add(forecast);
         }
@@ -224,91 +223,111 @@ public class WeatherServiceImpl implements WeatherService {
      */
     @Override
     public List<WeatherData.LifeIndex> getLifeIndices(String cityId, String types) {
-        String url = baseUrl + "/life/suggestion.json";
-        Map<String, String> params = new HashMap<>();
-        params.put("key", apiKey);
-        params.put("location", cityId); // 建议用参数cityId代替硬编码
-        params.put("language", "zh-Hans");
-        params.put("day", String.valueOf(1));
-
-        //拨除最外层的result的包裹
-        String result = HttpUtil.get(url, params);
-        JSONObject firstResult = parseFirstResult(result);
-        if (firstResult == null) {
+        // 参数校验：避免无效请求
+        if (cityId == null || cityId.trim().isEmpty() || types == null || types.trim().isEmpty()) {
+            log.warn("无效的请求参数：cityId={}, types={}", cityId, types);
             return Collections.emptyList();
         }
 
-        // 解析真正的JSON返回结构
-        JSONObject suggestions = firstResult.getJSONObject("suggestion");
-        if (suggestions == null) {
+        // 调整URL路径（根据接口实际路径修改，示例为v7/indices/daily，需与实际接口一致）
+        String url = hefengBaseUrl + "v7/indices/"  + "1d";
+        Map<String, String> params = new HashMap<>();
+        params.put("key", hefengApiKey);
+        params.put("location", cityId);
+        params.put("language", "zh-hans");
+        params.put("type", types);
+
+        String result = HttpUtil.get(url, params);
+        JSONObject firstResult = JSON.parseObject(result);
+        if (firstResult == null) {
+            log.warn("未获取到城市[{}]的生活指数数据", cityId);
+            return Collections.emptyList();
+        }
+
+        // 从接口返回中获取daily数组（生活指数数据）
+        JSONArray daily = firstResult.getJSONArray("daily");
+        if (daily == null) {
+            log.warn("生活指数daily数组为空：cityId={}", cityId);
             return Collections.emptyList();
         }
 
         List<WeatherData.LifeIndex> indices = new ArrayList<>();
+        log.debug("开始解析生活指数数据，共{}条", daily.size());
 
-        // 1. 穿衣指数（types包含"3"，对应dressing）
-        if (types.contains("3")) {
-            JSONObject dressingObj = suggestions.getJSONObject("dressing");
-            if (dressingObj != null) { // 增加空判断
-                WeatherData.LifeIndex dress = new WeatherData.LifeIndex();
-                dress.setType("3");
-                dress.setText(dressingObj.getString("brief"));
-                indices.add(dress);
+        for (Object obj : daily) {
+            if (!(obj instanceof JSONObject)) {
+                log.warn("跳过非JSON对象的生活指数元素：{}", obj);
+                continue;
+            }
+            JSONObject indexObj = (JSONObject) obj;
+            try {
+                if (!indexObj.containsKey("type") || !indexObj.containsKey("text")) {
+                    log.warn("生活指数元素缺少核心字段（type/text）：{}", indexObj);
+                    continue;
+                }
+
+                String type = indexObj.getString("type");
+                // 过滤出types中包含的类型
+                WeatherData.LifeIndex index = new WeatherData.LifeIndex();
+
+                index.setType(type);
+                index.setName(indexObj.containsKey("name") ? indexObj.getString("name") : ""); // 名称（如"运动指数"）
+                index.setCategory(indexObj.containsKey("category") ? indexObj.getString("category") : ""); // 分类（如"较不宜"）
+                index.setText(indexObj.getString("text")); // 详细描述
+                index.setLevel(indexObj.containsKey("level") ? indexObj.getString("level") : ""); // 等级（如"3"）
+                index.setDate(indexObj.containsKey("date") ? indexObj.getString("date") : ""); // 日期
+
+                indices.add(index);
+            } catch (JSONException e) {
+                log.error("解析生活指数元素失败：{}，异常：{}", indexObj, e.getMessage());
+                // 单个元素解析失败不影响整体，继续处理下一个
+                continue;
             }
         }
 
-        // 2. 紫外线指数（假设types包含"7"对应uv，根据实际业务调整）
-        if (types.contains("7")) {
-            JSONObject uvObj = suggestions.getJSONObject("uv");
-            if (uvObj != null) { // 增加空判断
-                WeatherData.LifeIndex uv = new WeatherData.LifeIndex();
-                uv.setType("7");
-                uv.setText(uvObj.getString("brief")); // 如"中等"
-                indices.add(uv);
-            }
-        }
-
-        // 3. 可根据需要添加其他指数（如洗车、运动等）
-        if (types.contains("1")) { // 假设"1"对应洗车指数
-            JSONObject carWashObj = suggestions.getJSONObject("car_washing");
-            if (carWashObj != null) {
-                WeatherData.LifeIndex carWash = new WeatherData.LifeIndex();
-                carWash.setType("1");
-                carWash.setText(carWashObj.getString("brief"));
-                indices.add(carWash);
-            }
-        }
-
+        log.debug("生活指数解析完成，共获取{}条有效数据", indices.size());
         return indices;
     }
 
     @Override
     public WeatherData.Sun getSunTime(String cityId) {
-        String url = baseUrl + "/geo/sun.json";
+        if (cityId == null || cityId.trim().isEmpty()) {
+            log.warn("无效的城市ID：{}", cityId);
+            return null;
+        }
+
+        String url = hefengBaseUrl + "v7/astronomy/sun";
         Map<String, String> params = new HashMap<>();
-        params.put("key", apiKey);
+        params.put("key", hefengApiKey);
         params.put("location", cityId);
-        params.put("days", String.valueOf(1));
+        params.put("date", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")));
 
         String result = HttpUtil.get(url, params);
-        JSONObject firstResult = parseFirstResult(result);
+        JSONObject firstResult = JSON.parseObject(result);
         if (firstResult == null) {
+            log.warn("未获取到城市[{}]的日出日落数据", cityId);
             return null;
         }
 
-        // 解析真正的JSON返回结构
-        JSONArray sunTime = firstResult.getJSONArray("sun");
-        if (sunTime == null) {
+        try {
+            WeatherData.Sun sun = new WeatherData.Sun();
+
+            // 解析日出日落时间（接口返回为直接字段，非数组）
+            String sunrise = firstResult.getString("sunrise");
+            String sunset = firstResult.getString("sunset");
+
+            String date = sunrise.substring(0, 10);
+            String riseDate = sunrise.substring(11, 16);
+            String setDate = sunset.substring(11, 16);
+            sun.setDate(date);
+            sun.setSunrise(riseDate); // 保留完整时间（含时区）
+            sun.setSunset(setDate);   // 保留完整时间（含时区）
+            return sun;
+        } catch (JSONException e) {
+            log.error("解析日出日落数据失败：{}", e.getMessage());
             return null;
         }
-        JSONObject sunTimeObject = sunTime.getJSONObject(0);
-        WeatherData.Sun sun = new WeatherData.Sun();
-        sun.setDate(sunTimeObject.getString("date"));
-        sun.setSunset(sunTimeObject.getString("sunset"));
-        sun.setSunrise(sunTimeObject.getString("sunrise"));
-        return sun;
     }
-
 
     /**
      * 通用解析接口返回的results数组第一个元素
