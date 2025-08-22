@@ -1,220 +1,260 @@
 <template>
-  <div class="book-container">
-  <div class="book-showcase">
-    <!-- 操作区 -->
-    <div class="controls">
-      <el-button type="primary" @click="showAddDialog = true">
-        <el-icon><Plus /></el-icon> 添加书籍
-      </el-button>
-      <el-select
-          v-model="sortType"
-          placeholder="排序方式"
-          style="margin-left: 15px; width: 180px;"
-      >
-        <el-option label="添加时间（新→旧）" value="newest" />
-        <el-option label="添加时间（旧→新）" value="oldest" />
-        <el-option label="书名（A→Z）" value="nameAsc" />
-      </el-select>
-    </div>
+  <div class="page-header">
+    <h1 class="page-title">书架</h1>
+    <img class="page-cover" src="../../assets/images/bg.jpg"
+         alt="">
+    <!-- 波浪 -->
+    <Waves></Waves>
+  </div>
+  <div class="bg">
+      <div class="book-container">
+        <div class="book-showcase">
+          <!-- 操作区 -->
+          <div class="controls card">
+            <div class="controls-left">
+              <el-button type="primary" @click="showAddDialog = true" class="add-btn">
+                <el-icon>
+                  <Plus/>
+                </el-icon>
+                添加书籍
+              </el-button>
+            </div>
 
-    <!-- 3D书籍网格 -->
-    <div class="books-grid">
-      <!-- 3D书籍组件 -->
-      <div
-          class="book-3d-container"
-          v-for="book in sortedBooks"
-          :key="book.id"
-          @click="showBookDetail(book)"
-          @mouseenter="book.hover = true"
-          @mouseleave="book.hover = false"
-      >
-        <!-- 3D书籍结构：封面+书脊+厚度 -->
-        <div class="book-3d" :class="{ 'hovered': book.hover }">
-          <!-- 书脊 -->
-          <div class="book-spine" :style="{ backgroundColor: getSpineColor(book.tags) }">
-            <div class="spine-text">{{ book.title }}</div>
+            <div class="controls-right">
+              <el-select v-model="sortType" placeholder="排序方式" class="sort-select" size="middle">
+                <el-option label="添加时间（新→旧）" value="newest"/>
+                <el-option label="添加时间（旧→新）" value="oldest"/>
+                <el-option label="书名（A→Z）" value="nameAsc"/>
+              </el-select>
+            </div>
           </div>
-          <!-- 封面 -->
-          <div class="book-cover">
-            <img
-                :src="book.cover || defaultCover"
-                :alt="book.title"
-                class="cover-img"
-            />
-          </div>
-          <!-- 书籍厚度（侧面） -->
-          <div class="book-edge"></div>
-        </div>
 
-        <!-- 书籍信息标签（悬浮时显示） -->
-        <div class="book-label" v-if="book.hover">
-          <div class="label-title">{{ book.title }}</div>
-          <div class="label-author">{{ book.author || '未知作者' }}</div>
-          <div class="label-status" :class="book.status">
-            {{ getStatusLabel(book.status) }}
+          <!-- 3D书籍网格 -->
+          <div class="books-grid">
+            <!-- 3D书籍组件 -->
+            <div
+                class="book-3d-container"
+                v-for="book in sortedBooks"
+                :key="book.id"
+                @click="showBookDetail(book)"
+                @mouseenter="book.hover = true"
+                @mouseleave="book.hover = false"
+            >
+              <!-- 3D书籍结构：封面+书脊+厚度 -->
+              <div class="book-3d" :class="{ 'hovered': book.hover }">
+                <!-- 书脊 -->
+                <div class="book-spine" :style="{ backgroundColor: getSpineColor(book.tags) }">
+                  <div class="spine-text">{{ book.title }}</div>
+                </div>
+                <!-- 封面 -->
+                <div class="book-cover">
+                  <img :src="book.cover || defaultCover" :alt="book.title" class="cover-img"/>
+                  <div class="cover-reflection"></div>
+                </div>
+                <!-- 书籍厚度（侧面） -->
+                <div class="book-edge"></div>
+              </div>
+
+              <!-- 书籍信息标签（悬浮时显示） -->
+              <div class="book-label" v-if="book.hover">
+                <div class="label-header">
+                  <div class="label-title" title="{{ book.title }}">{{ book.title }}</div>
+                  <div class="label-author">{{ book.author || '未知作者' }}</div>
+                </div>
+                <div class="label-bottom">
+                  <div class="label-tags">{{ book.tags || '未分类' }}</div>
+                  <div class="label-status" :class="book.status">{{ getStatusLabel(book.status) }}</div>
+                </div>
+              </div>
+
+            </div>
           </div>
+
+          <!-- 添加书籍弹窗（保持你原有内容绑定） -->
+          <el-dialog title="添加书籍" v-model="showAddDialog" width="420px" :close-on-click-modal="false">
+            <el-form :model="newBook" label-width="80px" class="add-form">
+              <el-form-item label="书名" required>
+                <el-input v-model="newBook.title" placeholder="请输入书名"/>
+              </el-form-item>
+              <el-form-item label="作者">
+                <el-input v-model="newBook.author" placeholder="作者姓名"/>
+              </el-form-item>
+              <el-form-item label="封面URL">
+                <el-input v-model="newBook.cover" placeholder="图片链接（可选）"/>
+              </el-form-item>
+              <el-form-item label="状态">
+                <el-select v-model="newBook.status" placeholder="选择状态">
+                  <el-option label="想读" value="wish"/>
+                  <el-option label="在读" value="reading"/>
+                  <el-option label="已读" value="read"/>
+                </el-select>
+              </el-form-item>
+              <el-form-item label="标签">
+                <el-input v-model="newBook.tags" placeholder="用逗号分隔"/>
+              </el-form-item>
+            </el-form>
+            <template #footer>
+              <el-button @click="showAddDialog = false">取消</el-button>
+              <el-button type="primary" @click="addBook">确认</el-button>
+            </template>
+          </el-dialog>
+
+          <!-- 书籍详情弹窗（保持绑定，宽度与布局美化） -->
+          <el-dialog
+              title="书籍详情"
+              v-model="showDetailDialog"
+              width="980px"
+              :modal-append-to-body="true"
+              :close-on-click-modal="false"
+          >
+            <div v-if="currentBook" class="book-detail">
+              <div class="detail-left">
+                <div class="book-3d preview">
+                  <div class="book-spine" :style="{ backgroundColor: getSpineColor(currentBook.tags) }">
+                    <div class="spine-text">{{ currentBook.title.substring(0, 1) }}</div>
+                  </div>
+                  <div class="book-cover">
+                    <img :src="currentBook.cover || defaultCover" class="cover-img" :alt="currentBook.title"/>
+                    <div class="cover-reflection"></div>
+                  </div>
+                  <div class="book-edge"></div>
+                </div>
+              </div>
+
+              <div class="detail-right">
+                <h2 class="book-title">{{ currentBook.title }}</h2>
+                <p class="book-author">作者：{{ currentBook.author || '未知' }}</p>
+
+                <div class="tags-status">
+                  <div class="tags">
+                    <el-tag v-if="currentBook.tags" size="small" effect="dark">{{ currentBook.tags }}</el-tag>
+                    <el-tag v-else size="small" effect="light">未分类</el-tag>
+                  </div>
+
+                  <div class="status-block">
+                    <span class="status-tag" :class="currentBook.status">{{ getStatusLabel(currentBook.status) }}</span>
+                  </div>
+                </div>
+
+                <div class="status-buttons">
+                  <el-button @click="changeStatus(currentBook.id, 'wish')"
+                             :type="currentBook.status === 'wish' ? 'primary' : 'default'" size="small">想读
+                  </el-button>
+                  <el-button @click="changeStatus(currentBook.id, 'reading')"
+                             :type="currentBook.status === 'reading' ? 'primary' : 'default'" size="small">在读
+                  </el-button>
+                  <el-button @click="changeStatus(currentBook.id, 'read')"
+                             :type="currentBook.status === 'read' ? 'primary' : 'default'" size="small">已读
+                  </el-button>
+                </div>
+
+                <div class="book-intro">
+                  <h3>简介</h3>
+                  <p>{{ currentBook.intro || '暂无简介，这是我喜欢的一本书～' }}</p>
+                </div>
+
+                <div class="book-sources">
+                  <h3>书源链接</h3>
+                  <div class="sources-list">
+                    <div class="source-item" v-for="(source, index) in currentBook.sources" :key="index">
+                      <el-icon class="source-icon">{{ getSourceIcon(source.type) }}</el-icon>
+                      <span class="source-name">{{ source.name }}</span>
+                      <el-link :href="source.url" target="_blank" type="primary" size="small">访问</el-link>
+                    </div>
+                    <div v-if="!currentBook.sources || currentBook.sources.length === 0" class="no-sources">
+                      <el-empty description="暂无书源，可添加电子书/笔记等链接"/>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </el-dialog>
         </div>
       </div>
     </div>
 
-    <!-- 添加书籍弹窗 -->
-    <el-dialog title="添加书籍" v-model="showAddDialog" width="400px">
-      <el-form :model="newBook" label-width="80px">
-        <el-form-item label="书名" required>
-          <el-input v-model="newBook.title" />
-        </el-form-item>
-        <el-form-item label="作者">
-          <el-input v-model="newBook.author" />
-        </el-form-item>
-        <el-form-item label="封面URL">
-          <el-input v-model="newBook.cover" />
-        </el-form-item>
-        <el-form-item label="状态">
-          <el-select v-model="newBook.status">
-            <el-option label="想读" value="wish" />
-            <el-option label="在读" value="reading" />
-            <el-option label="已读" value="read" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="标签">
-          <el-input v-model="newBook.tags" placeholder="用逗号分隔" />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="showAddDialog = false">取消</el-button>
-        <el-button type="primary" @click="addBook">确认</el-button>
-      </template>
-    </el-dialog>
-
-    <!-- 书籍详情弹窗 -->
-    <el-dialog title="书籍详情" v-model="showDetailDialog" width="500px">
-      <div v-if="currentBook" class="book-detail">
-        <div class="detail-3d-preview">
-          <!-- 详情页3D预览 -->
-          <div class="book-3d preview">
-            <div class="book-spine" :style="{ backgroundColor: getSpineColor(currentBook.tags) }">
-              <div class="spine-text">{{ currentBook.title.substring(0, 1) }}</div>
-            </div>
-            <div class="book-cover">
-              <img :src="currentBook.cover || defaultCover" class="cover-img" />
-            </div>
-            <div class="book-edge"></div>
-          </div>
-        </div>
-        <div class="detail-info">
-          <h2>{{ currentBook.title }}</h2>
-          <p>作者：{{ currentBook.author || '未知' }}</p>
-          <p>状态：{{ getStatusLabel(currentBook.status) }}</p>
-          <p>标签：{{ currentBook.tags ? currentBook.tags.split(',').join('、') : '无' }}</p>
-          <div class="status-buttons">
-            <el-button
-                @click="changeStatus(currentBook.id, 'wish')"
-                :type="currentBook.status === 'wish' ? 'primary' : 'default'"
-            >
-              标记为想读
-            </el-button>
-            <el-button
-                @click="changeStatus(currentBook.id, 'reading')"
-                :type="currentBook.status === 'reading' ? 'primary' : 'default'"
-            >
-              标记为在读
-            </el-button>
-            <el-button
-                @click="changeStatus(currentBook.id, 'read')"
-                :type="currentBook.status === 'read' ? 'primary' : 'default'"
-            >
-              标记为已读
-            </el-button>
-          </div>
-        </div>
-      </div>
-    </el-dialog>
-  </div>
-  </div>
 </template>
 
-<script setup>
-import { ref, computed } from 'vue';
-import { Plus } from '@element-plus/icons-vue';
+<script setup lang="ts">
+import {ref, reactive, toRefs, watch, onMounted} from 'vue';
+import {Plus} from '@element-plus/icons-vue';
+import {BookVO} from "@/api/book/type";
+import {
+  getBookList,
+  addBook as apiAddBook,
+  updateBookStatus as apiChangeBookStatus,
+} from "@/api/book";
 
-// 基础配置
 const defaultCover = '/images/defaultbook.png';
 const showAddDialog = ref(false);
 const showDetailDialog = ref(false);
-const currentBook = ref(null);
+const currentBook = ref<BookVO | null>(null);
 const sortType = ref('newest'); // 默认按最新添加排序
 
-// 书籍数据（本地存储）
-const books = ref(JSON.parse(localStorage.getItem('3dBooks') || '[]').map(book => ({
-  ...book,
-  hover: false,
-  addTime: book.addTime || Date.now() // 兼容旧数据
-})));
+const data = reactive({
+  count: 0,
+  queryParams: {
+    sortType: 'newest',
+  },
+  bookList: [] as BookVO[],
+});
 
-// 新书籍表单
 const newBook = ref({
   title: '',
   author: '',
   cover: '',
-  status: 'wish',
+  status: 'wish' as 'wish' | 'reading' | 'read',
   tags: '',
-  addTime: Date.now()
 });
 
-// 按选择的方式排序书籍
-const sortedBooks = computed(() => {
-  const sorted = [...books.value];
-  switch (sortType.value) {
-    case 'newest':
-      return sorted.sort((a, b) => b.addTime - a.addTime);
-    case 'oldest':
-      return sorted.sort((a, b) => a.addTime - b.addTime);
-    case 'nameAsc':
-      return sorted.sort((a, b) => a.title.localeCompare(b.title));
-    default:
-      return sorted;
-  }
-});
+
+const {count, queryParams, bookList} = toRefs(data);
+
+// 修改排序
+const changeSort = (type: string) => {
+  queryParams.value.sortType = type;
+  fetchBookList();
+};
 
 // 添加书籍
-const addBook = () => {
+const addBook = async () => {
   if (!newBook.value.title.trim()) return;
-  const book = { ...newBook.value, id: Date.now(), hover: false };
-  books.value.push(book);
-  saveToLocal();
+  await apiAddBook(newBook.value);
   showAddDialog.value = false;
-  newBook.value = { title: '', author: '', cover: '', status: 'wish', tags: '', addTime: Date.now() };
+  resetNewBook();
+  fetchBookList();
 };
 
-// 保存到本地存储
-const saveToLocal = () => {
-  const data = books.value.map(({ hover, ...rest }) => rest);
-  localStorage.setItem('3dBooks', JSON.stringify(data));
+// 重置新书表单
+const resetNewBook = () => {
+  newBook.value = {title: '', author: '', cover: '', status: 'wish', tags: ''};
 };
 
-// 查看详情
-const showBookDetail = (book) => {
-  currentBook.value = { ...book };
+// 查看书籍详情
+const showBookDetail = (book: BookVO) => {
+  currentBook.value = {...book};
   showDetailDialog.value = true;
 };
 
-// 切换状态
-const changeStatus = (id, status) => {
-  const book = books.value.find(b => b.id === id);
-  if (book) book.status = status;
-  saveToLocal();
+// TIP 对于针对组件的刷新，可以使用v-if来满足需求
+const changeStatus = async (id: number, status: string) => {
+  await apiChangeBookStatus(id, status);
+  if (currentBook.value) {
+    currentBook.value.status = status as 'wish' | 'reading' | 'read';
+  }
+  await fetchBookList();
 };
 
-// 获取状态文本
-const getStatusLabel = (status) => {
-  const map = { wish: '想读', reading: '在读', read: '已读' };
+// 获取状态标签
+const getStatusLabel = (status: string) => {
+  const map: Record<string, string> = {wish: '想读', reading: '在读', read: '已读'};
   return map[status] || '未知';
 };
 
-// 书脊颜色（根据标签动态生成）
-const getSpineColor = (tags) => {
+// 获取书脊颜色
+const getSpineColor = (tags?: string) => {
   if (!tags) return '#6b4226';
-  const tagColors = {
+  const tagColors: Record<string, string> = {
     '科幻': '#2c3e50',
     '文学': '#8e44ad',
     '历史': '#c0392b',
@@ -224,74 +264,178 @@ const getSpineColor = (tags) => {
   const firstTag = tags.split(',')[0];
   return tagColors[firstTag] || `hsl(${Math.random() * 360}, 50%, 40%)`;
 };
+
+// 排序后的书籍列表
+const sortedBooks = ref<BookVO[]>([]);
+
+const fetchBookList = async () => {
+  const {data} = await getBookList(queryParams.value);
+  bookList.value = data.data.recordList;
+  count.value = data.data.count;
+  sortedBooks.value = [...bookList.value];
+};
+
+// 监听排序变化
+watch(sortType, () => changeSort(sortType.value));
+
+onMounted(() => {
+  fetchBookList();
+});
 </script>
 
 <style scoped>
-.book-showcase {
-  padding: 30px;
-  max-width: 1200px;
-  margin: 60px auto;
+:root {
+  --bg-gradient-1: #f6fbff;
+  --bg-gradient-2: #f3f8ff;
+  --card-bg: #ffffff;
+  --muted: #6b7280;
+  --primary: #3b82f6; /* 主要色 */
+  --glass: rgba(255, 255, 255, 0.6);
+  --soft-shadow: 0 8px 30px rgba(20, 20, 30, 0.06);
 }
 
-/* 操作区样式 */
-.controls {
-  margin-bottom: 60px;
-  display: flex;
+/* 容器 */
+.book-container {
+  position: relative;
+  width: calc(70% - 0.625rem);
+  margin: 3.5rem auto;
+  padding: 1.75rem 2.25rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 0 1rem var(--box-bg-shadow);
+  animation: slideUpIn 1s;
+  background: linear-gradient(180deg, var(--bg-gradient-1), var(--bg-gradient-2));
+  min-height: 60vh;
+  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+  color: #222;
+}
+
+.title-group .title {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: -0.3px;
+  color: #172554;
+}
+
+.title-group .subtitle {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* 本书数量标签 */
+.count-chip {
+  display: inline-flex;
   align-items: center;
+  gap: 8px;
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.12), rgba(72, 187, 120, 0.06));
+  padding: 6px 10px;
+  border-radius: 20px;
+  box-shadow: var(--soft-shadow);
 }
 
-/* 3D书籍网格布局 */
+.count-chip .count {
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.count-chip .count-label {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* 主卡片 */
+.book-showcase {
+  max-width: 1200px;
+  margin: 10px auto 60px;
+}
+
+/* 操作区卡片 */
+.controls.card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px;
+  border-radius: 12px;
+  background: var(--card-bg);
+  box-shadow: var(--soft-shadow);
+  margin-bottom: 28px;
+}
+
+/* 按钮 */
+.add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.add-btn .el-icon {
+  font-size: 16px;
+}
+
+/* 排序选择器 */
+.sort-select {
+  min-width: 180px;
+}
+
+/* 书籍网格 */
 .books-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 40px;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 34px;
+  align-items: start;
 }
 
-/* 3D书籍容器 */
+/* 单个书籍容器 */
 .book-3d-container {
-  height: 260px;
+  height: 300px;
   cursor: pointer;
   position: relative;
   transform-style: preserve-3d;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
 }
 
-/* 3D书籍核心样式 */
+/* 书籍3D主体 */
 .book-3d {
-  width: 140px;
-  height: 200px;
+  width: 160px;
+  height: 230px;
   position: relative;
   transform-style: preserve-3d;
-  transform: rotateY(20deg) rotateX(10deg); /* 初始3D角度 */
-  transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-  margin: 0 auto;
+  transform: rotateY(22deg) rotateX(6deg) translateZ(0);
+  transition: transform 380ms cubic-bezier(.2, .9, .3, 1), box-shadow 280ms ease, filter 220ms ease;
+  margin-top: 6px;
+  will-change: transform;
 }
 
-/* 悬停动画 */
+/* 悬停 */
 .book-3d.hovered {
-  transform: rotateY(0deg) rotateX(0deg) translateZ(20px) scale(1.05);
-  filter: drop-shadow(0 15px 15px rgba(0, 0, 0, 0.2));
+  transform: rotateY(0deg) rotateX(0deg) translateZ(28px) scale(1.06);
+  filter: drop-shadow(0 22px 30px rgba(20, 24, 40, 0.14));
 }
 
-/* 书脊（侧面） */
+/* 书脊 */
 .book-spine {
   position: absolute;
-  width: 13px;
+  width: 14px;
   height: 100%;
-  left: -18px;
-  bottom: 0px;
-  transform: rotateY(100deg) translateZ(10px);
+  left: -20px;
+  bottom: 0;
+  transform: rotateY(102deg) translateZ(12px);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
-  font-weight: bold;
-  box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.3);
+  color: #fff;
+  font-weight: 700;
+  box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.28);
+  border-radius: 2px;
 }
 
 .spine-text {
-  writing-mode: vertical-rl; /* 文字竖排 */
+  writing-mode: vertical-rl;
   font-size: 12px;
   letter-spacing: 2px;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.18);
 }
 
 /* 封面 */
@@ -299,121 +443,283 @@ const getSpineColor = (tags) => {
   position: absolute;
   width: 100%;
   height: 100%;
-  backface-visibility: hidden; /* 隐藏背面 */
-  border-radius: 2px;
+  backface-visibility: hidden;
+  border-radius: 5px;
   overflow: hidden;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 6px 18px rgba(17, 24, 39, 0.06);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(0, 0, 0, 0.02));
+  border: 1px solid rgba(10, 20, 40, 0.03);
 }
 
 .cover-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.5s ease;
+  transition: transform 420ms ease;
+  display: block;
 }
 
 .book-3d.hovered .cover-img {
-  transform: scale(1.05); /* 封面微放大，增强立体感 */
+  transform: scale(1.06);
 }
 
-/* 书籍厚度（边缘） */
+/* 封面反光 */
+.cover-reflection {
+  position: absolute;
+  left: -10%;
+  top: -20%;
+  width: 120%;
+  height: 70%;
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.03) 40%, rgba(255, 255, 255, 0));
+  transform: rotate(-12deg);
+  pointer-events: none;
+  mix-blend-mode: overlay;
+  opacity: 0.65;
+}
+
+/* 书籍厚度（侧面） */
 .book-edge {
   position: absolute;
   width: 100%;
-  height: 20px;
-  bottom: -10px;
-  transform: rotateX(90deg) translateZ(0px); /* 旋转至底部 */
-  background-color: #e0e0e0;
-  background-image: linear-gradient(90deg, #ddd 0%, #fff 50%, #ddd 100%);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  height: 18px;
+  bottom: -9px;
+  transform: rotateX(92deg) translateZ(0px);
+  background-image: linear-gradient(90deg, #eee 0%, #fff 50%, #e9e9e9 100%);
+  border-radius: 4px;
+  box-shadow: 0 4px 10px rgba(10, 20, 30, 0.06);
 }
 
-/* 悬停信息标签 */
+/* 悬停信息卡 */
 .book-label {
   position: absolute;
-  bottom: -60px;
+  bottom: -37px;
   left: 50%;
   transform: translateX(-50%);
-  width: 160px;
-  padding: 8px 12px;
-  background-color: white;
-  border-radius: 6px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
-  z-index: 10;
-  text-align: center;
+  width: 220px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.98);
+  border-radius: 10px;
+  box-shadow: 0 12px 30px rgba(16, 24, 40, 0.12);
+  z-index: 12;
+  text-align: left;
+  transition: transform 220ms ease, opacity 220ms ease;
+}
+
+/* 新增的容器样式 */
+.label-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
 }
 
 .label-title {
-  font-weight: bold;
+  font-weight: 700;
+  font-size: 14px;
+  color: #172554;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-bottom: 4px;
+  flex: 1; /* 让标题占据剩余空间 */
+  margin-right: 8px; /* 与作者之间的间距 */
 }
 
 .label-author {
   font-size: 12px;
-  color: #666;
-  margin-bottom: 4px;
+  color: var(--muted);
+  /* 移除原有的margin-top */
+  white-space: nowrap; /* 防止作者名换行 */
+}
+
+.label-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.label-tags {
+  font-size: 12px;
+  color: #445;
+  background: #f3f6ff;
+  padding: 4px 8px;
+  border-radius: 8px;
 }
 
 .label-status {
-  font-size: 11px;
-  padding: 2px 8px;
+  font-size: 12px;
+  padding: 4px 8px;
   border-radius: 12px;
-  display: inline-block;
+  color: #fff;
 }
 
 .label-status.wish {
-  background-color: #e8f4fd;
-  color: #3498db;
+  background-color: #4299e1;
 }
 
 .label-status.reading {
-  background-color: #eafaf1;
-  color: #27ae60;
+  background-color: #48bb78;
 }
 
 .label-status.read {
-  background-color: #fef5e7;
-  color: #f39c12;
+  background-color: #ed8936;
 }
 
-/* 详情页样式 */
+/* 详情页 */
 .book-detail {
   display: flex;
-  gap: 30px;
-  padding: 10px 0;
+  gap: 28px;
+  padding: 12px 6px;
+  align-items: flex-start;
+  flex-wrap: wrap;
 }
 
-.detail-3d-preview {
-  flex: 0 0 160px;
+.detail-left {
+  flex: 0 0 200px;
+  display: flex;
+  justify-content: center;
 }
 
 .book-3d.preview {
-  width: 160px;
-  height: 240px;
-  transform: rotateY(0deg) rotateX(0deg);
+  width: 200px;
+  height: 300px;
+  transform: rotateY(0) rotateX(0);
+  transition: transform 220ms ease;
 }
 
-.detail-info {
+.detail-right {
   flex: 1;
+  min-width: 360px;
 }
 
-.detail-info h2 {
-  margin: 0 0 20px 0;
-  color: #333;
+.book-title {
+  margin: 0 0 8px 0;
+  font-size: 20px;
+  color: #0f172a;
 }
 
-.detail-info p {
-  margin: 10px 0;
-  color: #666;
-  line-height: 1.6;
+.book-author {
+  margin: 0 0 12px 0;
+  color: var(--muted);
+  font-size: 14px;
 }
 
+/* 标签与状态区 */
+.tags-status {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.status-tag {
+  padding: 6px 12px;
+  border-radius: 14px;
+  color: #fff;
+  font-size: 13px;
+}
+
+.status-tag.wish {
+  background-color: #4299e1;
+}
+
+.status-tag.reading {
+  background-color: #48bb78;
+}
+
+.status-tag.read {
+  background-color: #ed8936;
+}
+
+/* 按钮组 */
 .status-buttons {
-  margin-top: 20px;
   display: flex;
   gap: 10px;
+  margin: 14px 0 18px;
+}
+
+/* 简介与书源 */
+.book-intro, .book-sources {
+  margin-top: 10px;
+  padding: 12px;
+  background: linear-gradient(180deg, #fff, #fbfdff);
+  border-radius: 10px;
+  box-shadow: 0 6px 20px rgba(37, 51, 73, 0.04);
+}
+
+.book-intro h3, .book-sources h3 {
+  margin: 0 0 8px 0;
+  font-size: 15px;
+  color: #17325a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.book-intro p {
+  margin: 0;
+  color: #394050;
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+.sources-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.source-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(16, 24, 40, 0.04);
+}
+
+.source-icon {
+  font-size: 16px;
+  color: var(--muted);
+}
+
+.source-name {
+  flex: 1;
+  color: #172554;
+}
+
+/* 无书源 */
+.no-sources {
+  padding: 18px 0;
+}
+
+/* 响应式 */
+@media (max-width: 980px) {
+  .books-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 24px;
+  }
+
+  .book-3d {
+    width: 140px;
+    height: 200px;
+  }
+
+  .book-3d.preview {
+    width: 160px;
+    height: 230px;
+  }
+
+  .book-detail {
+    flex-direction: column;
+    gap: 18px;
+  }
 }
 </style>
