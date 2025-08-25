@@ -7,171 +7,176 @@
     <Waves></Waves>
   </div>
   <div class="bg">
-      <div class="book-container">
-        <div class="book-showcase">
-          <!-- 操作区 -->
-          <div class="controls card">
-            <div class="controls-left">
-              <el-button type="primary" @click="showAddDialog = true" class="add-btn">
-                <el-icon>
-                  <Plus/>
-                </el-icon>
-                添加书籍
-              </el-button>
-            </div>
-
-            <div class="controls-right">
-              <el-select v-model="sortType" placeholder="排序方式" class="sort-select" size="middle">
-                <el-option label="添加时间（新→旧）" value="newest"/>
-                <el-option label="添加时间（旧→新）" value="oldest"/>
-                <el-option label="书名（A→Z）" value="nameAsc"/>
-              </el-select>
-            </div>
+    <div class="book-container">
+      <div class="book-showcase">
+        <!-- 操作区 -->
+        <div class="controls card">
+          <div class="controls-left">
+            <el-button type="primary" @click="showAddDialog = true" class="add-btn">
+              <el-icon>
+                <Plus/>
+              </el-icon>
+              添加书籍
+            </el-button>
           </div>
 
-          <!-- 3D书籍网格 -->
-          <div class="books-grid">
-            <!-- 3D书籍组件 -->
-            <div
-                class="book-3d-container"
-                v-for="book in sortedBooks"
-                :key="book.id"
-                @click="showBookDetail(book)"
-                @mouseenter="book.hover = true"
-                @mouseleave="book.hover = false"
-            >
-              <!-- 3D书籍结构：封面+书脊+厚度 -->
-              <div class="book-3d" :class="{ 'hovered': book.hover }">
-                <!-- 书脊 -->
-                <div class="book-spine" :style="{ backgroundColor: getSpineColor(book.tags) }">
-                  <div class="spine-text">{{ book.title }}</div>
+          <div class="controls-right">
+            <el-select v-model="sortType" placeholder="排序方式" class="sort-select" size="default">
+              <el-option label="添加时间（新→旧）" value="newest"/>
+              <el-option label="添加时间（旧→新）" value="oldest"/>
+              <el-option label="书名（A→Z）" value="nameAsc"/>
+            </el-select>
+          </div>
+        </div>
+
+        <!-- 3D书籍网格 -->
+        <div class="books-grid">
+          <!-- 3D书籍组件 -->
+          <div
+              class="book-3d-container"
+              v-for="book in sortedBooks"
+              :key="book.id"
+              @click="showBookDetail(book)"
+              @mouseenter="book.hover = true"
+              @mouseleave="book.hover = false"
+          >
+            <!-- 3D书籍结构：封面+书脊+厚度 -->
+            <div class="book-3d" :class="{ 'hovered': book.hover }">
+              <!-- 书脊 -->
+              <div class="book-spine" :style="{ backgroundColor: getSpineColor(book.tags) }">
+                <div class="spine-text">{{ book.title }}</div>
+              </div>
+              <!-- 封面 -->
+              <div class="book-cover">
+                <img :src="book.cover || defaultCover" :alt="book.title" class="cover-img"/>
+                <div class="cover-reflection"></div>
+              </div>
+              <!-- 书籍厚度（侧面） -->
+              <div class="book-edge"></div>
+            </div>
+
+            <!-- 书籍信息标签（悬浮时显示） -->
+            <div class="book-label" v-if="book.hover">
+              <div class="label-header">
+                <div class="label-title" title="{{ book.title }}">{{ book.title }}</div>
+                <div class="label-author">{{ book.author || '未知作者' }}</div>
+              </div>
+              <div class="label-bottom">
+                <div class="label-tags">{{ book.tags || '未分类' }}</div>
+                <div class="label-status" :class="book.status">{{ getStatusLabel(book.status) }}</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- 添加书籍弹窗（保持你原有内容绑定） -->
+        <el-dialog title="添加书籍" v-model="showAddDialog" width="420px" :close-on-click-modal="false">
+          <el-form :model="newBook" label-width="80px" class="add-form">
+            <el-form-item label="书名" required>
+              <el-input v-model="newBook.title" placeholder="请输入书名"/>
+            </el-form-item>
+            <el-form-item label="作者">
+              <el-input v-model="newBook.author" placeholder="作者姓名"/>
+            </el-form-item>
+            <el-form-item label="封面URL">
+              <el-input v-model="newBook.cover" placeholder="图片链接（可选）"/>
+            </el-form-item>
+            <el-form-item label="状态">
+              <el-select v-model="newBook.status" placeholder="选择状态">
+                <el-option label="想读" value="wish"/>
+                <el-option label="在读" value="reading"/>
+                <el-option label="已读" value="read"/>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="标签">
+              <el-input v-model="newBook.tags" placeholder="用逗号分隔"/>
+            </el-form-item>
+          </el-form>
+          <template #footer>
+            <el-button @click="showAddDialog = false">取消</el-button>
+            <el-button type="primary" @click="addBook">确认</el-button>
+          </template>
+        </el-dialog>
+
+        <!-- 书籍详情弹窗（保持绑定，宽度与布局美化） -->
+        <el-dialog
+            title="书籍详情"
+            v-model="showDetailDialog"
+            width="980px"
+            :modal-append-to-body="true"
+            :close-on-click-modal="false"
+        >
+          <div v-if="currentBook" class="book-detail">
+            <div class="detail-left">
+              <div class="book-3d preview">
+                <div class="book-spine" :style="{ backgroundColor: getSpineColor(currentBook.tags) }">
+                  <div class="spine-text">{{ currentBook.title.substring(0, 1) }}</div>
                 </div>
-                <!-- 封面 -->
                 <div class="book-cover">
-                  <img :src="book.cover || defaultCover" :alt="book.title" class="cover-img"/>
+                  <img :src="currentBook.cover || defaultCover" class="cover-img" :alt="currentBook.title"/>
                   <div class="cover-reflection"></div>
                 </div>
-                <!-- 书籍厚度（侧面） -->
                 <div class="book-edge"></div>
               </div>
+            </div>
 
-              <!-- 书籍信息标签（悬浮时显示） -->
-              <div class="book-label" v-if="book.hover">
-                <div class="label-header">
-                  <div class="label-title" title="{{ book.title }}">{{ book.title }}</div>
-                  <div class="label-author">{{ book.author || '未知作者' }}</div>
+            <div class="detail-right">
+              <h2 class="book-title">{{ currentBook.title }}</h2>
+              <p class="book-author">作者：{{ currentBook.author || '未知' }}</p>
+
+              <div class="tags-status">
+                <div class="tags">
+                  <el-tag v-if="currentBook.tags" size="small" effect="dark">{{ currentBook.tags }}</el-tag>
+                  <el-tag v-else size="small" effect="light">未分类</el-tag>
                 </div>
-                <div class="label-bottom">
-                  <div class="label-tags">{{ book.tags || '未分类' }}</div>
-                  <div class="label-status" :class="book.status">{{ getStatusLabel(book.status) }}</div>
+
+                <div class="status-block">
+                  <span class="status-tag" :class="currentBook.status">{{ getStatusLabel(currentBook.status) }}</span>
                 </div>
               </div>
 
+              <div class="status-buttons">
+                <el-button @click="changeStatus(currentBook.id, 'wish')"
+                           :type="currentBook.status === 'wish' ? 'primary' : 'default'" size="small">想读
+                </el-button>
+                <el-button @click="changeStatus(currentBook.id, 'reading')"
+                           :type="currentBook.status === 'reading' ? 'primary' : 'default'" size="small">在读
+                </el-button>
+                <el-button @click="changeStatus(currentBook.id, 'read')"
+                           :type="currentBook.status === 'read' ? 'primary' : 'default'" size="small">已读
+                </el-button>
+              </div>
+
+              <div class="book-intro">
+                <h3>简介</h3>
+                <p>{{ currentBook.brief || '暂无简介，这是我喜欢的一本书～' }}</p>
+              </div>
+
+              <div class="book-sources">
+                <h3>书源链接</h3>
+                <div class="sources-list">
+                  <el-link :href="currentBook.resource" target="_blank" type="primary" size="small">访问</el-link>
+                  <div v-if="!currentBook.resource" class="no-sources">
+                    <el-empty description="暂无书源，可添加电子书/笔记等链接"/>
+                    <!--                    <div class="source-item" v-for="(source, index) in currentBook.resources" :key="index">
+                                          <el-icon class="source-icon">{{ getSourceIcon(source.type) }}</el-icon>
+                                          <span class="source-name">{{ source.name }}</span>
+                                          <el-link :href="source.url" target="_blank" type="primary" size="small">访问</el-link>
+                                        </div>
+                                        <div v-if="!currentBook.sources || currentBook.sources.length === 0" class="no-sources">
+                                          <el-empty description="暂无书源，可添加电子书/笔记等链接"/>
+                                        </div>-->
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-
-          <!-- 添加书籍弹窗（保持你原有内容绑定） -->
-          <el-dialog title="添加书籍" v-model="showAddDialog" width="420px" :close-on-click-modal="false">
-            <el-form :model="newBook" label-width="80px" class="add-form">
-              <el-form-item label="书名" required>
-                <el-input v-model="newBook.title" placeholder="请输入书名"/>
-              </el-form-item>
-              <el-form-item label="作者">
-                <el-input v-model="newBook.author" placeholder="作者姓名"/>
-              </el-form-item>
-              <el-form-item label="封面URL">
-                <el-input v-model="newBook.cover" placeholder="图片链接（可选）"/>
-              </el-form-item>
-              <el-form-item label="状态">
-                <el-select v-model="newBook.status" placeholder="选择状态">
-                  <el-option label="想读" value="wish"/>
-                  <el-option label="在读" value="reading"/>
-                  <el-option label="已读" value="read"/>
-                </el-select>
-              </el-form-item>
-              <el-form-item label="标签">
-                <el-input v-model="newBook.tags" placeholder="用逗号分隔"/>
-              </el-form-item>
-            </el-form>
-            <template #footer>
-              <el-button @click="showAddDialog = false">取消</el-button>
-              <el-button type="primary" @click="addBook">确认</el-button>
-            </template>
-          </el-dialog>
-
-          <!-- 书籍详情弹窗（保持绑定，宽度与布局美化） -->
-          <el-dialog
-              title="书籍详情"
-              v-model="showDetailDialog"
-              width="980px"
-              :modal-append-to-body="true"
-              :close-on-click-modal="false"
           >
-            <div v-if="currentBook" class="book-detail">
-              <div class="detail-left">
-                <div class="book-3d preview">
-                  <div class="book-spine" :style="{ backgroundColor: getSpineColor(currentBook.tags) }">
-                    <div class="spine-text">{{ currentBook.title.substring(0, 1) }}</div>
-                  </div>
-                  <div class="book-cover">
-                    <img :src="currentBook.cover || defaultCover" class="cover-img" :alt="currentBook.title"/>
-                    <div class="cover-reflection"></div>
-                  </div>
-                  <div class="book-edge"></div>
-                </div>
-              </div>
-
-              <div class="detail-right">
-                <h2 class="book-title">{{ currentBook.title }}</h2>
-                <p class="book-author">作者：{{ currentBook.author || '未知' }}</p>
-
-                <div class="tags-status">
-                  <div class="tags">
-                    <el-tag v-if="currentBook.tags" size="small" effect="dark">{{ currentBook.tags }}</el-tag>
-                    <el-tag v-else size="small" effect="light">未分类</el-tag>
-                  </div>
-
-                  <div class="status-block">
-                    <span class="status-tag" :class="currentBook.status">{{ getStatusLabel(currentBook.status) }}</span>
-                  </div>
-                </div>
-
-                <div class="status-buttons">
-                  <el-button @click="changeStatus(currentBook.id, 'wish')"
-                             :type="currentBook.status === 'wish' ? 'primary' : 'default'" size="small">想读
-                  </el-button>
-                  <el-button @click="changeStatus(currentBook.id, 'reading')"
-                             :type="currentBook.status === 'reading' ? 'primary' : 'default'" size="small">在读
-                  </el-button>
-                  <el-button @click="changeStatus(currentBook.id, 'read')"
-                             :type="currentBook.status === 'read' ? 'primary' : 'default'" size="small">已读
-                  </el-button>
-                </div>
-
-                <div class="book-intro">
-                  <h3>简介</h3>
-                  <p>{{ currentBook.intro || '暂无简介，这是我喜欢的一本书～' }}</p>
-                </div>
-
-                <div class="book-sources">
-                  <h3>书源链接</h3>
-                  <div class="sources-list">
-                    <div class="source-item" v-for="(source, index) in currentBook.sources" :key="index">
-                      <el-icon class="source-icon">{{ getSourceIcon(source.type) }}</el-icon>
-                      <span class="source-name">{{ source.name }}</span>
-                      <el-link :href="source.url" target="_blank" type="primary" size="small">访问</el-link>
-                    </div>
-                    <div v-if="!currentBook.sources || currentBook.sources.length === 0" class="no-sources">
-                      <el-empty description="暂无书源，可添加电子书/笔记等链接"/>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </el-dialog>
-        </div>
+        </el-dialog>
       </div>
     </div>
+  </div>
 
 </template>
 
@@ -190,6 +195,7 @@ const showAddDialog = ref(false);
 const showDetailDialog = ref(false);
 const currentBook = ref<BookVO | null>(null);
 const sortType = ref('newest'); // 默认按最新添加排序
+const colorCache = new Map<string, string>();
 
 const data = reactive({
   count: 0,
@@ -202,8 +208,8 @@ const data = reactive({
 const newBook = ref({
   title: '',
   author: '',
-  cover: '',
   status: 'wish' as 'wish' | 'reading' | 'read',
+  cover: '',
   tags: '',
 });
 
@@ -262,7 +268,15 @@ const getSpineColor = (tags?: string) => {
     '小说': '#f39c12'
   };
   const firstTag = tags.split(',')[0];
-  return tagColors[firstTag] || `hsl(${Math.random() * 360}, 50%, 40%)`;
+  if (tagColors[firstTag]) return tagColors[firstTag];
+
+  // 如果缓存里有颜色，直接返回
+  if (colorCache.has(firstTag)) return colorCache.get(firstTag)!;
+
+  // 随机生成并缓存
+  const randomColor = `hsl(${Math.random() * 360}, 50%, 40%)`;
+  colorCache.set(firstTag, randomColor);
+  return randomColor;
 };
 
 // 排序后的书籍列表
@@ -480,9 +494,9 @@ onMounted(() => {
 /* 书籍厚度（侧面） */
 .book-edge {
   position: absolute;
-  width: 100%;
-  height: 18px;
-  bottom: -9px;
+  width: 95%;
+  height: 48px;
+  bottom: -25px;
   transform: rotateX(92deg) translateZ(0px);
   background-image: linear-gradient(90deg, #eee 0%, #fff 50%, #e9e9e9 100%);
   border-radius: 4px;
