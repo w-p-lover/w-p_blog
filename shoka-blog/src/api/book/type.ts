@@ -17,7 +17,7 @@ export interface BookForm {
     /** 书籍标题 */
     title: string;
     /** 书籍作者（可选） */
-    author?: string;
+    author: string;
     /** 书籍状态：wish-想读, reading-在读, read-已读 */
     status: "wish" | "reading" | "read";
     /** 封面URL */
