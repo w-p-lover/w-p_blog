@@ -65,7 +65,6 @@ public class DictServiceImpl implements DictService {
                 response.addHeader("Access-Control-Expose-Headers", "Content-Disposition");
                 ExcelWriter excelWriter = EasyExcel.write(outputStream).build();
                 List<String> sheet = excelDTO.getSheet();
-                Map<List<Object>, Class<?>> sheetData = new HashMap<>();
                 for (String s : sheet) {
                     switch (s) {
                         case "article":
