@@ -72,6 +72,12 @@
             <artifactId>spring-boot-starter-websocket</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>30.1-jre</version>
+        </dependency>
+
         <!-- Spring Messaging 支持 STOMP -->
         <dependency>
             <groupId>org.springframework</groupId>
@@ -107,11 +113,6 @@
             <optional>true</optional>
         </dependency>
         <!-- elasticsearch -->
-        <!--        <dependency>
-                    <groupId>co.elastic.clients</groupId>
-                    <artifactId>elasticsearch-java</artifactId>
-                    <version>${elasticsearch.version}</version>
-                </dependency>-->
         <dependency>
             <groupId>org.elasticsearch.client</groupId>
             <artifactId>elasticsearch-rest-high-level-client</artifactId>
