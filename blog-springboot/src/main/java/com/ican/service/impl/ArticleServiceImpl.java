@@ -23,6 +23,7 @@ import com.ican.utils.BeanCopyUtils;
 import com.ican.utils.FileUtils;
 import com.ican.utils.PageUtils;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -40,9 +41,11 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ThreadPoolExecutor;
+
+import com.google.common.util.concurrent.Striped;
+
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
@@ -96,7 +99,10 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     @Autowired
     private ThreadPoolTaskExecutor hotArticleExecutor;
 
-    private static final ConcurrentHashMap<Integer, ReentrantLock> articleLocks = new ConcurrentHashMap<>();
+    // 使用Guava的Striped锁插件，在细粒度竞争时保证高性能，并且尽量避免锁长期保存的内存OMM问题
+    @SuppressWarnings("UnstableApiUsage")
+    public static final Striped<Lock> articleLocks =
+            Striped.lock(Runtime.getRuntime().availableProcessors() * 2);
 
     Cache<Integer, ArticleVO> localCache = Caffeine.newBuilder()
             .maximumSize(200)
@@ -314,7 +320,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 return;
             }
             // 使用本地锁（ReentrantLock）
-            ReentrantLock lock = articleLocks.computeIfAbsent(articleId, k -> new ReentrantLock());
+            ReentrantLock lock = (ReentrantLock) articleLocks.get(articleId);
             lock.lock();  // 获取锁
             try {
                 // 第二层精确检查
@@ -346,25 +352,26 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     private int getDynamicTTL(Integer articleId) {
         int baseTTL = 30;
         int maxTTL = 60;
-        int maxViewCount = 1000;
 
         // 获取文章的浏览量
         Double viewCount = redisService.getZsetScore(ARTICLE_VIEW_COUNT, articleId);
         if (viewCount == null) {
             viewCount = 0D; // 如果缓存中没有浏览量，则默认值为 0
         }
-        int dynamicTTL = baseTTL + (int) ((viewCount / maxViewCount) * maxTTL);
+        double logFactor = Math.log10(viewCount + 1) * 20;
+        int dynamicTTL = baseTTL + (int) Math.min(maxTTL, logFactor);
 
-        // 随机增加偏移量（避免缓存雪崩）
-        int randomOffset = new Random().nextInt(10);  // 随机增加 0 到 10 分钟
-        return dynamicTTL + randomOffset;
+        // 随机增加偏移量（避免缓存雪崩）符合正态分布的偏移量（μ=5min, σ=2min）
+        double normalOffset = new Random().nextGaussian() * 2 + 5;
+        int safeOffset = (int) Math.min(10, Math.max(0, normalOffset));
+        return dynamicTTL + safeOffset;
     }
 
     // 查询文章信息
     @Override
     public ArticleVO getArticleHomeById(Integer articleId) {
         // 1. 加入本地缓存层
-        String nullCacheKey = "NULL_" + articleId.toString();
+        String nullCacheKey = "cache:null:article:" + articleId.toString();
         String cachedNullValue = redisService.getObject(nullCacheKey);
         // 如果缓存了空值，直接返回 null
         if ("EMPTY".equals(cachedNullValue)) {
@@ -372,7 +379,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         }
         ArticleVO article = localCache.get(articleId, Id -> {
             // 2. 使用 ReentrantLock 来替代 synchronized，提升性能
-            ReentrantLock lock = articleLocks.computeIfAbsent(articleId, id -> new ReentrantLock());
+            ReentrantLock lock = (ReentrantLock) articleLocks.get(articleId);
             lock.lock();  // 获取锁
             try {
                 // 3. 检查 Redis 缓存
@@ -387,7 +394,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 }
                 // 5. 更新本地缓存和 Redis
                 updateArticleStatsFromRedis(articleId, dbArticle);
-/*                localCache.put(articleId, dbArticle);  // 更新本地缓存*/
+                // localCache.put(articleId, dbArticle);   更新本地缓存
                 redisService.setHash(HOT_ARTICLE, articleId.toString(), JSONUtil.toJsonStr(dbArticle));  // 更新 Redis
                 return dbArticle;
             } finally {
@@ -414,7 +421,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         articleVO.setLikeCount(Optional.ofNullable(likeCount).orElse(0));
         articleVO.setLastArticle(lastArticle);
         articleVO.setNextArticle(nextArticle);
-        articleVO.setViewCount(viewCount.intValue() + 1);
+        articleVO.setViews(viewCount.intValue() + 1);
         //异步对数据库数据更新，实现 优先更新 Redis，异步更新数据库 的策略。
         CompletableFuture.runAsync(() ->
                 articleMapper.incrementViews(Long.valueOf(articleId)), hotArticleExecutor);
