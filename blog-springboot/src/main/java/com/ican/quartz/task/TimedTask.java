@@ -53,7 +53,7 @@ public class TimedTask {
     }
 
     /**
-     * 清除一周前的聊天日志
+     * 清除半个月前的聊天日志
      */
     public void clearChatRecord() {
         DateTime endTime = DateUtil.beginOfDay(DateUtil.offsetDay(new Date(), -15));
