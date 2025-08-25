@@ -1,6 +1,6 @@
 server:
   # 端口
-  port: 8080
+  port: 8800
 spring:
   mvc:
     pathmatch:
@@ -110,9 +110,10 @@ upload:
   # oss存储
   oss:
     url: https://wangyoupeng-penghong.oss-cn-beijing.aliyuncs.com/
-    endpoint:  oss-cn-beijing.aliyuncs.com
+    endpoint: oss-cn-beijing.aliyuncs.com
     bucketName: wangyoupeng-penghong
-
+    accessKeyId: LTAI5tRRZNLER1ze1BpjWzPU
+    accesskeySecret: EJ5hJmjpHo926e7Mlugi3RAsB1AZ6S
   # cos存储
   cos:
     url: https://Bucket域名/
@@ -146,6 +147,17 @@ elasticsearch:
   connTimeout: 1000
   socketTimeout: 30000
   connectionRequestTimeout: 5000
+
+  # 心知天气API配置（替换为你的密钥）
+seniverse:
+  api-key: SkVDByyeJ8_XB0_DP  # 你的心知天气密钥
+  base-url: https://api.seniverse.com/v3  # 心知天气API基础地址
+
+  # 心知天气API配置（替换为你的密钥）
+hefeng:
+  api-key: cbf7917e722a406faa1e68dfcafdda56  # 你的心知天气密钥
+  base-url: https://pe7byfyfwb.re.qweatherapi.com/  # 心知天气API基础地址
+
 # Sa-Token 配置 (文档: https://sa-token.cc)
 sa-token:
   # token名称 (同时也是cookie名称)
@@ -153,7 +165,7 @@ sa-token:
   # token前缀
   token-prefix: Bearer
   # token有效期，单位s 默认30天, -1代表永不过期
-  timeout: 180
+  timeout: 18000
   # token临时有效期 (指定时间内无操作就视为token过期) 单位: 秒
   activity-timeout: -1
   # 关闭自动续签

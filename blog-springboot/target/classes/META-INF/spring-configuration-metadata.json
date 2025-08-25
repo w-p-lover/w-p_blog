@@ -16,6 +16,11 @@
       "sourceType": "com.ican.config.properties.QqProperties"
     },
     {
+      "name": "photo.apikey",
+      "type": "com.ican.config.properties.TinyProperites",
+      "sourceType": "com.ican.config.properties.TinyProperites"
+    },
+    {
       "name": "thread.pool",
       "type": "com.ican.config.properties.ThreadPoolProperties",
       "sourceType": "com.ican.config.properties.ThreadPoolProperties"
@@ -115,6 +120,12 @@
       "type": "java.lang.String",
       "description": "QQ用户信息地址",
       "sourceType": "com.ican.config.properties.QqProperties"
+    },
+    {
+      "name": "photo.apikey.key",
+      "type": "java.lang.String",
+      "description": "API密钥",
+      "sourceType": "com.ican.config.properties.TinyProperites"
     },
     {
       "name": "thread.pool.core-pool-size",
