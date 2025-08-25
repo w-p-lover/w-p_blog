@@ -42,6 +42,8 @@ const pageMessages = {
   '/talk/:id': '这则说说，道尽当时心境。',
   '/article/:id': '此篇文章，愿能与君共勉。',
   '/404': '页面暂未寻得，不妨换条路径。',
+  '/weather': '天气多云转晴，爱会一直放晴',
+  '/book': '看书，看的就是书，我看看看看',
   '/oauth/login/gitee': '正在通过Gitee登录，稍候片刻。',
   '/oauth/login/github': '正在通过Github登录，稍候片刻。'
 };
