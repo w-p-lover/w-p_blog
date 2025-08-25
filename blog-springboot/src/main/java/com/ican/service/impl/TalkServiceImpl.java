@@ -194,7 +194,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements Ta
                 blogFileMapper.insert(newFile);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
         }
         return url;
     }

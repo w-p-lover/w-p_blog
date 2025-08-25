@@ -91,7 +91,7 @@ public class FileUtils {
             tempFile = File.createTempFile(fileName, extName);
             multipartFile.transferTo(tempFile);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
         }
         return tempFile;
     }

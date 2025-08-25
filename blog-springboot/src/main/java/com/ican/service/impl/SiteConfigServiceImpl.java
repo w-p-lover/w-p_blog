@@ -85,7 +85,7 @@ public class SiteConfigServiceImpl extends ServiceImpl<SiteConfigMapper, SiteCon
                 blogFileMapper.insert(newFile);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
         }
         return url;
     }

@@ -6,6 +6,7 @@ import com.ican.exception.ServiceException;
 import com.ican.strategy.UploadStrategy;
 import com.ican.utils.FileUtils;
 import com.tinify.Tinify;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,6 +23,7 @@ import java.nio.file.Paths;
  * @author ican
  */
 @Service
+@Slf4j
 public abstract class AbstractUploadStrategyImpl implements UploadStrategy {
     @Autowired
     private TinyProperites tinyProperites;
@@ -54,7 +56,7 @@ public abstract class AbstractUploadStrategyImpl implements UploadStrategy {
             // 返回文件访问路径
             return getFileAccessUrl(path + fileName);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
             throw new ServiceException("文件上传失败");
         }
     }

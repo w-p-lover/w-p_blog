@@ -135,7 +135,7 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
                 blogFileMapper.insert(newFile);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
         }
         return url;
     }

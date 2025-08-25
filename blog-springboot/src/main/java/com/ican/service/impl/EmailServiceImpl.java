@@ -2,6 +2,7 @@ package com.ican.service.impl;
 
 import com.ican.model.dto.MailDTO;
 import com.ican.service.EmailService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
@@ -20,6 +21,7 @@ import javax.mail.internet.MimeMessage;
  * @author ican
  **/
 @Service
+@Slf4j
 public class EmailServiceImpl implements EmailService {
 
     /**
@@ -47,10 +49,10 @@ public class EmailServiceImpl implements EmailService {
     @Override
     public void sendHtmlMail(MailDTO mailDTO) {
         try {
-            MimeMessage mimeMessage = javaMailSender.createMimeMessage();
-            MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage);
             Context context = new Context();
             context.setVariables(mailDTO.getContentMap());
+            MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+            MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage);
             String process = templateEngine.process(mailDTO.getTemplate(), context);
             mimeMessageHelper.setFrom(email);
             mimeMessageHelper.setTo(mailDTO.getToEmail());
@@ -58,7 +60,7 @@ public class EmailServiceImpl implements EmailService {
             mimeMessageHelper.setText(process, true);
             javaMailSender.send(mimeMessage);
         } catch (MessagingException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
         }
     }
 }

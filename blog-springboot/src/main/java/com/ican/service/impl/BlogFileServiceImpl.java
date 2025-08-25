@@ -100,7 +100,7 @@ public class BlogFileServiceImpl extends ServiceImpl<BlogFileMapper, BlogFile> i
                     .build();
             blogFileMapper.insert(newFile);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
         }
     }
 
@@ -185,7 +185,7 @@ public class BlogFileServiceImpl extends ServiceImpl<BlogFileMapper, BlogFile> i
                 // 下载压缩包
                 downloadFile(filePath, blogFile.getFileName() + ".zip");
             } catch (IOException e) {
-                e.printStackTrace();
+                log.error(e.getMessage());
             } finally {
                 if (dest.exists()) {
                     dest.delete();

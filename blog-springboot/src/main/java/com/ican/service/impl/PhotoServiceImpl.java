@@ -154,7 +154,7 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
                 blogFileMapper.insert(newFile);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
         }
         return url;
     }
