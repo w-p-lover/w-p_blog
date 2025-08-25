@@ -102,6 +102,7 @@ public class WeatherServiceImpl implements WeatherService {
             city.setId(loc.getString("id"));
             city.setName(loc.getString("name"));
             city.setAdm2(loc.getString("adm2"));
+            city.setAdm1(loc.getString("adm1"));
             cities.add(city);
         }
         return cities;

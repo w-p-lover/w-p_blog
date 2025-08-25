@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ican.mapper.BookMapper">
+
+    <!-- 查询书籍列表，返回 BookVO -->
+    <select id="selectBookVOList" resultType="com.ican.model.vo.BookVO">
+        SELECT
+        id,
+        title,
+        author,
+        cover,
+        status,
+        tags,
+        brief,
+        resource,
+        add_time    AS addTime
+        FROM t_book
+        <where>
+            <!-- 按关键字搜索（标题或作者） -->
+            <if test="keyword != null and keyword != ''">
+                (title LIKE CONCAT('%', #{keyword}, '%')
+                OR author LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+        </where>
+        <!-- 排序 -->
+        <if test="sortType != null and sortType == 'newest'">
+            ORDER BY add_time DESC
+        </if>
+        <if test="sortType != null and sortType == 'oldest'">
+            ORDER BY add_time ASC
+        </if>
+        <if test="sortType != null and sortType == 'nameAsc'">
+            ORDER BY title ASC
+        </if>
+        <if test="sortType == null or sortType == ''">
+            ORDER BY add_time DESC
+        </if>
+    </select>
+
+</mapper>
