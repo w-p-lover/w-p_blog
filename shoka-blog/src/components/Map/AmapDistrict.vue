@@ -36,8 +36,27 @@
 </template>
 
 <script>
+// 独立的颜色映射对象，避免使用Vue实例的this
+const colorMap = {};
+
+// 独立的颜色生成函数，不依赖Vue实例
+function getColorByAdcode(adcode) {
+  if (!colorMap[adcode]) {
+    // 生成蓝色系颜色
+    const gb = Math.random() * 155 + 50;
+    colorMap[adcode] = `rgb(${gb}, ${gb}, 255)`;
+  }
+  return colorMap[adcode];
+}
+
 export default {
   name: 'DistrictMap',
+  props: {
+    weatherTitle: {
+      type: String,
+      default: '' // 或者一个默认值，比如 "默认天气"
+    }
+  },
   data() {
     return {
       // 地图实例
@@ -50,14 +69,11 @@ export default {
       selectedDepth: '2', // 默认显示区县级
       // 省份列表数据
       adcodeList: [],
-      // 存储颜色映射，确保同一区域颜色不变
-      colorMap: {}
     };
   },
   mounted() {
     // 初始化地图
     this.initMap();
-
     // 加载行政区编码数据
     this.loadAdcodeData();
   },
@@ -65,6 +81,24 @@ export default {
     // 组件销毁时清除地图实例
     if (this.map) {
       this.map.destroy();
+    }
+  },
+  // TIP 配合 activated() 和 deactivated() 生命周期，保证切换页面回来时地图能重新初始化。
+  // TIP 关键：离开页面销毁地图，防止白屏, 容器重新显示，强制刷新尺寸
+  activated() {
+    if (!this.map) {
+      this.initMap();
+    } else {
+      this.$nextTick(() => {
+        this.map.resize();
+      });
+    }
+  },
+  deactivated() {
+    if (this.map) {
+      this.map.destroy();
+      this.map = null;
+      this.districtLayer = null;
     }
   },
   methods: {
@@ -96,13 +130,22 @@ export default {
       }
     },
 
-    // 加载行政区编码数据
     loadAdcodeData() {
-      // 这里假设adcodes.js已通过script标签引入，暴露了window.adcodes变量
       if (window.adcodes) {
         this.adcodeList = window.adcodes;
+        // 传递了 weatherTitle，则匹配省份并更新地图
+        if (this.weatherTitle) {
+          const match = this.adcodeList.find(item => item.name.includes(this.weatherTitle));
+          if (match) {
+            this.selectedAdcode = match.adcode;
+            this.initDistrictLayer(this.selectedAdcode, this.selectedDepth);
+            console.log(`地图初始化到省份: ${match.name} (${match.adcode})`);
+          } else {
+            console.warn(`未找到匹配的省份: ${this.weatherTitle}`);
+          }
+        }
+
       } else {
-        // 如果数据未加载，尝试重试
         setTimeout(() => this.loadAdcodeData(), 300);
       }
     },
@@ -120,7 +163,8 @@ export default {
         adcode: [adcode],
         depth: parseInt(depth),
         styles: {
-          'fill': (properties) => this.getColorByAdcode(properties.adcode),
+          // 使用独立函数，避免引用Vue实例
+          'fill': (properties) => getColorByAdcode(properties.adcode),
           'province-stroke': 'cornflowerblue',
           'city-stroke': 'white',
           'county-stroke': 'rgba(255,255,255,0.5)'
@@ -129,16 +173,6 @@ export default {
 
       // 添加图层到地图
       this.districtLayer.setMap(this.map);
-    },
-
-    // 根据adcode获取颜色
-    getColorByAdcode(adcode) {
-      if (!this.colorMap[adcode]) {
-        // 生成蓝色系颜色
-        const gb = Math.random() * 155 + 50;
-        this.colorMap[adcode] = `rgb(${gb}, ${gb}, 255)`;
-      }
-      return this.colorMap[adcode];
     },
 
     // 处理省份选择变化
@@ -157,10 +191,11 @@ export default {
 </script>
 
 <style scoped>
-.district-map-container[data-v-98a4431c] {
+.district-map-container {
   position: relative;
-  width: 71%;
-  padding-top: 75px;
+  width: 61%;
+  padding-top: 50px;
+  padding-left: 20px;
   height: 76vh;
 }
 

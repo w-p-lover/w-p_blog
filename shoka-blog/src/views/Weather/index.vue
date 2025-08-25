@@ -1,4 +1,12 @@
 <template>
+  <div class="page-header">
+    <h1 class="page-title">书架</h1>
+    <img class="page-cover" src="../../assets/images/bg.jpg"
+         alt="">
+    <!-- 波浪 -->
+    <Waves></Waves>
+  </div>
+  <div class="weather-bg">
   <div class="parent-container">
     <el-card class="weather-card" shadow="hover">
       <!-- Card header: 左侧图标/温度  右侧 城市/操作/展开箭头 -->
@@ -20,7 +28,6 @@
 
             <el-button
                 class="city-btn"
-                size="mini"
                 type="text"
                 @click.stop="showCitySelector = true"
                 title="切换城市"
@@ -70,7 +77,7 @@
       <transition name="fade-slide">
         <div v-if="isExpanded" class="detail-area">
           <el-divider/>
-          <el-row gutter={16} class="detail-top">
+          <el-row :gutter="16" class="detail-top">
             <el-col :xs="24" :sm="24" :md="12">
               <el-card class="sub-card">
                 <div class="sub-title">今后 3 天</div>
@@ -164,13 +171,16 @@
       </div>
     </el-card>
     <AmapDistrict
+        v-if="weatherTitle"
+        :key="weatherTitle"
         :current-city="defaultCity"
-        :amap-key="AmapKey"
         map-width="500px"
         map-height="600px"
+        :weatherTitle="weatherTitle"
         @map-loaded="handleMapLoaded"
     />
   </div>
+  </div>>
 </template>
 
 <script setup>
@@ -185,7 +195,6 @@ import {
 import {ElMessage} from 'element-plus';
 import AmapDistrict from "@/components/Map/AmapDistrict.vue";
 const defaultCity = ref('北京');
-const AmapKey = ref('4c7c8ed3e9e6be656d909bec63c0bd12');
 const BASE_API = 'http://localhost:8800/api/weather';
 
 // 状态
@@ -209,6 +218,7 @@ const cityInput = ref('');
 const errorMsg = ref('');
 const isLoading = ref(false);
 const cityListCache = ref([]);
+const weatherTitle = ref('北京市');
 
 // 提醒设置（保存在 localStorage）
 const reminderSettings = ref({
@@ -219,6 +229,7 @@ const reminderSettings = ref({
 // 计时器引用
 let sunsetTimer = null;
 let countdownTimer = null;
+
 
 // 初始化：尝试定位并拉取天气
 onMounted(async () => {
@@ -231,6 +242,7 @@ onMounted(async () => {
       await fetchWeatherData(city.id);
     } else {
       // 兜底北京
+      currentCity.value = '北京';
       currentCity.value = '北京';
       await fetchWeatherData('101010100');
     }
@@ -248,6 +260,7 @@ onUnmounted(() => {
   if (sunsetTimer) window.clearTimeout(sunsetTimer);
   if (countdownTimer) window.clearInterval(countdownTimer);
 });
+
 
 // 刷新
 const refresh = async () => {
@@ -296,7 +309,6 @@ const fetchWeatherData = async (cityId) => {
       windSpeed: todayForecast.windSpeed ?? '',          // 当天风速
       windScale: todayForecast.windScale ?? ''            // 当天风级
     };
-    console.log('currentWeather:', currentWeather.value);
 
     forecast.value = fk.slice(0, 3).map(d => ({
       date: d.date,
@@ -312,7 +324,6 @@ const fetchWeatherData = async (cityId) => {
       if (item.type === '3' || item.type === 3) dressingTips.value = item.text;
 
     });
-    console.log('sunsetTime:', sunRes);
     sunsetTime.value = sunRes.data.data.sunset;
     // 如果已开启日落提醒，则安排通知
     if (reminderSettings.value.sunsetAlarm && sunsetTime.value) {
@@ -343,7 +354,8 @@ const fetchCities = async (queryString, cb) => {
       value: it.adm2 ? `${it.name} (${it.adm2})` : it.name,
       id: it.id,
       name: it.name,
-      adm2: it.adm2 || ''
+      adm2: it.adm2 || '',
+      adm1: it.adm1 || ''
     }));
     cityListCache.value = list;
     cb(list);
@@ -361,6 +373,7 @@ const onEnterCity = async () => {
   // 尝试匹配缓存
   const found = cityListCache.value.find(c => c.value === cityInput.value || c.name === cityInput.value);
   if (found) {
+    weatherTitle.value = found.adm1;
     selectCity(found);
     return;
   }
@@ -370,6 +383,7 @@ const onEnterCity = async () => {
     const {data} = await axios.get(`${BASE_API}/search`, {params: {keyword: cityInput.value.trim()}});
     const arr = data?.data || [];
     if (arr.length > 0) {
+      weatherTitle.value = arr[0].adm1
       selectCity({id: arr[0].id, name: arr[0].name, adm2: arr[0].adm2});
     } else {
       ElMessage.info('未找到匹配城市');
@@ -514,7 +528,6 @@ const saveWeatherToTrack = (cityId) => {
       temp: currentWeather.value.temp,
       updateTime: new Date().toISOString()
     };
-    console.log('保存天气记录：', weatherRecord);
     if (existingIndex > -1) {
       trackData[existingIndex] = weatherRecord;
     } else {
@@ -573,10 +586,55 @@ const cityNameSafe = (city) => city?.name || city?.value || '未知城市';
 </script>
 
 <style scoped>
+.page-header {
+  position: relative;
+  width: 100%;
+  height: 70vh;
+  background: var(--color-red) no-repeat center center / cover;
+  z-index: -9;
+
+  &::after {
+    content: '';
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, .2);
+    transition: all .2s ease-in-out 0s;
+  }
+}
+
+.page-title {
+  @include flex;
+  flex-direction: column;
+  position: fixed;
+  width: 100%;
+  height: 50vh;
+  min-height: 10rem;
+  padding: 4rem 5rem 0;
+  font-size: 2.25em;
+  color: var(--header-text-color);
+  animation: titleScale 1s;
+  z-index: 1;
+}
+
+.page-cover {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 70vh;
+  object-fit: cover;
+}
+.weather-bg{
+  background-color: #6782a0;
+}
 .weather-card {
   width: 610px;
   margin-left: 75px;
-  margin-top: 75px;
+  margin-top: 50px;
   position: relative;
   overflow: visible;
   border-radius: 12px;
@@ -711,13 +769,14 @@ const cityNameSafe = (city) => city?.name || city?.value || '未知城市';
 /* sub cards */
 .sub-card {
   border-radius: 10px;
+  margin: 8px 0;
   box-shadow: none;
   background: rgba(209, 200, 197, 0.32);
 }
 
 .sub-title {
   font-weight: 600;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
   color: #333;
 }
 
@@ -774,7 +833,7 @@ const cityNameSafe = (city) => city?.name || city?.value || '未知城市';
   display: flex;
   gap: 20px;
   align-items: flex-start; /* 关键：子元素顶部对齐，不拉伸高度 */
-  padding: 20px;
+  padding: 40px;
 }
 
 /* 加载遮罩 */
@@ -821,6 +880,9 @@ const cityNameSafe = (city) => city?.name || city?.value || '未知城市';
   font-family: fantasy,sans-serif;
 }
 
+:deep(.el-divider--horizontal ){
+  border-top: 2px #aab3bf var(--el-border-style);
+}
 /* 响应式 */
 @media (max-width: 420px) {
   .weather-card { width: 100%; }
