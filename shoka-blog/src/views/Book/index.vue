@@ -92,6 +92,14 @@
             <el-form-item label="标签">
               <el-input v-model="newBook.tags" placeholder="用逗号分隔"/>
             </el-form-item>
+            <el-form-item label="简介">
+              <el-input
+                  type="textarea"
+                  v-model="newBook.brief"
+                  placeholder="请输入书籍简介"
+                  :rows="3"
+              />
+            </el-form-item>
           </el-form>
           <template #footer>
             <el-button @click="showAddDialog = false">取消</el-button>
@@ -119,6 +127,9 @@
                 </div>
                 <div class="book-edge"></div>
               </div>
+              <el-button type="primary" size="medium" @click="addResource" style="align-content:center">
+                添加书源
+              </el-button>
             </div>
 
             <div class="detail-right">
@@ -155,24 +166,64 @@
 
               <div class="book-sources">
                 <h3>书源链接</h3>
-                <div class="sources-list">
-                  <el-link :href="currentBook.resource" target="_blank" type="primary" size="small">访问</el-link>
-                  <div v-if="!currentBook.resource" class="no-sources">
-                    <el-empty description="暂无书源，可添加电子书/笔记等链接"/>
-                    <!--                    <div class="source-item" v-for="(source, index) in currentBook.resources" :key="index">
-                                          <el-icon class="source-icon">{{ getSourceIcon(source.type) }}</el-icon>
-                                          <span class="source-name">{{ source.name }}</span>
-                                          <el-link :href="source.url" target="_blank" type="primary" size="small">访问</el-link>
-                                        </div>
-                                        <div v-if="!currentBook.sources || currentBook.sources.length === 0" class="no-sources">
-                                          <el-empty description="暂无书源，可添加电子书/笔记等链接"/>
-                                        </div>-->
-                  </div>
+
+                <el-table
+                    :data="currentBook.resource"
+                    border
+                    style="width: 100%"
+                >
+                  <!-- 名称 -->
+                  <el-table-column prop="name" label="名称">
+                    <template #default="{ row }">
+                      <el-input v-model="row.name" placeholder="输入书源名称"/>
+                    </template>
+                  </el-table-column>
+
+                  <!-- 链接 -->
+                  <el-table-column prop="url" label="链接">
+                    <template #default="{ row }">
+                      <el-input v-model="row.url" placeholder="输入书源URL"/>
+                    </template>
+                  </el-table-column>
+
+                  <!-- 类型 -->
+                  <el-table-column prop="type" label="类型">
+                    <template #default="{ row }">
+                      <el-select v-model="row.type" placeholder="类型" size="small">
+                        <el-option label="PDF" value="pdf"/>
+                        <el-option label="笔记" value="note"/>
+                        <el-option label="其他" value="other"/>
+                      </el-select>
+                    </template>
+                  </el-table-column>
+
+                  <!-- 操作 -->
+                  <el-table-column label="操作" width="140">
+                    <template #default="{ row, $index }">
+                      <el-button
+                          type="danger"
+                          size="small"
+                          @click="removeResource($index, row.id)"
+                      >
+                        删除
+                      </el-button>
+                      <el-button
+                          type="success"
+                          size="small"
+                          @click="saveSource()"
+                      >
+                        保存
+                      </el-button>
+                    </template>
+                  </el-table-column>
+                </el-table>
+                <div v-if="!currentBook.resource || currentBook.resource.length === 0" class="no-sources">
+                  <el-empty description="暂无书源，可添加电子书/笔记等链接"/>
                 </div>
               </div>
+
             </div>
           </div>
-          >
         </el-dialog>
       </div>
     </div>
@@ -181,16 +232,12 @@
 </template>
 
 <script setup lang="ts">
-import {ref, reactive, toRefs, watch, onMounted} from 'vue';
+import {onMounted, reactive, ref, toRefs, watch} from 'vue';
 import {Plus} from '@element-plus/icons-vue';
 import {BookVO} from "@/api/book/type";
-import {
-  getBookList,
-  addBook as apiAddBook,
-  updateBookStatus as apiChangeBookStatus,
-} from "@/api/book";
+import {addBook as apiAddBook, getBookList, updateBookStatus as apiChangeBookStatus,updateResource,deleteResource} from "@/api/book";
+import { ElMessage } from 'element-plus';
 
-const defaultCover = '/images/defaultbook.png';
 const showAddDialog = ref(false);
 const showDetailDialog = ref(false);
 const currentBook = ref<BookVO | null>(null);
@@ -211,6 +258,7 @@ const newBook = ref({
   status: 'wish' as 'wish' | 'reading' | 'read',
   cover: '',
   tags: '',
+  brief: ''
 });
 
 
@@ -222,25 +270,43 @@ const changeSort = (type: string) => {
   fetchBookList();
 };
 
-// 添加书籍
 const addBook = async () => {
   if (!newBook.value.title.trim()) return;
-  await apiAddBook(newBook.value);
+  const payload = {
+    ...newBook.value,
+    resource: JSON.stringify([])
+  };
+  await apiAddBook(payload);
   showAddDialog.value = false;
   resetNewBook();
   fetchBookList();
 };
 
+// 新增书源
+const addResource = () => {
+  if (!currentBook.value) return;
+  currentBook.value.resource.push({
+    name: '',
+    url: '',
+    type: 'pdf',
+  });
+};
+
 // 重置新书表单
 const resetNewBook = () => {
-  newBook.value = {title: '', author: '', cover: '', status: 'wish', tags: ''};
+  newBook.value = {title: '', author: '', cover: '', status: 'wish', tags: '',  brief: ''};
 };
 
 // 查看书籍详情
 const showBookDetail = (book: BookVO) => {
-  currentBook.value = {...book};
+  currentBook.value = {
+    ...book,
+    resource: book.resource.map(item => ({ ...item })) // 再次深拷贝
+  };
+  console.log(currentBook.value);
   showDetailDialog.value = true;
 };
+
 
 // TIP 对于针对组件的刷新，可以使用v-if来满足需求
 const changeStatus = async (id: number, status: string) => {
@@ -284,9 +350,49 @@ const sortedBooks = ref<BookVO[]>([]);
 
 const fetchBookList = async () => {
   const {data} = await getBookList(queryParams.value);
-  bookList.value = data.data.recordList;
+  bookList.value = data.data.recordList.map((book: any) => {
+    let res: any[] = [];
+    try {
+      const parsed = JSON.parse(book.resource);
+      res = Array.isArray(parsed) ? parsed : [parsed];
+    } catch (e) {
+      res = [];
+    }
+    return {
+      ...book,
+      resource: res.map(item => ({ ...item })) //
+    };
+  });
   count.value = data.data.count;
   sortedBooks.value = [...bookList.value];
+  console.log(data);
+};
+
+
+// 删除书源
+const removeResource = async (index: number, sourceId: number) => {
+  try {
+    if (!currentBook.value) return
+    await deleteResource(currentBook.value.id,index); // 调用后端删除接口
+    currentBook.value.resource.splice(index, 1); // 前端移除
+    ElMessage.success('删除成功');
+  } catch (err) {
+    ElMessage.error('删除失败');
+    console.error(err);
+  }
+};
+
+// 保存书源
+const saveSource = async () => {
+  try {
+    if (!currentBook.value) return
+    await updateResource(currentBook.value.id, currentBook.value.resource);// 调用后端保存接口
+    console.log('保存书源', currentBook.value.resource);
+    ElMessage.success('保存成功');
+  } catch (err) {
+    ElMessage.error('保存失败');
+    console.error(err);
+  }
 };
 
 // 监听排序变化
@@ -591,7 +697,9 @@ onMounted(() => {
 .detail-left {
   flex: 0 0 200px;
   display: flex;
+  flex-direction: column;
   justify-content: center;
+  gap: 35px;
 }
 
 .book-3d.preview {

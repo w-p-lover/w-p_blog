@@ -1,11 +1,14 @@
 package com.ican.service.impl;
 
 import cn.hutool.core.lang.Assert;
+import cn.hutool.json.JSONUtil;
+import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ican.entity.Book;
 import com.ican.mapper.BookMapper;
 import com.ican.model.dto.BookDTO;
+import com.ican.model.dto.ResourceDTO;
 import com.ican.model.vo.BookVO;
 import com.ican.model.vo.PageResult;
 import com.ican.service.BookService;
@@ -18,6 +21,7 @@ import org.springframework.util.CollectionUtils;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -59,6 +63,10 @@ public class BookServiceImpl extends ServiceImpl<BookMapper, Book> implements Bo
 
         Book newBook = BeanCopyUtils.copyBean(bookDTO, Book.class);
         newBook.setAddTime(LocalDateTime.now());
+
+        if (bookDTO.getResource() != null) {
+            newBook.setResource(bookDTO.getResource());
+        }
         baseMapper.insert(newBook);
     }
 
@@ -85,6 +93,9 @@ public class BookServiceImpl extends ServiceImpl<BookMapper, Book> implements Bo
 
         Book newBook = BeanCopyUtils.copyBean(bookDTO, Book.class);
         newBook.setUpdateTime(LocalDateTime.now());
+        if (bookDTO.getResource() != null) {
+            newBook.setResource(bookDTO.getResource());
+        }
         bookMapper.updateById(newBook);
     }
 
@@ -121,6 +132,38 @@ public class BookServiceImpl extends ServiceImpl<BookMapper, Book> implements Bo
         }
         return books;
     }
+
+    /**
+     * 更新书源字段
+     */
+    public void updateResource(Integer bookId, String resourceJson) {
+        Book book = new Book();
+        book.setId(bookId);
+        book.setResource(resourceJson);
+        bookMapper.updateById(book);
+    }
+
+    /**
+     * 删除某书书源
+     */
+    @Override
+    public void deleteResource(Integer bookId, int index) {
+        Book book = bookMapper.selectById(bookId);
+        if (book == null || book.getResource() == null) return;
+
+        try {
+            List<ResourceDTO> resourceDTOS = JSONUtil.toList(book.getResource(), ResourceDTO.class);
+            if (index < 0 || index >= resourceDTOS.size()) {
+                throw new IllegalArgumentException("删除索引越界");
+            }
+            resourceDTOS.remove(index);
+            book.setResource(JSON.toJSONString(resourceDTOS));
+            bookMapper.updateById(book);
+        } catch (Exception e) {
+            throw new RuntimeException("删除书源失败", e);
+        }
+    }
+
 
     /**
      * 前台查询书籍列表

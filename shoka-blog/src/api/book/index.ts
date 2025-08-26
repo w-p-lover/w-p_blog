@@ -1,7 +1,7 @@
 import {BookQuery, PageResult, Result} from "@/model";
 import request from "@/utils/request";
 import { AxiosPromise } from "axios";
-import { BookVO, BookForm, BookSearch } from "./type";
+import { BookVO, BookForm, BookSearch,  Resource } from "./type";
 
 /**
  * 查看书籍列表
@@ -87,3 +87,27 @@ export function searchBook(keyword: string): AxiosPromise<Result<BookSearch[]>> 
         params: { keyword },
     });
 }
+
+/**
+ * 更新书源
+ */
+export const updateResource = (bookId: number, resources: Resource[]) => {
+    return request({
+        url: `/book/updateResource?bookId=${bookId}&resourceJson=${encodeURIComponent(JSON.stringify(resources))}`,
+        method: "post"
+    });
+};
+
+
+
+
+/**
+ * 删除书源
+ */
+export const deleteResource = (bookId: number, index: number) => {
+    return request({
+        url: "/book/deleteResource",
+        method:"post",
+        params:{ bookId, index }
+    });
+};

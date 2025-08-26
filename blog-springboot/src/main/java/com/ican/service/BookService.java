@@ -1,5 +1,7 @@
 package com.ican.service;
 
+import com.ican.entity.Book;
+import com.ican.model.dto.BookDTO;
 import com.ican.model.vo.BookVO;
 import com.ican.model.vo.PageResult;
 
@@ -49,4 +51,15 @@ public interface BookService {
      * 搜索书籍
      */
     List<BookVO> searchBooks(String keyword);
+
+    /**
+     * 更新书源字段
+     */
+    void updateResource(Integer id, String resourceJson);
+
+    /**
+     * 删除书籍资源
+     */
+    void deleteResource(Integer bookId, int index);
+
 }

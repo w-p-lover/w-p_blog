@@ -4,6 +4,7 @@ import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.ican.annotation.OptLogger;
 import com.ican.annotation.VisitLogger;
+import com.ican.entity.Book;
 import com.ican.model.dto.BookDTO;
 import com.ican.model.vo.BookVO;
 import com.ican.model.vo.PageResult;
@@ -133,5 +134,22 @@ public class BookController {
     @GetMapping("/book/search")
     public Result<List<BookVO>> searchBooks(@RequestParam String keyword) {
         return Result.success(bookService.searchBooks(keyword));
+    }
+
+    // 删除书籍
+    @ApiOperation(value = "删除书籍")
+    @PostMapping("/book/deleteResource")
+    public String deleteResource(@RequestParam Integer bookId, @RequestParam int index) {
+        bookService.deleteResource(bookId, index);
+        return "success";
+    }
+
+
+    // 更新书源字段
+    @ApiOperation(value = "更新书源字段")
+    @PostMapping("/book/updateResource")
+    public String updateResource(@RequestParam Integer bookId,  @RequestParam String resourceJson) {
+        bookService.updateResource(bookId, resourceJson);
+        return "success";
     }
 }

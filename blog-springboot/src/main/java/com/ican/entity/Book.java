@@ -45,4 +45,7 @@ public class Book {
     /** 更新时间 */
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
+
+    // resource 存储 JSON，映射为 List<ResourceDTO>
+    private String resource;
 }
