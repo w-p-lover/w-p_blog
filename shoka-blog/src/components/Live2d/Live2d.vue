@@ -69,8 +69,8 @@ onMounted(async () => {
     await initializeLive2D({
       Container: container,
       CanvasId: 'live2d-canvas',
-      BackgroundRGBA: [0.0, 0.0, 0.0, 0.0],
-      ResourcesPath: 'whitecatfree_vts/sdwhite cat free.model3.json',
+      BackgroundRGBA: [0,0,0,0],
+      ResourcesPath: 'whitecatfree_vts/SDwhite_cat_free.model3.json',
       CanvasSize: { width: 300, height: 400 },
       ShowToolBox: true,
       LoadFromCache: true,
