@@ -8,6 +8,7 @@ import cn.dev33.satoken.stp.StpUtil;
 import com.ican.exception.ServiceException;
 import com.ican.model.vo.Result;
 import com.ican.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -22,6 +23,7 @@ import static com.ican.enums.StatusCodeEnum.*;
  *
  * @author ican
  */
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -100,8 +102,8 @@ public class GlobalExceptionHandler {
      * 处理系统异常
      */
     @ExceptionHandler(value = Exception.class)
-    public Result<?> handleSystemException() {
-        return Result.fail(SYSTEM_ERROR.getCode(), SYSTEM_ERROR.getMsg());
+    public Result<?> handleSystemException(Exception e) {
+        return Result.fail(SYSTEM_ERROR.getCode(), e.getMessage());
     }
 
 }
