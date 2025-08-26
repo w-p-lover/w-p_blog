@@ -87,7 +87,7 @@
         <dependency>
             <groupId>com.tinify</groupId>
             <artifactId>tinify</artifactId>
-            <version>RELEASE</version>
+            <version>1.8.8</version>
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
@@ -262,10 +262,6 @@
             <groupId>org.glassfish.jaxb</groupId>
             <artifactId>jaxb-runtime</artifactId>
             <version>2.3.3</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-websocket</artifactId>
         </dependency>
     </dependencies>
 

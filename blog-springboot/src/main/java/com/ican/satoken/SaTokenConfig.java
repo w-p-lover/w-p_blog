@@ -58,6 +58,7 @@ public class SaTokenConfig implements WebMvcConfigurer {
     }
     private final List<String> ALLOWED_ORIGINS = Arrays.asList(
             "http://localhost:5173",  // 允许的前端1
+            "http://localhost:5175",
             "http://localhost:5174",  // 允许的前端2
             "http://121.41.87.40",
             "http://121.41.87.40:30",

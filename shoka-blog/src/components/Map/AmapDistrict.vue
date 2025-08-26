@@ -64,7 +64,7 @@ export default {
       // 行政区图层实例
       districtLayer: null,
       // 选中的省份编码
-      selectedAdcode: '130000', // 默认河北省
+      selectedAdcode: '110000', // 默认河北省
       // 选中的层级
       selectedDepth: '2', // 默认显示区县级
       // 省份列表数据
