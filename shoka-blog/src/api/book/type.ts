@@ -9,6 +9,7 @@ export interface BookVO {
     tags?: string;
     resource: Resource[];
     brief?: string;
+    briefImg?: string;
 }
 
 export interface Resource {
@@ -23,6 +24,8 @@ export interface BookForm {
     author: string;
     status: "wish" | "reading" | "read";
     cover: '',
+    briefImg?: string;
+    brief?: string;
     tags: '',
 }
 
