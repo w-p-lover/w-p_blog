@@ -55,6 +55,12 @@ public class BookDTO {
     private String brief;
 
     /**
+     * 简介图片
+     */
+    @ApiModelProperty(value = "简介图片")
+    private String briefImg;
+
+    /**
      * 资源
      */
     @ApiModelProperty(value = "资源")

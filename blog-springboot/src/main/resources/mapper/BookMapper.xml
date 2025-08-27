@@ -16,6 +16,7 @@
         tags,
         brief,
         resource,
+        brief_img AS briefImg,
         add_time    AS addTime
         FROM t_book
         <where>
