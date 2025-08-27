@@ -28,13 +28,6 @@ import static cn.dev33.satoken.SaManager.log;
 public class WeatherServiceImpl implements WeatherService {
 
     // 从配置文件读取心知天气密钥（application.yml中配置）
-    @Value("${seniverse.api-key}")
-    private String apiKey;
-
-    @Value("${seniverse.base-url}")
-    private String baseUrl;
-
-    // 从配置文件读取心知天气密钥（application.yml中配置）
     @Value("${hefeng.api-key}")
     private String hefengApiKey;
 
@@ -84,8 +77,7 @@ public class WeatherServiceImpl implements WeatherService {
      * 2. 搜索城市
      */
     @Override
-    public List<WeatherData.CityInfo> searchCity(String keyword) {
-        String url = hefengBaseUrl + "geo/v2/city/lookup";
+    public List<WeatherData.CityInfo> searchCity(String keyword) {String url = hefengBaseUrl + "geo/v2/city/lookup";
         Map<String, String> params = new HashMap<>();
         params.put("key", hefengApiKey);
         params.put("location", keyword);
