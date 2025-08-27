@@ -1,7 +1,10 @@
 <template>
   <!-- Live2D 模型容器 -->
   <div id="live2d-container" class="live2d-container">
-    <!-- 自定义消息框（放在模型容器内部，方便相对定位） -->
+    <!-- Canvas 会自动插入或手动创建 -->
+    <canvas id="live2d-canvas"></canvas>
+
+    <!-- 自定义消息框 -->
     <div id="live2dMessageBox" class="message-box">
       <div
           id="live2dMessageBox-content"
@@ -16,13 +19,17 @@
 <script setup>
 import { onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import { initializeLive2D } from 'live2d-render';
+
+// 兼容 import 方式
+import * as Live2DModule from 'live2d-render';
+const initializeLive2D = Live2DModule.initializeLive2D || Live2DModule.default;
 
 const isMessageVisible = ref(false);
 const currentMessage = ref('');
 const messageTimer = ref(null);
 const route = useRoute();
 
+// 页面消息配置
 const pageMessages = {
   '/': '愿您在此寻得片刻安宁。',
   '/message': '笔墨传情，静待您的留言。',
@@ -52,9 +59,10 @@ const setMessageBox = (message, duration = 3000) => {
   currentMessage.value = message;
   isMessageVisible.value = true;
   if (messageTimer.value) clearTimeout(messageTimer.value);
-  messageTimer.value = setTimeout(() => isMessageVisible.value = false, duration);
+  messageTimer.value = setTimeout(() => (isMessageVisible.value = false), duration);
 };
 
+// 监听路由变化
 watch(() => route.path, (newPath) => {
   const regex = /\/(\d+)$/;
   const newMessage = pageMessages[newPath.replace(regex, '/:id')];
@@ -63,29 +71,42 @@ watch(() => route.path, (newPath) => {
 
 onMounted(async () => {
   const container = document.getElementById('live2d-container');
-  if (!container) return;
+  if (!container) {
+    console.error('Live2D 容器不存在！');
+    return;
+  }
+
+  if (!initializeLive2D || typeof initializeLive2D !== 'function') {
+    console.error('initializeLive2D 未导入成功，请检查 live2d-render 版本或导入方式！');
+    return;
+  }
 
   try {
+    // 初始化 Live2D
     await initializeLive2D({
       Container: container,
       CanvasId: 'live2d-canvas',
-      BackgroundRGBA: [0,0,0,0],
-      ResourcesPath: 'whitecatfree_vts/SDwhite_cat_free.model3.json',
+      BackgroundRGBA: [0, 0, 0, 0],
+      ResourcesPath: '/whitecatfree_vts/SDwhite_cat_free.model3.json', // 注意斜杠
       CanvasSize: { width: 300, height: 400 },
-      ShowToolBox: true,
+      ShowToolBox: false,
       LoadFromCache: true,
       Scale: 0.5,
-      Offset: { x: 0, y: 0 },
+      Offset: { x: 0, y: 0 }
     });
+
+    // 当前页面显示消息
     const regex = /\/(\d+)$/;
     const currentPageMessage = pageMessages[route.path.replace(regex, '/:id')];
     if (currentPageMessage) setMessageBox(currentPageMessage, 5000);
+
     console.log('Live2D 模型加载完成');
-  } catch (error) {
-    console.error('Live2D 初始化失败：', error);
+  } catch (err) {
+    console.error('Live2D 初始化失败：', err);
   }
 });
 </script>
+
 
 <style scoped>
 .live2d-container {
@@ -112,11 +133,12 @@ onMounted(async () => {
   font-family: "新宋体", sans-serif;
   font-size: 14px;
   font-weight: bold;
-  line-height: 1.5;
   padding: 10px 18px;
   border-radius: 20px;
-  max-width: 100%;
+  width: 300px;
   word-wrap: break-word;
+  display: flex;
+  justify-content: center
 }
 
 .message-content-hidden {
@@ -131,13 +153,13 @@ onMounted(async () => {
   opacity: 1;
   transform: translate(-50%, 0);
   transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-  background-color: rgba(255, 255, 255, 0.98);
+  background-color: rgba(202, 201, 201, 0.51);
   color: #234161;
   border: 1px solid rgba(220, 220, 220, 0.3);
 }
 
 #live2dMessageBox-content:hover {
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 5px 20px rgba(2, 13, 85, 0.2);
   transition: all 0.3s ease;
 }
 </style>

@@ -152,6 +152,7 @@ export default {
 
     // 初始化行政区图层
     initDistrictLayer(adcode, depth) {
+      if (this.districtLayer && this.districtLayer.adcode === adcode && this.districtLayer.depth === depth) return;
       // 清除已有图层
       if (this.districtLayer) {
         this.districtLayer.setMap(null);
