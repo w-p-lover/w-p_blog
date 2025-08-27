@@ -65,4 +65,10 @@ public class BookVO {
      */
     @ApiModelProperty(value = "资源")
     private String resource;
+
+    /**
+     * 简介图片
+     */
+    @ApiModelProperty(value = "简介图片")
+    private String briefImg;
 }
