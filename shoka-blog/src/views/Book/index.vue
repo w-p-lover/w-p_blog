@@ -21,11 +21,21 @@
           </div>
 
           <div class="controls-right">
-            <el-select v-model="sortType" placeholder="排序方式" class="sort-select" size="default">
-              <el-option label="添加时间（新→旧）" value="newest"/>
-              <el-option label="添加时间（旧→新）" value="oldest"/>
-              <el-option label="书名（A→Z）" value="nameAsc"/>
-            </el-select>
+            <div class="select-group">
+              <!-- 排序选择器 -->
+              <el-select v-model="sortType" placeholder="排序方式" size="default" @change="changeSort(sortType)">
+                <el-option label="添加时间（新→旧）" value="newest"/>
+                <el-option label="添加时间（旧→新）" value="oldest"/>
+                <el-option label="书名（A→Z）" value="nameAsc"/>
+              </el-select>
+
+              <!-- 布局选择器 -->
+              <el-select v-model="gridLayout" placeholder="布局" size="default" @change="updateGridLayout">
+                <el-option label="紧凑" value="compact"/>
+                <el-option label="标准" value="standard"/>
+                <el-option label="宽松" value="spacious"/>
+              </el-select>
+            </div>
           </div>
         </div>
 
@@ -40,35 +50,45 @@
               @mouseenter="book.hover = true"
               @mouseleave="book.hover = false"
           >
-            <!-- 3D书籍结构：封面+书脊+厚度 -->
-            <div class="book-3d" :class="{ 'hovered': book.hover }">
-              <!-- 书脊 -->
-              <div class="book-spine" :style="{ backgroundColor: getSpineColor(book.tags) }">
-                <div class="spine-text">{{ book.title }}</div>
-              </div>
-              <!-- 封面 -->
-              <div class="book-cover">
-                <img :src="book.cover || defaultCover" :alt="book.title" class="cover-img"/>
-                <div class="cover-reflection"></div>
-              </div>
-              <!-- 书籍厚度（侧面） -->
-              <div class="book-edge"></div>
-            </div>
+            <el-tooltip
+                raw-content
+                effect="light"
+                placement="right"
+                :hide-after="0"
+                popper-class="custom-tooltip"
+                :enterable="false"
+            >
+              <template #content>
+                <img :src="book.briefImg || book.cover || defaultCover" alt="封面" class="tooltip-cover"/>
+                <div class="book-label">
+                  <div class="label-header">
+                    <div class="label-title" :title="book.title">{{ book.title }}</div>
+                    <div class="label-author">{{ book.author || '未知作者' }}</div>
+                  </div>
+                  <div class="label-bottom">
+                    <div class="label-tags">{{ book.tags || '未分类' }}</div>
+                    <div class="label-status" :class="book.status">
+                      {{ getStatusLabel(book.status) }}
+                    </div>
+                  </div>
+                </div>
+              </template>
 
-            <!-- 书籍信息标签（悬浮时显示） -->
-            <div class="book-label" v-if="book.hover">
-              <div class="label-header">
-                <div class="label-title" title="{{ book.title }}">{{ book.title }}</div>
-                <div class="label-author">{{ book.author || '未知作者' }}</div>
+              <!-- 3D书籍结构 -->
+              <div class="book-3d" :class="{ 'hovered': book.hover }">
+                <div class="book-spine" :style="{ backgroundColor: getSpineColor(book.tags) }">
+                  <div class="spine-text">{{ book.title }}</div>
+                </div>
+                <div class="book-cover">
+                  <img :src="book.cover || defaultCover" :alt="book.title" class="cover-img"/>
+                  <div class="cover-reflection"></div>
+                </div>
+                <div class="book-edge"></div>
               </div>
-              <div class="label-bottom">
-                <div class="label-tags">{{ book.tags || '未分类' }}</div>
-                <div class="label-status" :class="book.status">{{ getStatusLabel(book.status) }}</div>
-              </div>
-            </div>
-
+            </el-tooltip>
           </div>
         </div>
+
 
         <!-- 添加书籍弹窗（保持你原有内容绑定） -->
         <el-dialog title="添加书籍" v-model="showAddDialog" width="420px" :close-on-click-modal="false">
@@ -79,9 +99,6 @@
             <el-form-item label="作者">
               <el-input v-model="newBook.author" placeholder="作者姓名"/>
             </el-form-item>
-            <el-form-item label="封面URL">
-              <el-input v-model="newBook.cover" placeholder="图片链接（可选）"/>
-            </el-form-item>
             <el-form-item label="状态">
               <el-select v-model="newBook.status" placeholder="选择状态">
                 <el-option label="想读" value="wish"/>
@@ -91,6 +108,12 @@
             </el-form-item>
             <el-form-item label="标签">
               <el-input v-model="newBook.tags" placeholder="用逗号分隔"/>
+            </el-form-item>
+            <el-form-item label="封面URL">
+              <el-input v-model="newBook.cover" placeholder="图片链接（可选）"/>
+            </el-form-item>
+            <el-form-item label="简介URL">
+              <el-input v-model="newBook.briefImg" placeholder="图片链接（可选）"/>
             </el-form-item>
             <el-form-item label="简介">
               <el-input
@@ -127,7 +150,7 @@
                 </div>
                 <div class="book-edge"></div>
               </div>
-              <el-button type="primary" size="medium" @click="addResource" style="align-content:center">
+              <el-button type="primary" size="default" @click="addResource" style="align-content:center">
                 添加书源
               </el-button>
             </div>
@@ -221,7 +244,6 @@
                   <el-empty description="暂无书源，可添加电子书/笔记等链接"/>
                 </div>
               </div>
-
             </div>
           </div>
         </el-dialog>
@@ -235,14 +257,42 @@
 import {onMounted, reactive, ref, toRefs, watch} from 'vue';
 import {Plus} from '@element-plus/icons-vue';
 import {BookVO} from "@/api/book/type";
-import {addBook as apiAddBook, getBookList, updateBookStatus as apiChangeBookStatus,updateResource,deleteResource} from "@/api/book";
-import { ElMessage } from 'element-plus';
+import {
+  addBook as apiAddBook,
+  getBookList,
+  updateBookStatus as apiChangeBookStatus,
+  updateResource,
+  deleteResource
+} from "@/api/book";
+import {ElMessage} from 'element-plus';
 
 const showAddDialog = ref(false);
 const showDetailDialog = ref(false);
 const currentBook = ref<BookVO | null>(null);
 const sortType = ref('newest'); // 默认按最新添加排序
 const colorCache = new Map<string, string>();
+const gridLayout = ref('spacious'); // 默认布局
+const defaultCover = ref('')
+// 更新网格布局
+const updateGridLayout = () => {
+  const grid = document.querySelector('.books-grid') as HTMLElement;
+  if (!grid) return;
+
+  switch (gridLayout.value) {
+    case 'compact':
+      grid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(120px, 1fr))';
+      grid.style.gap = '16px';
+      break;
+    case 'standard':
+      grid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(160px, 1fr))';
+      grid.style.gap = '34px';
+      break;
+    case 'spacious':
+      grid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(200px, 1fr))';
+      grid.style.gap = '48px';
+      break;
+  }
+};
 
 const data = reactive({
   count: 0,
@@ -258,7 +308,8 @@ const newBook = ref({
   status: 'wish' as 'wish' | 'reading' | 'read',
   cover: '',
   tags: '',
-  brief: ''
+  brief: '',
+  briefImg: '',
 });
 
 
@@ -294,14 +345,14 @@ const addResource = () => {
 
 // 重置新书表单
 const resetNewBook = () => {
-  newBook.value = {title: '', author: '', cover: '', status: 'wish', tags: '',  brief: ''};
+  newBook.value = {title: '', author: '', cover: '', status: 'wish', tags: '', brief: '', briefImg: ''};
 };
 
 // 查看书籍详情
 const showBookDetail = (book: BookVO) => {
   currentBook.value = {
     ...book,
-    resource: book.resource.map(item => ({ ...item })) // 再次深拷贝
+    resource: book.resource.map(item => ({...item})) // 再次深拷贝
   };
   console.log(currentBook.value);
   showDetailDialog.value = true;
@@ -360,7 +411,7 @@ const fetchBookList = async () => {
     }
     return {
       ...book,
-      resource: res.map(item => ({ ...item })) //
+      resource: res.map(item => ({...item})) //
     };
   });
   count.value = data.data.count;
@@ -373,7 +424,7 @@ const fetchBookList = async () => {
 const removeResource = async (index: number, sourceId: number) => {
   try {
     if (!currentBook.value) return
-    await deleteResource(currentBook.value.id,index); // 调用后端删除接口
+    await deleteResource(currentBook.value.id, index); // 调用后端删除接口
     currentBook.value.resource.splice(index, 1); // 前端移除
     ElMessage.success('删除成功');
   } catch (err) {
@@ -400,6 +451,7 @@ watch(sortType, () => changeSort(sortType.value));
 
 onMounted(() => {
   fetchBookList();
+  updateGridLayout();
 });
 </script>
 
@@ -492,11 +544,6 @@ onMounted(() => {
   font-size: 16px;
 }
 
-/* 排序选择器 */
-.sort-select {
-  min-width: 180px;
-}
-
 /* 书籍网格 */
 .books-grid {
   display: grid;
@@ -511,6 +558,7 @@ onMounted(() => {
   cursor: pointer;
   position: relative;
   transform-style: preserve-3d;
+  transform: translate3d(0, 0, 0);
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -611,26 +659,19 @@ onMounted(() => {
 
 /* 悬停信息卡 */
 .book-label {
-  position: absolute;
-  bottom: -37px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 220px;
+  width: 250px;
   padding: 10px 14px;
   background: rgba(255, 255, 255, 0.98);
   border-radius: 10px;
   box-shadow: 0 12px 30px rgba(16, 24, 40, 0.12);
-  z-index: 12;
   text-align: left;
   transition: transform 220ms ease, opacity 220ms ease;
 }
 
-/* 新增的容器样式 */
 .label-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 100%;
 }
 
 .label-title {
@@ -640,15 +681,12 @@ onMounted(() => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  flex: 1; /* 让标题占据剩余空间 */
-  margin-right: 8px; /* 与作者之间的间距 */
+  margin-right: 8px;
 }
 
 .label-author {
   font-size: 12px;
-  color: var(--muted);
-  /* 移除原有的margin-top */
-  white-space: nowrap; /* 防止作者名换行 */
+  color: #6b7280;
 }
 
 .label-bottom {
@@ -660,7 +698,7 @@ onMounted(() => {
 
 .label-tags {
   font-size: 12px;
-  color: #445;
+  color: #374151;
   background: #f3f6ff;
   padding: 4px 8px;
   border-radius: 8px;
@@ -674,16 +712,17 @@ onMounted(() => {
 }
 
 .label-status.wish {
-  background-color: #4299e1;
+  background-color: #3b82f6;
 }
 
 .label-status.reading {
-  background-color: #48bb78;
+  background-color: #10b981;
 }
 
 .label-status.read {
-  background-color: #ed8936;
+  background-color: #f59e0b;
 }
+
 
 /* 详情页 */
 .book-detail {
@@ -791,32 +830,6 @@ onMounted(() => {
   font-size: 14px;
 }
 
-.sources-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.source-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
-  border-radius: 8px;
-  background: #fff;
-  box-shadow: 0 2px 6px rgba(16, 24, 40, 0.04);
-}
-
-.source-icon {
-  font-size: 16px;
-  color: var(--muted);
-}
-
-.source-name {
-  flex: 1;
-  color: #172554;
-}
-
 /* 无书源 */
 .no-sources {
   padding: 18px 0;
@@ -843,5 +856,37 @@ onMounted(() => {
     flex-direction: column;
     gap: 18px;
   }
+}
+
+.controls-right {
+  display: flex;
+  align-items: center;
+}
+
+.select-group {
+  display: flex;
+  gap: 10px;
+  padding: 6px 12px;
+  background: #f3f6ff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(16, 24, 40, 0.08);
+}
+
+.select-group .el-select {
+  min-width: 170px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.select-group .el-select .el-input__inner {
+  height: 32px;
+  line-height: 32px;
+}
+
+.custom-tooltip img {
+  display: block;
+  max-width: 250px;
+  margin-top: 5px;
+  border-radius: 8px;
 }
 </style>
