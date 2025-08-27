@@ -384,7 +384,7 @@ const getSpineColor = (tags?: string) => {
     '技术': '#27ae60',
     '小说': '#f39c12'
   };
-  const firstTag = tags.split(',')[0];
+  const firstTag = tags.split('，')[0];
   if (tagColors[firstTag]) return tagColors[firstTag];
 
   // 如果缓存里有颜色，直接返回
@@ -601,10 +601,13 @@ onMounted(() => {
 
 .spine-text {
   writing-mode: vertical-rl;
+  transform: rotateY(-160deg);
+  transform-origin: center;
   font-size: 12px;
-  letter-spacing: 2px;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.18);
+  color: #fff;
+  text-align: center;
 }
+
 
 /* 封面 */
 .book-cover {
@@ -649,12 +652,12 @@ onMounted(() => {
 .book-edge {
   position: absolute;
   width: 95%;
-  height: 48px;
-  bottom: -25px;
+  height: 47px;
+  bottom: -24px;
   transform: rotateX(92deg) translateZ(0px);
   background-image: linear-gradient(90deg, #eee 0%, #fff 50%, #e9e9e9 100%);
   border-radius: 4px;
-  box-shadow: 0 4px 10px rgba(10, 20, 30, 0.06);
+  box-shadow: 0 -10px 30px rgb(11 55 98 / 49%);
 }
 
 /* 悬停信息卡 */
