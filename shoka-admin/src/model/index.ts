@@ -13,6 +13,20 @@ export interface PageResult<T> {
 }
 
 /**
+ * 分页参数
+ */
+export interface BookQuery {
+    /**
+     * 关键字
+     */
+    keyword?: string;
+    /**
+     * 排序字段
+     */
+    sortType?: string;
+}
+
+/**
  * 结果返回接口
  */
 export interface Result<T> {
