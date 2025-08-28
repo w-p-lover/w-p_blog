@@ -53,7 +53,7 @@
             <el-tooltip
                 raw-content
                 effect="light"
-                placement="right"
+                placement="top"
                 :hide-after="0"
                 popper-class="custom-tooltip"
                 :enterable="false"
@@ -150,9 +150,9 @@
                 </div>
                 <div class="book-edge"></div>
               </div>
-              <el-button type="primary" size="default" @click="addResource" style="align-content:center">
+<!--              <el-button type="primary" size="default" @click="addResource" style="align-content:center">
                 添加书源
-              </el-button>
+              </el-button>-->
             </div>
 
             <div class="detail-right">
@@ -219,23 +219,22 @@
                       </el-select>
                     </template>
                   </el-table-column>
-
                   <!-- 操作 -->
-                  <el-table-column label="操作" width="140">
-                    <template #default="{ row, $index }">
-                      <el-button
+                  <el-table-column label="操作" width="100" align="center">
+                    <template #default="{ row }">
+<!--                      <el-button
                           type="danger"
                           size="small"
                           @click="removeResource($index, row.id)"
                       >
                         删除
-                      </el-button>
+                      </el-button>-->
                       <el-button
                           type="success"
                           size="small"
-                          @click="saveSource()"
+                          @click="openLink(row.url)"
                       >
-                        保存
+                        访问
                       </el-button>
                     </template>
                   </el-table-column>
@@ -334,14 +333,14 @@ const addBook = async () => {
 };
 
 // 新增书源
-const addResource = () => {
+/*const addResource = () => {
   if (!currentBook.value) return;
   currentBook.value.resource.push({
     name: '',
     url: '',
     type: 'pdf',
   });
-};
+};*/
 
 // 重置新书表单
 const resetNewBook = () => {
@@ -419,8 +418,11 @@ const fetchBookList = async () => {
   console.log(data);
 };
 
-
-// 删除书源
+const openLink = (url: string) => {
+  if (!url) return;
+  window.open(url, "_blank"); // 新窗口打开
+};
+/*// 删除书源
 const removeResource = async (index: number, sourceId: number) => {
   try {
     if (!currentBook.value) return
@@ -444,7 +446,7 @@ const saveSource = async () => {
     ElMessage.error('保存失败');
     console.error(err);
   }
-};
+};*/
 
 // 监听排序变化
 watch(sortType, () => changeSort(sortType.value));
@@ -662,7 +664,7 @@ onMounted(() => {
 
 /* 悬停信息卡 */
 .book-label {
-  width: 250px;
+  width: 300px;
   padding: 10px 14px;
   background: rgba(255, 255, 255, 0.98);
   border-radius: 10px;
@@ -811,7 +813,7 @@ onMounted(() => {
 /* 简介与书源 */
 .book-intro, .book-sources {
   margin-top: 10px;
-  padding: 12px;
+  padding: 12px 0;
   background: linear-gradient(180deg, #fff, #fbfdff);
   border-radius: 10px;
   box-shadow: 0 6px 20px rgba(37, 51, 73, 0.04);
@@ -888,7 +890,7 @@ onMounted(() => {
 
 .custom-tooltip img {
   display: block;
-  max-width: 250px;
+  max-width: 300px;
   margin-top: 5px;
   border-radius: 8px;
 }
