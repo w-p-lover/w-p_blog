@@ -195,7 +195,7 @@ import {
 import {ElMessage} from 'element-plus';
 import AmapDistrict from "@/components/Map/AmapDistrict.vue";
 const defaultCity = ref('北京');
-const BASE_API = 'http://localhost:8080/api/weather';
+const BASE_API = 'http://localhost:8080/weather';
 
 // 状态
 const currentCity = ref('定位中...');

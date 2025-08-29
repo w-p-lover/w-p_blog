@@ -76,7 +76,7 @@
           {{ scope.row.resource.length }}
         </template>
       </el-table-column>
-      <el-table-column prop="addTime" label="添加时间" width="160">
+      <el-table-column prop="addTime" label="添加时间" width="160" align="center">
         <template #default="scope">{{ formatDate(scope.row.addTime) }}</template>
       </el-table-column>
       <el-table-column label="操作" width="200" align="center">
@@ -192,7 +192,7 @@
 
 <script setup lang="ts">
 import {ref, reactive, toRefs, onMounted} from "vue";
-import {getBookList, addBook, updateBook, updateResource, deleteBookBatch} from "@/api/book";
+import {getBookList, addBook, updateBook, updateResource, deleteBookBatch, searchBook} from "@/api/book";
 import {BookVO} from "@/api/book/types";
 import {notifySuccess, messageConfirm} from "@/utils/modal";
 import {ElMessage, FormInstance, FormRules} from "element-plus";
@@ -375,6 +375,22 @@ const getList = () => {
   });
 };
 
+
+// 获取书籍列表
+const searchList = () => {
+  loading.value = true;
+  searchBook(queryParams.value.keyword).then(({data}) => {
+    bookList.value = data.data.recordList.map((item: BookVO) => {
+      return {
+        ...item,
+        resource: parseResource(item.resource)
+      };
+    });
+    count.value = data.data.count;
+    loading.value = false;
+  });
+};
+
 // 封装解析函数
 const parseResource = (val: any): any[] => {
   if (!val) return [];
@@ -387,10 +403,9 @@ const parseResource = (val: any): any[] => {
   }
 };
 
-
 const handleQuery = () => {
   queryParams.value.current = 1;
-  getList();
+  searchList();
 };
 
 onMounted(() => {

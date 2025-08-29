@@ -10,7 +10,7 @@ import java.util.List;
 // 允许跨域（根据前端地址调整origin）
 @CrossOrigin(origins = "http://localhost:5173")
 @RestController
-@RequestMapping("/api/weather") // 接口基础路径，与前端BASE_API对应
+@RequestMapping("/weather") // 接口基础路径，与前端BASE_API对应
 public class WeatherController {
 
     @Resource

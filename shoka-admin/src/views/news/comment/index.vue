@@ -45,9 +45,9 @@
         </template>
       </el-table-column>
       <!-- 评论人昵称 -->
-      <el-table-column prop="fromNickname" label="评论人" align="center" width="120"/>
+      <el-table-column prop="fromNickname" label="评论人" align="center" width="140"/>
       <!-- 回复人昵称 -->
-      <el-table-column prop="toNickname" label="回复人" align="center" width="120">
+      <el-table-column prop="toNickname" label="回复人" align="center" width="140">
         <template #default="scope">
                     <span v-if="scope.row.toNickname">
                         {{ scope.row.toNickname }}

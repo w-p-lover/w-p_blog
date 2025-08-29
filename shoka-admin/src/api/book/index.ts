@@ -10,7 +10,7 @@ import { BookVO, BookForm, BookSearch,  Resource } from "./types";
  */
 export function getBookList(params: BookQuery): AxiosPromise<Result<PageResult<BookVO[]>>> {
     return request({
-        url: "/book/list",
+        url: "/admin/book/list",
         method: "get",
         params,
     });
@@ -66,23 +66,10 @@ export const deleteBookBatch = (ids: number[]) => {
 
 
 /**
- * 修改书籍状态
- * @param bookId 书籍ID
- * @param status 新状态
- */
-export function updateBookStatus(bookId: number, status: string): AxiosPromise<Result<null>> {
-    return request({
-        url: `/book/${bookId}/status`,
-        method: "put",
-        params: { status },
-    });
-}
-
-/**
  * 搜索书籍
  * @param keyword 关键字
  */
-export function searchBook(keyword: string): AxiosPromise<Result<BookSearch[]>> {
+export function searchBook(keyword: string): AxiosPromise<Result<PageResult<BookVO[]>>> {
     return request({
         url: "/book/search",
         method: "get",
