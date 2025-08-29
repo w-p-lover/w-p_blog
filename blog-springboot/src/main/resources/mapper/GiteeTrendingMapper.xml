@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ican.mapper.GiteeTrendingMapper">
+
+    <!-- 分页查询 Gitee Trending -->
+    <select id="selectGiteeTrendingVOList" resultType="com.ican.model.vo.GiteeTrendingVO">
+        SELECT id,
+        repo_name,
+        author,
+        stars,
+        language,
+        description,
+        url,
+        top_category,
+        sub_category,
+        project_image,
+        order_by,
+        scraped_at
+        FROM t_gitee_trending
+        <where>
+<!--            <if test="condition.repoName != null and condition.repoName != ''">
+                AND repo_name LIKE CONCAT('%', #{repoName}, '%')
+            </if>
+            <if test="condition.author != null and condition.author != ''">
+                AND author LIKE CONCAT('%', #{author}, '%')
+            </if>-->
+            <if test="condition.language != null and condition.language != ''">
+                AND language = #{language}
+            </if>
+        </where>
+        ORDER BY scraped_at DESC
+        LIMIT #{limit}, #{size}
+    </select>
+
+    <!-- 查询总数 -->
+    <select id="countGiteeTrending" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM t_gitee_trending
+        <where>
+<!--            <if test="condition.repoName != null and condition.repoName != ''">
+                AND repo_name LIKE CONCAT('%', #{repoName}, '%')
+            </if>
+            <if test="condition.author != null and condition.author != ''">
+                AND author LIKE CONCAT('%', #{author}, '%')
+            </if>-->
+            <if test="condition.language != null and condition.language != ''">
+                AND language = #{language}
+            </if>
+        </where>
+    </select>
+
+</mapper>

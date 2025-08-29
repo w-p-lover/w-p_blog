@@ -74,6 +74,19 @@ export interface BookQuery {
 }
 
 /**
+ * 分页参数
+ */
+export interface PageQuery {
+    /**
+     * 关键字
+     */
+    keyword?: string;
+    /**
+     * 排序字段
+     */
+    sortType?: string;
+}
+/**
  * 用户信息
  */
 export interface UserForm {

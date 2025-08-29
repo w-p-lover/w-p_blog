@@ -33,6 +33,12 @@ public class ConditionDTO {
     private String keyword;
 
     /**
+     * 搜索内容
+     */
+    @ApiModelProperty(value = "语言")
+    private String language;
+
+    /**
      * 是否禁用 (0否 1是)
      */
     @ApiModelProperty(value = "是否禁用 (0否 1是)")
