@@ -70,6 +70,13 @@ const routes: RouteRecordRaw[] = [
         },
     },
     {
+        path: "/trend",
+        component: () => import("@/views/Trending/index.vue"),
+        meta: {
+            title: "gitee代码",
+        },
+    },
+    {
         path: "/book",
         component: () => import("@/views/Book/index.vue"),
         meta: {

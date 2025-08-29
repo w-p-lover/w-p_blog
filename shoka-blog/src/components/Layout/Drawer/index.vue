@@ -99,6 +99,11 @@ const menuList = [
         path: "/weather"
       },
       {
+        name: "项目",
+        icon: "search",
+        path: "/trend"
+      },
+      {
         name: "书目",
         icon: "qizhi",
         path: "/book"
