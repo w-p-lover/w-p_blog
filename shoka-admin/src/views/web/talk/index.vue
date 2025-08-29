@@ -61,7 +61,7 @@
         <!-- 说说图片 -->
         <el-row :gutter="4" style="margin-top: 0.5rem;">
           <el-col :md="8" :cols="6" v-for="(img, index) of talk.imgList" :key="index">
-            <el-image class="talk-image" :src="img" :preview-src-list="previewList"></el-image>
+            <el-image class="talk-image" :src="img" :preview-src-list="previewList" ></el-image>
           </el-col>
         </el-row>
       </div>
@@ -462,7 +462,6 @@ onMounted(() => {
 }
 
 .talk-image {
-  width: 100%;
   height: 200px;
   padding: 0.125rem;
   border-radius: 10px;

@@ -1,7 +1,5 @@
 package com.ican.service;
 
-import com.ican.entity.Book;
-import com.ican.model.dto.BookDTO;
 import com.ican.model.vo.BookVO;
 import com.ican.model.vo.PageResult;
 
