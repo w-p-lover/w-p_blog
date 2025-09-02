@@ -13,7 +13,13 @@ export default defineConfig({
         global: 'window',
     },
     plugins: [
-        vue(),
+        vue({
+            template: {
+                compilerOptions: {
+                    isCustomElement: tag => tag === 'meting-js'
+                }
+            }
+        }),
         AutoImport({
             imports: ["vue", "vue-router", "pinia"],
             dts: "src/types/auto-imports.d.ts",
