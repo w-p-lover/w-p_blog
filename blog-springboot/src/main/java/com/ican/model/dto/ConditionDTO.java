@@ -93,6 +93,17 @@ public class ConditionDTO {
     private Integer userType;
 
     /**
+     * 项目类型
+     */
+    @ApiModelProperty(value = "项目类型")
+    private String trendingType;
+
+    /**
+     * Stars
+     */
+    @ApiModelProperty(value = "Stars")
+    private String trendingOrder;
+    /**
      * 操作模块
      */
     @ApiModelProperty(value = "操作模块")

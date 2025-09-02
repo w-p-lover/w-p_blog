@@ -5,7 +5,9 @@ import com.ican.entity.Chat;
 import com.ican.model.dto.ConditionDTO;
 import com.ican.model.vo.GiteeTrendingVO;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 import org.springframework.stereotype.Repository;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.List;
 
@@ -26,4 +28,10 @@ public interface GiteeTrendingMapper extends BaseMapper<Chat> {
             @Param("condition") ConditionDTO condition
     );
     Long countGiteeTrending(@Param("condition") ConditionDTO condition);
+
+    @Select("SELECT DISTINCT sub_category FROM t_gitee_trending")
+    List<String> countGiteeTrendingTypes();
+
+    @Select("SELECT DISTINCT language FROM t_gitee_trending WHERE language != '' ")
+    List<String> countGiteeTrendingLang();
 }

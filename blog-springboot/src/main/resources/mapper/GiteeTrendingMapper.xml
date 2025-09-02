@@ -21,17 +21,14 @@
         scraped_at
         FROM t_gitee_trending
         <where>
-<!--            <if test="condition.repoName != null and condition.repoName != ''">
-                AND repo_name LIKE CONCAT('%', #{repoName}, '%')
+            <if test="condition.trendingType != null and condition.trendingType != ''">
+                AND sub_category =  #{condition.trendingType}
             </if>
-            <if test="condition.author != null and condition.author != ''">
-                AND author LIKE CONCAT('%', #{author}, '%')
-            </if>-->
             <if test="condition.language != null and condition.language != ''">
-                AND language = #{language}
+                AND language = #{condition.language}
             </if>
         </where>
-        ORDER BY scraped_at DESC
+        ORDER BY ${condition.trendingOrder} DESC
         LIMIT #{limit}, #{size}
     </select>
 
@@ -40,14 +37,11 @@
         SELECT COUNT(*)
         FROM t_gitee_trending
         <where>
-<!--            <if test="condition.repoName != null and condition.repoName != ''">
-                AND repo_name LIKE CONCAT('%', #{repoName}, '%')
+            <if test="condition.trendingType != null and condition.trendingType != ''">
+                AND sub_category =  #{condition.trendingType}
             </if>
-            <if test="condition.author != null and condition.author != ''">
-                AND author LIKE CONCAT('%', #{author}, '%')
-            </if>-->
             <if test="condition.language != null and condition.language != ''">
-                AND language = #{language}
+                AND language = #{condition.language}
             </if>
         </where>
     </select>
