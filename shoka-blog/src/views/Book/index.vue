@@ -468,6 +468,10 @@ onMounted(() => {
   --soft-shadow: 0 8px 30px rgba(20, 20, 30, 0.06);
 }
 
+:deep(.el-overlay-dialog){
+  bottom: -33px;
+}
+
 /* 容器 */
 .book-container {
   position: relative;
@@ -494,17 +498,6 @@ onMounted(() => {
   margin: 4px 0 0;
   color: var(--muted);
   font-size: 13px;
-}
-
-/* 本书数量标签 */
-.count-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: linear-gradient(90deg, rgba(59, 130, 246, 0.12), rgba(72, 187, 120, 0.06));
-  padding: 6px 10px;
-  border-radius: 20px;
-  box-shadow: var(--soft-shadow);
 }
 
 .count-chip .count {
@@ -733,7 +726,7 @@ onMounted(() => {
 .book-detail {
   display: flex;
   gap: 28px;
-  padding: 12px 6px;
+  padding: 0 6px;
   align-items: flex-start;
   flex-wrap: wrap;
 }
@@ -813,7 +806,7 @@ onMounted(() => {
 /* 简介与书源 */
 .book-intro, .book-sources {
   margin-top: 10px;
-  padding: 12px 0;
+  padding: 8px 5px;
   background: linear-gradient(180deg, #fff, #fbfdff);
   border-radius: 10px;
   box-shadow: 0 6px 20px rgba(37, 51, 73, 0.04);
