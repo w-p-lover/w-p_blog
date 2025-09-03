@@ -91,7 +91,7 @@
 
 
         <!-- 添加书籍弹窗（保持你原有内容绑定） -->
-        <el-dialog title="添加书籍" v-model="showAddDialog" width="420px" :close-on-click-modal="false">
+        <el-dialog title="添加书籍" v-model="showAddDialog" width="450px" :close-on-click-modal="false">
           <el-form :model="newBook" label-width="80px" class="add-form">
             <el-form-item label="书名" required>
               <el-input v-model="newBook.title" placeholder="请输入书名"/>
@@ -107,7 +107,26 @@
               </el-select>
             </el-form-item>
             <el-form-item label="标签">
-              <el-input v-model="newBook.tags" placeholder="用逗号分隔"/>
+              <el-input-tag
+                  v-model="tagInput"
+                  :max="3"
+                  draggable
+                  placeholder="请输入标签（回车确认）"
+              >
+                <template #tag="{ value }">
+                  <el-tag
+                      :type="getTagType(value)"
+                      effect="light"
+                      @close="removeTag(value)"
+                      style="display: flex; align-items: center;"
+                  >
+                    <el-icon class="mr-1">
+                      <ElementPlus/>
+                    </el-icon>
+                    <span>{{ value }}</span>
+                  </el-tag>
+                </template>
+              </el-input-tag>
             </el-form-item>
             <el-form-item label="封面URL">
               <el-input v-model="newBook.cover" placeholder="图片链接（可选）"/>
@@ -150,9 +169,6 @@
                 </div>
                 <div class="book-edge"></div>
               </div>
-<!--              <el-button type="primary" size="default" @click="addResource" style="align-content:center">
-                添加书源
-              </el-button>-->
             </div>
 
             <div class="detail-right">
@@ -222,13 +238,6 @@
                   <!-- 操作 -->
                   <el-table-column label="操作" width="100" align="center">
                     <template #default="{ row }">
-<!--                      <el-button
-                          type="danger"
-                          size="small"
-                          @click="removeResource($index, row.id)"
-                      >
-                        删除
-                      </el-button>-->
                       <el-button
                           type="success"
                           size="small"
@@ -260,10 +269,9 @@ import {
   addBook as apiAddBook,
   getBookList,
   updateBookStatus as apiChangeBookStatus,
-  updateResource,
-  deleteResource
 } from "@/api/book";
-import {ElMessage} from 'element-plus';
+import {ElementPlus} from '@element-plus/icons-vue'
+import type {TagProps} from 'element-plus'
 
 const showAddDialog = ref(false);
 const showDetailDialog = ref(false);
@@ -272,6 +280,35 @@ const sortType = ref('newest'); // 默认按最新添加排序
 const colorCache = new Map<string, string>();
 const gridLayout = ref('spacious'); // 默认布局
 const defaultCover = ref('')
+const tagTypes: TagProps['type'][] = ['primary', 'success', 'info', 'warning', 'danger']
+const type = ref('primary')
+const data = reactive({
+  count: 0,
+  queryParams: {
+    sortType: 'newest',
+  },
+  bookList: [] as BookVO[],
+});
+
+const newBook = ref({
+  title: '',
+  author: '',
+  status: 'wish' as 'wish' | 'reading' | 'read',
+  cover: '',
+  tags: '',
+  brief: '',
+  briefImg: '',
+});
+
+const tagInput = ref<string[]>([]);
+const {count, queryParams, bookList} = toRefs(data);
+
+// 修改排序
+const changeSort = (type: string) => {
+  queryParams.value.sortType = type;
+  fetchBookList();
+};
+
 // 更新网格布局
 const updateGridLayout = () => {
   const grid = document.querySelector('.books-grid') as HTMLElement;
@@ -292,36 +329,10 @@ const updateGridLayout = () => {
       break;
   }
 };
-
-const data = reactive({
-  count: 0,
-  queryParams: {
-    sortType: 'newest',
-  },
-  bookList: [] as BookVO[],
-});
-
-const newBook = ref({
-  title: '',
-  author: '',
-  status: 'wish' as 'wish' | 'reading' | 'read',
-  cover: '',
-  tags: '',
-  brief: '',
-  briefImg: '',
-});
-
-
-const {count, queryParams, bookList} = toRefs(data);
-
-// 修改排序
-const changeSort = (type: string) => {
-  queryParams.value.sortType = type;
-  fetchBookList();
-};
-
 const addBook = async () => {
   if (!newBook.value.title.trim()) return;
+  const tags = computed(() => tagInput.value.join(","));
+  newBook.value.tags = tags.value;
   const payload = {
     ...newBook.value,
     resource: JSON.stringify([])
@@ -331,16 +342,6 @@ const addBook = async () => {
   resetNewBook();
   fetchBookList();
 };
-
-// 新增书源
-/*const addResource = () => {
-  if (!currentBook.value) return;
-  currentBook.value.resource.push({
-    name: '',
-    url: '',
-    type: 'pdf',
-  });
-};*/
 
 // 重置新书表单
 const resetNewBook = () => {
@@ -422,32 +423,20 @@ const openLink = (url: string) => {
   if (!url) return;
   window.open(url, "_blank"); // 新窗口打开
 };
-/*// 删除书源
-const removeResource = async (index: number, sourceId: number) => {
-  try {
-    if (!currentBook.value) return
-    await deleteResource(currentBook.value.id, index); // 调用后端删除接口
-    currentBook.value.resource.splice(index, 1); // 前端移除
-    ElMessage.success('删除成功');
-  } catch (err) {
-    ElMessage.error('删除失败');
-    console.error(err);
-  }
-};
 
-// 保存书源
-const saveSource = async () => {
-  try {
-    if (!currentBook.value) return
-    await updateResource(currentBook.value.id, currentBook.value.resource);// 调用后端保存接口
-    console.log('保存书源', currentBook.value.resource);
-    ElMessage.success('保存成功');
-  } catch (err) {
-    ElMessage.error('保存失败');
-    console.error(err);
+const getTagType = (value: string): TagProps['type'] => {
+  const str = String(value) // 保证是字符串
+  let hash = 0
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash)
   }
-};*/
+  type.value = tagTypes[Math.abs(hash) % tagTypes.length]
+  return tagTypes[Math.abs(hash) % tagTypes.length]
+}
 
+const removeTag = (value: string) => {
+  tagInput.value = tagInput.value.filter(tag => tag !== value)
+}
 // 监听排序变化
 watch(sortType, () => changeSort(sortType.value));
 
@@ -468,7 +457,7 @@ onMounted(() => {
   --soft-shadow: 0 8px 30px rgba(20, 20, 30, 0.06);
 }
 
-:deep(.el-overlay-dialog){
+:deep(.el-overlay-dialog) {
   bottom: -33px;
 }
 
