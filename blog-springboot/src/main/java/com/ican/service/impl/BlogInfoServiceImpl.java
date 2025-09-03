@@ -28,7 +28,7 @@ import static com.ican.enums.ArticleStatusEnum.PUBLIC;
 /**
  * 博客业务接口实现类
  *
- * @author ican
+ * @author xcs
  **/
 @Service
 public class BlogInfoServiceImpl implements BlogInfoService {

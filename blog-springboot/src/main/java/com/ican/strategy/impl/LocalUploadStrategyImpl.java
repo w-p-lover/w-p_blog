@@ -14,7 +14,7 @@ import java.io.*;
 /**
  * 本地上传策略
  *
- * @author ican
+ * @author xcs
  */
 @Slf4j
 @Service("localUploadStrategyImpl")

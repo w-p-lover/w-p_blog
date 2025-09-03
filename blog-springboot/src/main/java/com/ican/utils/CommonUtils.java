@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 /**
  * 公共工具类
  *
- * @author ican
+ * @author xcs
  */
 public class CommonUtils {
 

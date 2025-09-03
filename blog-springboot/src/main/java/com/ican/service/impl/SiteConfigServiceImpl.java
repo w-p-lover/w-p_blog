@@ -25,7 +25,7 @@ import static com.ican.enums.FilePathEnum.CONFIG;
 /**
  * 网站配置业务接口实现类
  *
- * @author ican
+ * @author xcs
  */
 @Service
 public class SiteConfigServiceImpl extends ServiceImpl<SiteConfigMapper, SiteConfig> implements SiteConfigService {

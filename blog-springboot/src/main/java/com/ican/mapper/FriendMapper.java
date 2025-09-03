@@ -12,7 +12,7 @@ import java.util.List;
 /**
  * 友链 Mapper
  *
- * @author ican
+ * @author xcs
  */
 @Repository
 public interface FriendMapper extends BaseMapper<Friend> {

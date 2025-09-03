@@ -16,7 +16,7 @@ import java.util.List;
 /**
  * 定时任务日志业务接口实现类
  *
- * @author ican
+ * @author xcs
  */
 @Service
 public class TaskLogServiceImpl extends ServiceImpl<TaskLogMapper, TaskLog> implements TaskLogService {

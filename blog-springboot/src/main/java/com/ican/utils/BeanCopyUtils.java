@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * 拷贝工具
  *
- * @author ican
+ * @author xcs
  */
 public class BeanCopyUtils {
 

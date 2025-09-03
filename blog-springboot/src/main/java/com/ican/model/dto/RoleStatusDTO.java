@@ -9,7 +9,7 @@ import javax.validation.constraints.NotNull;
 /**
  * 角色状态
  *
- * @author ican
+ * @author xcs
  * @date 2022/12/19 10:31
  **/
 @Data

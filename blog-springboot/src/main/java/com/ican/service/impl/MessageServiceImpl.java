@@ -32,7 +32,7 @@ import static com.ican.constant.CommonConstant.TRUE;
 /**
  * 留言业务接口实现类
  *
- * @author ican
+ * @author xcs
  */
 @Service
 public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> implements MessageService {

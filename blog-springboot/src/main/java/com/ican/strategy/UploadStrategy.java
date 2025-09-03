@@ -5,7 +5,7 @@ import org.springframework.web.multipart.MultipartFile;
 /**
  * 上传策略
  *
- * @author ican
+ * @author xcs
  */
 public interface UploadStrategy {
     /**

@@ -7,7 +7,7 @@ import lombok.Data;
 /**
  * 分类选项VO
  *
- * @author ican
+ * @author xcs
  **/
 @Data
 @ApiModel(description = "分类选项VO")

@@ -12,7 +12,7 @@ import java.util.List;
 /**
  * 访问日志Mapper
  *
- * @author ican
+ * @author xcs
  */
 @Repository
 public interface VisitLogMapper extends BaseMapper<VisitLog> {

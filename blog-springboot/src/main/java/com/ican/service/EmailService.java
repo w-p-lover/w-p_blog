@@ -5,7 +5,7 @@ import com.ican.model.dto.MailDTO;
 /**
  * 邮件服务接口
  *
- * @author ican
+ * @author xcs
  **/
 public interface EmailService {
 

@@ -9,7 +9,7 @@ import com.ican.model.vo.TaskLogVO;
 /**
  * 定时任务日志业务接口
  *
- * @author ican
+ * @author xcs
  */
 public interface TaskLogService extends IService<TaskLog> {
 

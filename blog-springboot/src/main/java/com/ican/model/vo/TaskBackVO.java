@@ -12,7 +12,7 @@ import java.util.Date;
 /**
  * 定时任务后台VO
  *
- * @author ican
+ * @author xcs
  */
 @Data
 @NoArgsConstructor

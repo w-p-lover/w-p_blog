@@ -21,7 +21,7 @@ import static com.ican.constant.ElasticConstant.ARTICLE_INDEX;
 /**
  * es文章业务接口实现类
  *
- * @author ican
+ * @author xcs
  **/
 @Service
 @Slf4j

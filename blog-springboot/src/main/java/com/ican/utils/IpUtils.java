@@ -16,7 +16,7 @@ import java.util.Objects;
 /**
  * IP地址工具类
  *
- * @author ican
+ * @author xcs
  */
 @SuppressWarnings("all")
 public class IpUtils {

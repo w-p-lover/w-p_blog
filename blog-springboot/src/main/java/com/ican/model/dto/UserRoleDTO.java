@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * 用户角色DTO
  *
- * @author ican
+ * @author xcs
  **/
 @Data
 @ApiModel(description = "用户角色DTO")

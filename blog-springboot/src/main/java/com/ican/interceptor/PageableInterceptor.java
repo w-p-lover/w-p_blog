@@ -15,7 +15,7 @@ import static com.ican.constant.PageConstant.*;
 /**
  * 分页拦截器
  *
- * @author ican
+ * @author xcs
  */
 public class PageableInterceptor implements HandlerInterceptor {
 

@@ -23,7 +23,7 @@ import static com.ican.constant.SocialLoginConstant.*;
 /**
  * Qq登录策略
  *
- * @author ican
+ * @author xcs
  * @date 2023/04/06 18:43
  **/
 @Service("qqLoginStrategyImpl")

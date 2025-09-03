@@ -12,7 +12,7 @@ import java.util.List;
 /**
  * 评论Mapper
  *
- * @author ican
+ * @author xcs
  */
 @Repository
 public interface CommentMapper extends BaseMapper<Comment> {

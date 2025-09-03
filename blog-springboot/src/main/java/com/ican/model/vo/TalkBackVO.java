@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * 说说后台VO
  *
- * @author ican
+ * @author xcs
  */
 @Data
 @ApiModel(description = "说说后台VO")

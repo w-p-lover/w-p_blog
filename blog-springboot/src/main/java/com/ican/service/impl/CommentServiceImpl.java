@@ -39,7 +39,7 @@ import static com.ican.enums.CommentTypeEnum.*;
 /**
  * 评论业务接口实现类
  *
- * @author ican
+ * @author xcs
  */
 @Service
 public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> implements CommentService {

@@ -21,7 +21,7 @@ import static com.ican.constant.MqConstant.*;
 /**
  * 文章消费者
  *
- * @author ican
+ * @author xcs
  **/
 @Component
 public class ArticleConsumer {

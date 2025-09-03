@@ -6,7 +6,7 @@ import com.ican.model.vo.BlogInfoVO;
 /**
  * 博客业务接口
  *
- * @author ican
+ * @author xcs
  **/
 public interface BlogInfoService {
     /**

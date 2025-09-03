@@ -25,7 +25,7 @@ import static com.ican.constant.OptTypeConstant.*;
 /**
  * 文章控制器
  *
- * @author ican
+ * @author xcs
  **/
 @Api(tags = "文章模块")
 @RestController

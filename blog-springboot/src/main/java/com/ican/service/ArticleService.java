@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * 文章业务接口
  *
- * @author ican
+ * @author xcs
  * @date 2022/12/04 22:30
  **/
 public interface ArticleService extends IService<Article> {

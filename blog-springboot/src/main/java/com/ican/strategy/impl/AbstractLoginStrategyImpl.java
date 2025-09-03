@@ -19,7 +19,7 @@ import static com.ican.enums.RoleEnum.USER;
 /**
  * 抽象登录模板
  *
- * @author ican
+ * @author xcs
  */
 @Service
 public abstract class AbstractLoginStrategyImpl implements SocialLoginStrategy {

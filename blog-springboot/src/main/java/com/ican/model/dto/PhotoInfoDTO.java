@@ -10,7 +10,7 @@ import javax.validation.constraints.NotNull;
 /**
  * 照片信息DTO
  *
- * @author ican
+ * @author xcs
  **/
 @Data
 @ApiModel(description = "照片信息DTO")

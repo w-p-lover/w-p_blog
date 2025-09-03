@@ -7,7 +7,7 @@ import lombok.Data;
 /**
  * 后台照片VO
  *
- * @author ican
+ * @author xcs
  * @date 2022/12/30 20:56
  **/
 @Data

@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * 评论VO
  *
- * @author ican
+ * @author xcs
  **/
 @Data
 @ApiModel(description = "评论VO")

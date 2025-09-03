@@ -7,7 +7,7 @@ import lombok.Data;
 /**
  * Git用户信息
  *
- * @author ican
+ * @author xcs
  */
 @Data
 @ApiModel(description = "Git用户信息")

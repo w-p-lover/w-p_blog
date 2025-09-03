@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * 相册业务接口
  *
- * @author ican
+ * @author xcs
  */
 public interface AlbumService extends IService<Album> {
 

@@ -7,7 +7,7 @@ import lombok.Data;
 /**
  * 分类列表
  *
- * @author ican
+ * @author xcs
  **/
 @Data
 @ApiModel(description = "分类列表")

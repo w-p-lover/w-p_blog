@@ -16,7 +16,7 @@ import java.util.Map;
 /**
  * 照片业务接口
  *
- * @author ican
+ * @author xcs
  */
 public interface PhotoService extends IService<Photo> {
 

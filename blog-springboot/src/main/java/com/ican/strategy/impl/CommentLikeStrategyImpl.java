@@ -19,7 +19,7 @@ import static com.ican.constant.RedisConstant.USER_COMMENT_LIKE;
 /**
  * 评论点赞策略
  *
- * @author ican
+ * @author xcs
  */
 @Service("commentLikeStrategyImpl")
 public class CommentLikeStrategyImpl implements LikeStrategy {

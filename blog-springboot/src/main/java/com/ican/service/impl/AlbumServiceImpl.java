@@ -34,7 +34,7 @@ import static com.ican.enums.FilePathEnum.PHOTO;
 /**
  * 相册业务接口实现类
  *
- * @author ican
+ * @author xcs
  */
 @Service
 public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements AlbumService {

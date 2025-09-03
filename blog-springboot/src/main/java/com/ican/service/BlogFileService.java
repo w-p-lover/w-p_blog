@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * 文件业务接口
  *
- * @author ican
+ * @author xcs
  */
 public interface BlogFileService extends IService<BlogFile> {
 

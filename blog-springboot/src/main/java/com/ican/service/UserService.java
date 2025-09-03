@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * 用户业务接口
  *
- * @author ican
+ * @author xcs
  * @date 2022/12/05 15:29
  **/
 public interface UserService extends IService<User> {

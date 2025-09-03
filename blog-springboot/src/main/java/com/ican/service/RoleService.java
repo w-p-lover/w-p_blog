@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * 角色业务接口
  *
- * @author ican
+ * @author xcs
  * @date 2022/12/07 09:38
  **/
 public interface RoleService extends IService<Role> {

@@ -7,7 +7,7 @@ import org.springframework.web.multipart.MultipartFile;
 /**
  * 网站配置业务接口
  *
- * @author ican
+ * @author xcs
  */
 public interface SiteConfigService extends IService<SiteConfig> {
 

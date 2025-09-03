@@ -12,7 +12,7 @@ import java.util.List;
 /**
  * 分类 Mapper
  *
- * @author ican
+ * @author xcs
  * @date 2022/12/02 17:34
  **/
 @Repository

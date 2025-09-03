@@ -26,7 +26,7 @@ import static com.ican.enums.LoginTypeEnum.GITEE;
 /**
  * Gitee登录策略
  *
- * @author ican
+ * @author xcs
  */
 @Service("giteeLoginStrategyImpl")
 public class GiteeLoginStrategyImpl extends AbstractLoginStrategyImpl {

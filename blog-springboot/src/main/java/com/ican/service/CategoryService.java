@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * 分类业务接口
  *
- * @author ican
+ * @author xcs
  * @date 2022/12/02 17:33
  **/
 public interface CategoryService extends IService<Category> {

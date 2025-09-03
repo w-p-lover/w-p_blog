@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * 友链业务接口实现类
  *
- * @author ican
+ * @author xcs
  */
 @Service
 public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> implements FriendService {

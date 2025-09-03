@@ -25,7 +25,7 @@ import static com.ican.constant.OptTypeConstant.*;
 /**
  * 相册控制器
  *
- * @author ican
+ * @author xcs
  * @date 2022/12/29 22:10
  **/
 @Api(tags = "相册模块")

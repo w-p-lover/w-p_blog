@@ -36,7 +36,7 @@ import static com.ican.enums.CommentTypeEnum.TALK;
 /**
  * 说说业务接口实现类
  *
- * @author ican
+ * @author xcs
  */
 @Service
 public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements TalkService {

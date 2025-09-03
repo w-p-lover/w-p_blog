@@ -13,7 +13,7 @@ import java.time.format.DateTimeFormatter;
 /**
  * 博客启动类
  *
- * @author ican
+ * @author xcs
  * @date 2022/11/28 18:54
  **/
 @SpringBootApplication

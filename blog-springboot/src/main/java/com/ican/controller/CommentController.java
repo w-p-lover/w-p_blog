@@ -25,7 +25,7 @@ import static com.ican.constant.OptTypeConstant.UPDATE;
 /**
  * 评论控制器
  *
- * @author ican
+ * @author xcs
  **/
 @Api(tags = "评论模块")
 @RestController

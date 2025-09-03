@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * 标签业务接口
  *
- * @author ican
+ * @author xcs
  * @date 2022/12/02 21:59
  **/
 public interface TagService extends IService<Tag> {

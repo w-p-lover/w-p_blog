@@ -8,7 +8,7 @@ import com.ican.model.vo.PageResult;
 /**
  * 访问业务接口
  *
- * @author ican
+ * @author xcs
  */
 public interface VisitLogService extends IService<VisitLog> {
 

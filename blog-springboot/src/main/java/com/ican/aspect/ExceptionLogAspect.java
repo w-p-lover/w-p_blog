@@ -28,7 +28,7 @@ import java.util.Objects;
 /**
  * AOP记录异常日志
  *
- * @author ican
+ * @author xcs
  */
 @Slf4j
 @Aspect

@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 /**
  * 角色VO
  *
- * @author ican
+ * @author xcs
  * @date 2022/12/07 09:50
  **/
 @Data

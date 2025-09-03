@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * 留言业务接口
  *
- * @author ican
+ * @author xcs
  */
 public interface MessageService extends IService<Message> {
 

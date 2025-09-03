@@ -9,7 +9,7 @@ import javax.validation.constraints.NotBlank;
 /**
  * 友链DTO
  *
- * @author ican
+ * @author xcs
  * @date 2022/12/28 19:18
  **/
 @Data

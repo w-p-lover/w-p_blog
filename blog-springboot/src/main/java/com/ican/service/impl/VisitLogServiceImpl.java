@@ -17,7 +17,7 @@ import java.util.List;
 /**
  * 访问业务接口实现类
  *
- * @author ican
+ * @author xcs
  */
 @Service
 public class VisitLogServiceImpl extends ServiceImpl<VisitLogMapper, VisitLog> implements VisitLogService {

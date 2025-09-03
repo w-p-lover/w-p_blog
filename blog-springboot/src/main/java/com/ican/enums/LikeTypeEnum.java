@@ -6,7 +6,7 @@ import lombok.Getter;
 /**
  * 点赞类型枚举
  *
- * @author ican
+ * @author xcs
  */
 @Getter
 @AllArgsConstructor

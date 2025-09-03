@@ -26,7 +26,7 @@ import static com.ican.constant.OptTypeConstant.*;
 /**
  * 说说控制器
  *
- * @author ican
+ * @author xcs
  **/
 @Api(tags = "说说模块")
 @RestController

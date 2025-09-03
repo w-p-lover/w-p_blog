@@ -33,7 +33,7 @@ import static com.ican.constant.PersonConstant.MY_RED_MAIL;
 /**
  * 分类业务接口实现类
  *
- * @author ican
+ * @author xcs
  * @date 2022/12/02 17:35
  **/
 @Service

@@ -5,7 +5,7 @@ import java.lang.annotation.*;
 /**
  * Redis限流注解
  *
- * @author ican
+ * @author xcs
  */
 @Documented
 @Target(ElementType.METHOD)

@@ -9,7 +9,7 @@ import com.ican.model.vo.PageResult;
 /**
  * 操作日志业务接口
  *
- * @author ican
+ * @author xcs
  */
 public interface OperationLogService extends IService<OperationLog> {
 

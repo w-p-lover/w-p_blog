@@ -10,7 +10,7 @@ import java.util.Set;
 /**
  * 评论类型校验器
  *
- * @author ican
+ * @author xcs
  **/
 public class CommentTypeValidator implements ConstraintValidator<CommentType, Integer> {
 

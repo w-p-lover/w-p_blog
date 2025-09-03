@@ -28,7 +28,7 @@ import static com.ican.constant.CommonConstant.PARENT_ID;
 /**
  * 菜单业务接口实现类
  *
- * @author ican
+ * @author xcs
  * @date 2022/12/05 22:13
  **/
 @Service

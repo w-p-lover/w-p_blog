@@ -9,7 +9,7 @@ import javax.validation.constraints.NotBlank;
 /**
  * Git信息
  *
- * @author ican
+ * @author xcs
  **/
 @Data
 @ApiModel(description = "Git信息")

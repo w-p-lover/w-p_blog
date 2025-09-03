@@ -8,7 +8,7 @@ import com.ican.model.vo.PageResult;
 /**
  * 异常日志业务接口
  *
- * @author ican
+ * @author xcs
  */
 public interface ExceptionLogService extends IService<ExceptionLog> {
 

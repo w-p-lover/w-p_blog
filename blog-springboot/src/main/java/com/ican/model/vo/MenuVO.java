@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * 菜单VO
  *
- * @author ican
+ * @author xcs
  * @date 2022/12/05 22:26
  **/
 @Data

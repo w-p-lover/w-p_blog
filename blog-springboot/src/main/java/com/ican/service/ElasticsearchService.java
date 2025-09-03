@@ -6,7 +6,7 @@ import com.ican.model.vo.ArticleSearchVO;
 /**
  * es文章业务接口
  *
- * @author ican
+ * @author xcs
  */
 public interface ElasticsearchService {
 
