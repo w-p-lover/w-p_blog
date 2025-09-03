@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration;
 /**
  * cos配置属性
  *
- * @author ican
+ * @author xcs
  */
 @Data
 @Configuration

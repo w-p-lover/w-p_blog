@@ -9,7 +9,7 @@ import java.lang.annotation.*;
 /**
  * 评论类型注解
  *
- * @author ican
+ * @author xcs
  **/
 @Documented
 @Constraint(validatedBy = {CommentTypeValidator.class})

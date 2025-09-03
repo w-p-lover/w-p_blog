@@ -16,7 +16,7 @@ import java.util.Objects;
 /**
  * 文件md5工具类
  *
- * @author ican
+ * @author xcs
  */
 @Log4j2
 public class FileUtils {

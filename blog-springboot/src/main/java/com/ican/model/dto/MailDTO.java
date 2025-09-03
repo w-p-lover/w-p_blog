@@ -12,7 +12,7 @@ import java.util.Map;
 /**
  * 邮箱DTO
  *
- * @author ican
+ * @author xcs
  */
 @Data
 @Builder

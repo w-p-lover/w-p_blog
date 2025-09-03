@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * 友链业务接口
  *
- * @author ican
+ * @author xcs
  */
 public interface FriendService extends IService<Friend> {
 

@@ -7,7 +7,7 @@ import lombok.Data;
 /**
  * 用户菜单
  *
- * @author ican
+ * @author xcs
  * @date 2022/12/06 16:41
  **/
 @Data

@@ -16,7 +16,7 @@ import static com.ican.constant.RedisConstant.USER_TALK_LIKE;
 /**
  * 说说点赞策略
  *
- * @author ican
+ * @author xcs
  */
 @Service("talkLikeStrategyImpl")
 public class TalkLikeStrategyImpl implements LikeStrategy {

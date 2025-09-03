@@ -7,7 +7,7 @@ import static com.ican.enums.StatusCodeEnum.FAIL;
 /**
  * 业务异常
  *
- * @author ican
+ * @author xcs
  * @date 2022/12/02 16:18
  **/
 @Getter

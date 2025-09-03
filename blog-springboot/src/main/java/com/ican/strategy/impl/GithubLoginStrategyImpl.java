@@ -28,7 +28,7 @@ import static com.ican.enums.LoginTypeEnum.GITHUB;
 /**
  * Github登录策略
  *
- * @author ican
+ * @author xcs
  **/
 @Service("githubLoginStrategyImpl")
 public class GithubLoginStrategyImpl extends AbstractLoginStrategyImpl {

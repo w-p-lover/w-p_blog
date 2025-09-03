@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * 说说业务接口
  *
- * @author ican
+ * @author xcs
  */
 public interface TalkService extends IService<Talk> {
 

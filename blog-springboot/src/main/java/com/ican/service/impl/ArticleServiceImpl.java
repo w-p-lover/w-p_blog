@@ -46,7 +46,7 @@ import static com.ican.enums.FilePathEnum.ARTICLE;
 /**
  * 文章业务接口实现类
  *
- * @author ican
+ * @author xcs
  * @date 2022/12/04 22:31
  **/
 @Service

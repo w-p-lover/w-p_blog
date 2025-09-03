@@ -9,7 +9,7 @@ import javax.validation.constraints.NotBlank;
 /**
  * 标签DTO
  *
- * @author ican
+ * @author xcs
  */
 @Data
 @ApiModel(description = "标签DTO")

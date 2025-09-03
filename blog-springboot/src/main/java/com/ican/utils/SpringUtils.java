@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 /**
  * spring工具类
  *
- * @author ican
+ * @author xcs
  */
 @Component
 public final class SpringUtils implements BeanFactoryPostProcessor {

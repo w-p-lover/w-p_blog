@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 /**
  * 用户角色
  *
- * @author ican
+ * @author xcs
  * @date 2022/11/29 22:13
  **/
 @Data

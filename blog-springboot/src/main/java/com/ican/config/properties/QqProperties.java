@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration;
 /**
  * QQ配置属性
  *
- * @author ican
+ * @author xcs
  */
 @Data
 @Configuration

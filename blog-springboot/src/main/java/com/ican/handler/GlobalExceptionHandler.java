@@ -21,7 +21,7 @@ import static com.ican.enums.StatusCodeEnum.*;
 /**
  * 全局异常处理
  *
- * @author ican
+ * @author xcs
  */
 @Slf4j
 @RestControllerAdvice

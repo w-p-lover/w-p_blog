@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * 角色DTO
  *
- * @author ican
+ * @author xcs
  * @date 2022/12/07 15:36
  **/
 @Data

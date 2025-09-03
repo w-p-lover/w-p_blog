@@ -20,7 +20,7 @@ import static com.ican.constant.CommonConstant.TRUE;
 /**
  * 抽象quartz调用
  *
- * @author ican
+ * @author xcs
  */
 @SuppressWarnings(value = "all")
 public abstract class AbstractQuartzJob implements Job {

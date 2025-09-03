@@ -40,7 +40,7 @@ import static com.ican.constant.CommonConstant.TRUE;
 /**
  * 文件业务接口实现类
  *
- * @author ican
+ * @author xcs
  */
 @Service
 public class BlogFileServiceImpl extends ServiceImpl<BlogFileMapper, BlogFile> implements BlogFileService {

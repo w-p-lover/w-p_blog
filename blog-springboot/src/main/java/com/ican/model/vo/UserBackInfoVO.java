@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * 后台登录用户信息
  *
- * @author ican
+ * @author xcs
  * @date 2022/12/05 16:10
  **/
 @Data

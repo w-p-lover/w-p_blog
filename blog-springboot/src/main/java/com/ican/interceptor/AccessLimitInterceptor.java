@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Redis拦截器
  *
- * @author ican
+ * @author xcs
  */
 @Slf4j
 @Component

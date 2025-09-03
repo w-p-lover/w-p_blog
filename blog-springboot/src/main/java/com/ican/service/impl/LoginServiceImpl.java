@@ -35,7 +35,7 @@ import static com.ican.utils.CommonUtils.checkEmail;
 /**
  * 登录业务接口实现类
  *
- * @author ican
+ * @author xcs
  * @date 2022/12/04 11:24
  **/
 @Service

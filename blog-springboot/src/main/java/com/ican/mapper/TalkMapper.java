@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * 说说 Mapper
  *
- * @author ican
+ * @author xcs
  */
 @Repository
 public interface TalkMapper extends BaseMapper<Talk> {

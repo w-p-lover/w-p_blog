@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * 文章标签 Mapper
  *
- * @author ican
+ * @author xcs
  */
 @Repository
 public interface ArticleTagMapper extends BaseMapper<ArticleTag> {

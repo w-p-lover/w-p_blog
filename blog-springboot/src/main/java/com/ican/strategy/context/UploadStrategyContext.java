@@ -13,7 +13,7 @@ import static com.ican.enums.UploadModeEnum.getStrategy;
 /**
  * 上传策略上下文
  *
- * @author ican
+ * @author xcs
  */
 @Service
 public class UploadStrategyContext {

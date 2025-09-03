@@ -15,7 +15,7 @@ import static com.ican.constant.RedisConstant.UNIQUE_VISITOR;
 /**
  * 执行定时任务
  *
- * @author ican
+ * @author xcs
  */
 @SuppressWarnings(value = "all")
 @Component("timedTask")

@@ -19,7 +19,7 @@ import java.nio.file.Paths;
 /**
  * 抽象上传模板
  *
- * @author ican
+ * @author xcs
  */
 @Service
 public abstract class AbstractUploadStrategyImpl implements UploadStrategy {

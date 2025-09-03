@@ -12,7 +12,7 @@ import java.util.List;
 /**
  * 定时任务日志 Mapper
  *
- * @author ican
+ * @author xcs
  */
 @Repository
 public interface TaskLogMapper extends BaseMapper<TaskLog> {

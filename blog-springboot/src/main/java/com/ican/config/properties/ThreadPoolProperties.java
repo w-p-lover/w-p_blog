@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration;
 /**
  * 线程池参数
  *
- * @author ican
+ * @author xcs
  * @date 2022/12/05 11:33
  **/
 @Data

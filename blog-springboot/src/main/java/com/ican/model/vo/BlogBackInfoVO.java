@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * 网站后台信息VO
  *
- * @author ican
+ * @author xcs
  **/
 @Data
 @Builder

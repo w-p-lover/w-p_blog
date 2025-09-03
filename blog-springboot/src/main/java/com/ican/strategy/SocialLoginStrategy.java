@@ -3,7 +3,7 @@ package com.ican.strategy;
 /**
  * 第三方登录策略
  *
- * @author ican
+ * @author xcs
  */
 public interface SocialLoginStrategy {
 

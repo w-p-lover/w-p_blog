@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * 自定义权限验证接口扩展
  *
- * @author ican
+ * @author xcs
  */
 @Component
 public class StpInterfaceImpl implements StpInterface {

@@ -8,7 +8,7 @@ import lombok.Data;
 /**
  * 文章浏览量排行
  *
- * @author ican
+ * @author xcs
  */
 @Data
 @Builder

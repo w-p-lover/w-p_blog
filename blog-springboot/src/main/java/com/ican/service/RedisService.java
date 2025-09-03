@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Redis服务接口
  *
- * @author ican
+ * @author xcs
  */
 @SuppressWarnings("all")
 public interface RedisService {

@@ -12,7 +12,7 @@ import static com.ican.constant.MqConstant.*;
 /**
  * RabbitMQ配置
  *
- * @author ican
+ * @author xcs
  **/
 @Slf4j
 @Configuration

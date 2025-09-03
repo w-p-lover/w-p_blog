@@ -1,7 +1,7 @@
 package com.ican.model.vo;
 
 /**
- * @author ican
+ * @author xcs
  * @date 2023/02/07 11:29
  **/
 
@@ -12,7 +12,7 @@ import lombok.Data;
 /**
  * 回复数VO
  *
- * @author ican
+ * @author xcs
  */
 @Data
 @ApiModel(description = "回复数VO")

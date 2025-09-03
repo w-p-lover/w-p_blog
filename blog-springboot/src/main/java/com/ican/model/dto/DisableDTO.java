@@ -9,7 +9,7 @@ import javax.validation.constraints.NotNull;
 /**
  * 禁用状态
  *
- * @author ican
+ * @author xcs
  **/
 @Data
 @ApiModel(description = "禁用状态")

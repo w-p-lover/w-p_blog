@@ -8,7 +8,7 @@ import lombok.Data;
 /**
  * 其他信息
  *
- * @author ican
+ * @author xcs
  * @date 2022/12/11 19:35
  **/
 @Data

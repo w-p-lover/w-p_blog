@@ -16,7 +16,7 @@ import java.util.Collections;
 /**
  * Knife4j配置
  *
- * @author ican
+ * @author xcs
  */
 @Configuration
 @EnableSwagger2WebMvc

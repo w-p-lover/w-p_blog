@@ -17,7 +17,7 @@ import javax.mail.internet.MimeMessage;
 /**
  * 邮件服务接口实现类
  *
- * @author ican
+ * @author xcs
  **/
 @Service
 public class EmailServiceImpl implements EmailService {

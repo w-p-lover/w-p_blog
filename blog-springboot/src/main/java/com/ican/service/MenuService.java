@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * 菜单业务接口
  *
- * @author ican
+ * @author xcs
  * @date 2022/12/05 22:13
  **/
 public interface MenuService extends IService<Menu> {

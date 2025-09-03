@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 /**
  * 博客信息
  *
- * @author ican
+ * @author xcs
  **/
 @Data
 @Builder

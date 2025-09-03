@@ -10,7 +10,7 @@ import javax.validation.constraints.Size;
 /**
  * 登录信息
  *
- * @author ican
+ * @author xcs
  * @date 2022/12/04 11:17
  **/
 @Data

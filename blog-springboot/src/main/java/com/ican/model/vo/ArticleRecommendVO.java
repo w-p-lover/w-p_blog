@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 /**
  * 推荐文章
  *
- * @author ican
+ * @author xcs
  **/
 @Data
 @ApiModel(description = "推荐文章")

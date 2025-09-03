@@ -16,7 +16,7 @@ import static com.ican.constant.MqConstant.*;
 /**
  * 邮件消费者
  *
- * @author ican
+ * @author xcs
  */
 @Component
 public class EmailConsumer {

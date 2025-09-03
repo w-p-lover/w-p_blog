@@ -19,7 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 /**
  * 用户信息控制器
  *
- * @author ican
+ * @author xcs
  **/
 @Api(tags = "用户信息模块")
 @RestController

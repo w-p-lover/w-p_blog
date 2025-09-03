@@ -25,7 +25,7 @@ import static com.ican.constant.PersonConstant.MY_RED_MAIL;
 /**
  * MySQL搜索策略
  *
- * @author ican
+ * @author xcs
  */
 @Service("mySqlSearchStrategyImpl")
 public class MysqlSearchStrategyImpl implements SearchStrategy {

@@ -3,7 +3,7 @@ package com.ican.constant;
 /**
  * elasticsearch常量
  *
- * @author ican
+ * @author xcs
  **/
 public class ElasticConstant {
 

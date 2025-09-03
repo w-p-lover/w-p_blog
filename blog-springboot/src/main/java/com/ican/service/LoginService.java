@@ -8,7 +8,7 @@ import com.ican.model.dto.RegisterDTO;
 /**
  * 登录业务接口
  *
- * @author ican
+ * @author xcs
  * @date 2022/12/04 11:16
  **/
 public interface LoginService {
