@@ -2,6 +2,7 @@ package com.ican.model.dto;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import io.swagger.models.auth.In;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
@@ -14,6 +15,13 @@ import java.util.List;
 @Data
 @ApiModel(description = "游戏数据传输对象，用于新增或更新游戏信息")
 public class GameDTO {
+
+    /**
+     * 游戏名称
+     */
+    @NotBlank(message = "游戏ID不能为空")
+    @ApiModelProperty(value = "游戏ID", required = true, example = "1")
+    private Long id;
 
     /**
      * 游戏名称

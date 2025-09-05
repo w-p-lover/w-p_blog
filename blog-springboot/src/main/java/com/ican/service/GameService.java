@@ -3,19 +3,45 @@ package com.ican.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.ican.entity.Game;
 import com.ican.model.dto.ConditionDTO;
+import com.ican.model.dto.GameDTO;
 import com.ican.model.vo.GameVO;
 
+import java.util.List;
 import java.util.Map;
-
 
 public interface GameService extends IService<Game> {
 
     /**
-     * 获取游戏列表
+     * 查看游戏库列表
      *
      * @param condition 条件
-     * @return {@link Map<String, Object>} 游戏列表
+     * @return 游戏列表
      */
     Map<String, Object> getGameList(ConditionDTO condition);
+
+    Map<String, Object> getAdminGameList(ConditionDTO condition);
+    /**
+     * 获取游戏详情
+     *
+     * @param id 游戏id
+     * @return 游戏详情
+     */
+    GameVO getGameById(Long id);
+
+    /**
+     * 新增游戏
+     *
+     * @param gameDTO 游戏信息
+     */
+    void addGame(GameDTO gameDTO);
+
+    /**
+     * 更新游戏
+     *
+     * @param gameDTO 游戏信息
+     */
+    void updateGame(GameDTO gameDTO);
+
+    void deleteGameBatch(List<Long> ids);
 
 }

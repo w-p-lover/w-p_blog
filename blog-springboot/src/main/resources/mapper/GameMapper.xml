@@ -20,5 +20,22 @@
         ORDER BY ${condition.sortType} DESC
         LIMIT #{limit}, #{size}
     </select>
+    <select id="getAdminGameList" resultType="com.ican.entity.Game">
+        SELECT id,
+               name,
+               cover_url,
+               description,
+               is_installed,
+               play_time,
+               last_played,
+               tags,
+               rating,
+               release_date,
+               developer
+        FROM t_game
+        WHERE name LIKE CONCAT('%', #{condition.keyword}, '%')
+        ORDER BY play_time DESC
+        LIMIT #{limit}, #{size}
+    </select>
 
 </mapper>
