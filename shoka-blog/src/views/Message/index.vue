@@ -1,69 +1,125 @@
 <template>
-  <!-- 弹幕输入框 -->
   <div class="message-container">
     <h1 class="message-title">留言板</h1>
     <div class="message-input">
-      <input class="input" v-model="messageContent" @click="show = true" @keyup.enter="send" placeholder="说点什么吧"/>
+      <input
+          class="input"
+          v-model="messageContent"
+          @click="show = true"
+          @keyup.enter="send"
+          placeholder="说点什么吧"
+      />
       <button class="send" @click="send" v-show="show">发送</button>
     </div>
   </div>
-  <!-- 弹幕列表 -->
-  <div class="danmaku-container">
-    <vue-danmaku ref="danmaku" class="danmaku" use-slot v-model:danmus="messageList" :is-suspend="true">
-      <template v-slot:dm="{ danmu }">
-        <span class="danmaku-item">
-          <img :src="danmu.avatar" width="30" height="30" style="border-radius: 50%"/>
-          <span class="ml">{{ danmu.nickname }} :</span>
-          <span class="ml">{{ danmu.messageContent }}</span>
-        </span>
-      </template>
-    </vue-danmaku>
+
+  <div class="danmaku-container" ref="danmakuContainer">
+    <img class="background" src="https://wangyoupeng-penghong.oss-cn-beijing.aliyuncs.com/avatar/wallhaven-d6eq6o_5640x2400.png" />
+    <div
+        v-for="(dm, index) in messageList"
+        :key="index"
+        class="danmaku-item"
+        :style="{
+        left: dm.x + 'px',
+        top: dm.top + 'px',
+      }"
+        @mouseenter="dm.paused = true"
+        @mouseleave="dm.paused = false"
+    >
+      <img :src="dm.avatar" width="35" height="35" style="border-radius:50%" />
+      <span class="ml">{{ dm.nickname }} :</span>
+      <span class="ml">{{ dm.messageContent }}</span>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import {addMessage, getMessageList} from "@/api/message";
-import {Message} from "@/api/message/types";
+import { ref, onMounted } from "vue";
+import { addMessage, getMessageList } from "@/api/message";
 import useStore from "@/store";
-import vueDanmaku from "vue3-danmaku";
 
-const {blog, user} = useStore();
+const { blog, user } = useStore();
 const messageContent = ref("");
 const show = ref(false);
-const danmaku = ref();
-const messageList = ref<Message[]>([]);
-onMounted(async () => {
-  await getMessageList().then(({data}) => {
-    messageList.value = data.data;
-  });
-});
-const send = () => {
-  if (messageContent.value.trim() == "") {
-    window.$message?.warning("留言内容不能为空");
-    return false;
+const messageList = ref<any[]>([]);
+const danmakuContainer = ref<HTMLElement | null>(null);
+
+const getRandomSpeed = () => Math.random() + Math.random() * 1.5 + 1;
+
+const getRandomTop = () => {
+  const containerHeight = danmakuContainer.value?.offsetHeight || 500;
+  const margin = 50;
+  const avoidTop = containerHeight * 0.35;
+  const avoidBottom = containerHeight * 0.5;
+
+  // 随机选择在上区或下区
+  if (Math.random() > 0.5) {
+    return Math.random() * (avoidTop - margin) + margin;
+  } else {
+    return Math.random() * (containerHeight - avoidBottom - margin ) + avoidBottom;
   }
-  const userAvatar = user.avatar ? user.avatar : blog.blogInfo.siteConfig.touristAvatar;
-  const userNickname = user.nickname ? user.nickname : "游客";
-  let message = {
-    avatar: userAvatar,
-    nickname: userNickname,
+};
+
+
+/** 初始化弹幕 */
+onMounted(async () => {
+  const { data } = await getMessageList();
+  messageList.value = data.data.map((msg) => ({
+    ...msg,
+    x: -200,
+    top: getRandomTop(),
+    speed: getRandomSpeed(),
+    paused: false,
+  }));
+  animateDanmaku();
+});
+
+/** 发送弹幕 */
+const send = () => {
+  if (!messageContent.value.trim()) {
+    window.$message?.warning("留言内容不能为空");
+    return;
+  }
+  const message = {
+    avatar: user.avatar || blog.blogInfo.siteConfig.touristAvatar,
+    nickname: user.nickname || "游客",
     messageContent: messageContent.value,
+    x: -200,
+    top: getRandomTop(),
+    speed: getRandomSpeed(),
+    paused: false,
   };
-  addMessage(message).then(({data}) => {
+  addMessage(message).then(({ data }) => {
     if (data.flag) {
-      if (blog.blogInfo.siteConfig.messageCheck) {
-        window.$message?.warning("留言成功，正在审核中");
-      } else {
-        danmaku.value.push(message);
+      if (!blog.blogInfo.siteConfig.messageCheck) {
+        messageList.value.push(message);
         window.$message?.success("留言成功");
+      } else {
+        window.$message?.warning("留言成功，正在审核中");
       }
       messageContent.value = "";
     }
   });
 };
+
+/** 弹幕动画循环 */
+const animateDanmaku = () => {
+  const step = () => {
+    const width = danmakuContainer.value?.offsetWidth || window.innerWidth;
+    messageList.value.forEach((dm) => {
+      if (!dm.paused) {
+        dm.x -= dm.speed;
+        if (dm.x < -200) dm.x = width; // 到左边界回到右边
+
+      }
+    });
+    requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+};
 </script>
 
-<style lang="scss" scoped>
+<style scoped lang="scss">
 .message-container {
   position: fixed;
   top: 35%;
@@ -118,29 +174,33 @@ const send = () => {
   right: 0;
   bottom: 0;
   width: 100%;
-  background: var(--color-cyan-light) url("https://wangyoupeng-penghong.oss-cn-beijing.aliyuncs.com/avatar/wallhaven-d6eq6o_5640x2400.png") no-repeat center;
-  background-size: cover;
-  filter: brightness(85%);
-  animation: slideDownIn 1s;
+  overflow: hidden;
 }
 
-.danmaku {
-  position: fixed;
-  top: 3.125rem;
+.background {
+  position: absolute;
   width: 100%;
   height: 100%;
+  object-fit: cover;
+  filter: brightness(85%);
+  z-index: 0;
+}
 
-  .danmaku-item {
-    display: flex;
-    align-items: center;
-    padding: 0 0.625rem 0 0.3125rem;
-    border-radius: 6.25rem;
-    background-color: rgba(0, 0, 0, 0.3);
-    color: #fff;
-  }
+.danmaku-item {
+  display: flex;
+  align-items: center;
+  padding: 2px 20px;
+  border-radius: 1.5rem;
+  background-color: rgba(141, 149, 148, 0.18);
+  color: #fff;
+  position: absolute;
+  white-space: nowrap;
+  font-size: 17px;
+  pointer-events: auto;
+  z-index: 1;
+}
 
-  .ml {
-    margin-left: 0.5rem;
-  }
+.ml {
+  margin-left: 0.5rem;
 }
 </style>
