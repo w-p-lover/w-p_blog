@@ -2,7 +2,7 @@
   <div class="page-header">
     <div class="header-overlay">
       <h1 class="page-title">我的游戏库</h1>
-      <div class="filter-tag">已收藏游戏</div>
+      <div class="filter-tag">已下载游戏</div>
     </div>
     <img class="page-cover" src="../../assets/images/bg.jpg" alt="游戏库背景"/>
     <Waves></Waves>
@@ -44,7 +44,7 @@
                   class="cover-img"
               />
               <div class="installed-tag" v-if="game.isInstalled">
-                <i class="tag-icon">✓</i> 已收藏
+                <i class="tag-icon">✓</i> 已下载
               </div>
             </div>
 
