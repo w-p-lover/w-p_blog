@@ -2,6 +2,7 @@ package com.ican.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.ican.entity.Chat;
+import com.ican.entity.GiteeTrending;
 import com.ican.model.dto.ConditionDTO;
 import com.ican.model.vo.GiteeTrendingVO;
 import org.apache.ibatis.annotations.Param;
@@ -12,7 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import java.util.List;
 
 @Repository
-public interface GiteeTrendingMapper extends BaseMapper<Chat> {
+public interface GiteeTrendingMapper extends BaseMapper<GiteeTrending> {
 
     /**
      * 分页查询 Gitee Trending 仓库
