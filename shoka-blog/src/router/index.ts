@@ -77,6 +77,13 @@ const routes: RouteRecordRaw[] = [
         },
     },
     {
+        path: "/steam",
+        component: () => import("@/views/Steam/index.vue"),
+        meta: {
+            title: "steam游戏库",
+        },
+    },
+    {
         path: "/book",
         component: () => import("@/views/Book/index.vue"),
         meta: {

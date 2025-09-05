@@ -121,6 +121,11 @@ const menuList = [
         path: "/trend"
       },
       {
+        name: "游戏库",
+        icon: "search",
+        path: "/steam"
+      },
+      {
         name: "书目",
         icon: "qizhi",
         path: "/book"
