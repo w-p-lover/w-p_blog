@@ -78,7 +78,7 @@
         </router-link>
       </h3>
       <!-- 文章内容 -->
-      <div class="article-content">{{ article.articleContent }}</div>
+        <div class="article-content" v-html="renderMarkdown(article.articleContent)"></div>
       <!-- 文章分类 -->
       <div class="article-category">
         <svg-icon icon-class="qizhi" size="0.85rem" style="margin-right: 0.15rem"></svg-icon>
@@ -103,6 +103,7 @@ import EventBus from '@/eventBus';
 import {formatDateTime} from "@/utils/date";
 import {getTagList} from "@/api/tag";
 import {Tag} from "@/api/tag/types";
+import { marked } from 'marked'
 
 const selectedTag = ref(null);
 const tagList = ref<Tag[]>([]);
@@ -132,6 +133,10 @@ function changeSort(sortType: string) {
 
 function filterByTag() {
   data.queryParams.tagId = selectedTag.value;
+}
+
+function renderMarkdown(content: string) {
+  return marked(content || '')
 }
 
 function filterByDate() {
@@ -324,16 +329,17 @@ onMounted(() => {
   .article-title {
     text-overflow: ellipsis;
     white-space: nowrap;
-    margin: 0.625rem 0;
+    margin: 10px 0;
     color: var(--primary-color);
     overflow: hidden;
   }
 
   .article-content {
+    font-family: 'Fredericka the Great',serif;
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 3;
-    max-height: 5rem;
+    max-height: 106px;
     font-size: 0.875em;
     overflow: hidden;
   }

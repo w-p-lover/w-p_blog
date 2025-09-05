@@ -873,6 +873,7 @@ onMounted(() => {
 .custom-tooltip img {
   display: block;
   max-width: 300px;
+  max-height: 450px;
   margin-top: 5px;
   border-radius: 8px;
 }

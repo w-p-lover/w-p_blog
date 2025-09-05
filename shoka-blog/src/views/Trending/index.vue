@@ -206,7 +206,7 @@ const fetchTrending = async () => {
       params: {
         language: language.value,
         trendingType: trendingType.value,
-        trendingOrder: trendingOrder.value,
+        sortType: trendingOrder.value,
         current: queryParams.value.current,
         size: queryParams.value.size,
       }
