@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import com.ican.entity.Game;
+
 import java.util.List;
 
 @Mapper
@@ -19,6 +20,14 @@ public interface GameMapper extends BaseMapper<Game> {
             @Param("condition") ConditionDTO condition
     );
 
+    List<Game> getAdminGameList(
+            @Param("limit") Long limit,
+            @Param("size") Long size,
+            @Param("condition") ConditionDTO condition);
+
     @Select("SELECT COUNT(*) FROM t_game")
     int getTotalCount();
+
+    @Select("SELECT * FROM t_game WHERE name LIKE CONCAT('%', #{keyword}, '%')")
+    List<Game> searchGame(String keyword);
 }
