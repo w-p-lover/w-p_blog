@@ -78,6 +78,14 @@ export interface BookQuery {
  */
 export interface PageQuery {
     /**
+     * 当前页
+     */
+    current: number;
+    /**
+     * 每页大小
+     */
+    size: number;
+    /**
      * 关键字
      */
     keyword?: string;
