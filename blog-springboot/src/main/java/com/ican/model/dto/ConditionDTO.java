@@ -102,7 +102,7 @@ public class ConditionDTO {
      * Stars
      */
     @ApiModelProperty(value = "Stars")
-    private String trendingOrder;
+    private String sortType;
     /**
      * 操作模块
      */
