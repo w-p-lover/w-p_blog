@@ -1,5 +1,8 @@
 package com.ican.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.ican.entity.GiteeTrending;
 import com.ican.mapper.GiteeTrendingMapper;
 import com.ican.model.dto.ConditionDTO;
 import com.ican.model.vo.GiteeTrendingVO;
@@ -17,8 +20,11 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -121,5 +127,50 @@ public class GiteeTrendingServiceImpl implements GiteeTrendingService {
             return Collections.emptyList();
         }
         return trendingTypes;
+    }
+
+    @Override
+    public boolean saveBatch(Collection<GiteeTrending> entityList, int batchSize) {
+        return false;
+    }
+
+    @Override
+    public boolean saveOrUpdateBatch(Collection<GiteeTrending> entityList, int batchSize) {
+        return false;
+    }
+
+    @Override
+    public boolean updateBatchById(Collection<GiteeTrending> entityList, int batchSize) {
+        return false;
+    }
+
+    @Override
+    public boolean saveOrUpdate(GiteeTrending entity) {
+        return false;
+    }
+
+    @Override
+    public GiteeTrending getOne(Wrapper<GiteeTrending> queryWrapper, boolean throwEx) {
+        return null;
+    }
+
+    @Override
+    public Map<String, Object> getMap(Wrapper<GiteeTrending> queryWrapper) {
+        return Map.of();
+    }
+
+    @Override
+    public <V> V getObj(Wrapper<GiteeTrending> queryWrapper, Function<? super Object, V> mapper) {
+        return null;
+    }
+
+    @Override
+    public BaseMapper<GiteeTrending> getBaseMapper() {
+        return null;
+    }
+
+    @Override
+    public Class<GiteeTrending> getEntityClass() {
+        return null;
     }
 }
