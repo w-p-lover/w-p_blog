@@ -13,9 +13,23 @@ export interface PageResult<T> {
 }
 
 /**
- * 分页参数
+ * 书本查询
  */
 export interface BookQuery {
+    /**
+     * 关键字
+     */
+    keyword?: string;
+    /**
+     * 排序字段
+     */
+    sortType?: string;
+}
+
+/**
+ * 游戏查询
+ */
+export interface GameQuery {
     /**
      * 关键字
      */
