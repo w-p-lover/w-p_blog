@@ -69,4 +69,9 @@ public class Game {
      * 开发商
      */
     private String developer;
+
+    /**
+     * 截图
+     */
+    private String screenshotUrl;
 }

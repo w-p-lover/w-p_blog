@@ -84,6 +84,14 @@
         <el-form-item label="封面URL" prop="coverUrl">
           <el-input v-model="currentGame.coverUrl" placeholder="请输入封面图片URL"/>
         </el-form-item>
+        <el-form-item label="截图URL" prop="screenshotUrl">
+          <el-input v-model="screenshotUrl" placeholder="输入截图url按回车" @keyup.enter="addScreenshotUrl"/>
+          <div class="tag-container">
+            <el-tag v-for="(url, index) in currentGame.screenshotUrl" :key="index" closable @close="removeScreenshotUrl(index)">
+              {{ url }}
+            </el-tag>
+          </div>
+        </el-form-item>
         <el-form-item label="简介" prop="description">
           <el-input type="textarea" v-model="currentGame.description" placeholder="请输入游戏简介"/>
         </el-form-item>
@@ -137,6 +145,7 @@ const rules = reactive<FormRules>({
 
 // 标签处理
 const tagInput = ref("");
+const screenshotUrl = ref("")
 const addTag = () => {
   if (tagInput.value.trim() && !currentGame.value.tags.includes(tagInput.value)) {
     currentGame.value.tags.push(tagInput.value.trim());
@@ -147,6 +156,15 @@ const removeTag = (index: number) => {
   currentGame.value.tags.splice(index, 1);
 };
 
+const addScreenshotUrl = () => {
+  if (screenshotUrl.value.trim() && !currentGame.value.screenshotUrl.includes(screenshotUrl.value)) {
+    currentGame.value.screenshotUrl.push(screenshotUrl.value.trim());
+  }
+  screenshotUrl.value = "";
+};
+const removeScreenshotUrl = (index: number) => {
+  currentGame.value.screenshotUrl.splice(index, 1);
+};
 // 表格数据
 const data = reactive({
   count: 0,
@@ -171,7 +189,8 @@ const currentGame = ref<any>({
   tags: [],
   rating: "",
   releaseDate: "",
-  developer: ""
+  developer: "",
+  screenshotUrl: [],
 });
 const {count, showSearch, loading, title, queryParams, gameList, gameIdList} = toRefs(data);
 
@@ -193,7 +212,8 @@ const openModel = (game?: any) => {
       tags: [],
       rating: "",
       releaseDate: "",
-      developer: ""
+      developer: "",
+      screenshotUrl: [],
     };
     isEdit.value = false;
   }
