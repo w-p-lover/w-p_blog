@@ -85,4 +85,10 @@ public class GameDTO {
      */
     @ApiModelProperty(value = "开发商", example = "CD Projekt Red")
     private String developer;
+
+    /**
+     * 截图URL列表
+     */
+    @ApiModelProperty(value = "截图URL列表")
+    private List<String> screenshotUrl;
 }

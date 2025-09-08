@@ -19,7 +19,14 @@ public interface GameService extends IService<Game> {
      */
     Map<String, Object> getGameList(ConditionDTO condition);
 
+    /**
+     * 查看游戏库列表
+     *
+     * @param condition 条件
+     * @return 游戏列表
+     */
     Map<String, Object> getAdminGameList(ConditionDTO condition);
+
     /**
      * 获取游戏详情
      *
@@ -42,6 +49,11 @@ public interface GameService extends IService<Game> {
      */
     void updateGame(GameDTO gameDTO);
 
+    /**
+     * 删除游戏
+     *
+     * @param ids 游戏id列表
+     */
     void deleteGameBatch(List<Long> ids);
 
 }

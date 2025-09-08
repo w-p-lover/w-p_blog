@@ -63,4 +63,8 @@ public class GameVO {
     /** 开发商 */
     @ApiModelProperty(value = "开发商")
     private String developer;
-}
+
+    /** 开发商 */
+    @ApiModelProperty(value = "开发商")
+    private List<String> screenshotUrl;
+ }

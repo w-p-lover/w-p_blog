@@ -4,21 +4,21 @@
 
     <!-- 查询所有游戏列表 -->
     <select id="getGameList" resultType="com.ican.entity.Game">
-        SELECT
-            id,
-            name,
-            cover_url,
-            description,
-            is_installed,
-            play_time,
-            last_played,
-            tags,
-            rating,
-            release_date,
-            developer
+        SELECT id,
+               name,
+               cover_url,
+               description,
+               is_installed,
+               play_time,
+               last_played,
+               tags,
+               rating,
+               release_date,
+               developer,
+               screenshot_url
         FROM t_game
         ORDER BY ${condition.sortType} DESC
-        LIMIT #{limit}, #{size}
+            LIMIT #{limit}, #{size}
     </select>
     <select id="getAdminGameList" resultType="com.ican.entity.Game">
         SELECT id,
@@ -31,11 +31,12 @@
                tags,
                rating,
                release_date,
-               developer
+               developer,
+                   screenshot_url
         FROM t_game
         WHERE name LIKE CONCAT('%', #{condition.keyword}, '%')
         ORDER BY play_time DESC
-        LIMIT #{limit}, #{size}
+            LIMIT #{limit}, #{size}
     </select>
 
 </mapper>
