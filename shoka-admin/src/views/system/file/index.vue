@@ -220,7 +220,7 @@ const beforeUpload = (rawFile: UploadRawFile) => {
 const handleUpload = (options: UploadRequestOptions) => {
   let formData = new FormData();
   formData.append("file", options.file);
-  formData.append("path", filePath.value);
+  formData.append("path", filePath.value.replace(/^\/+/, ""));
   uploadFile(formData).then(({data}) => {
     if (data.flag) {
       notifySuccess(data.msg);

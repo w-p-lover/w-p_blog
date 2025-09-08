@@ -136,14 +136,17 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public String uploadTalkFile(String type, MultipartFile file) {
         String filePath;
+        String filePathSave;
         String url;
         // 确定文件路径
         switch (type) {
             case "img":
                 filePath = FilePathEnum.CHAT.getPath();
+                filePathSave = FilePathEnum.CHAT.getFilePath();
                 break;
             case "file":
                 filePath = FilePathEnum.CHAT_FILE.getPath();
+                filePathSave = FilePathEnum.CHAT_FILE.getFilePath();
                 break;
             default:
                 throw new IllegalArgumentException("不支持的文件类型: " + type);
@@ -173,7 +176,7 @@ public class ChatServiceImpl implements ChatService {
                         .fileUrl(url)
                         .originalName(file.getOriginalFilename())
                         .fileName(md5)
-                        .filePath(filePath)
+                        .filePath(filePathSave)
                         .extendName(extName)
                         .fileSize((int) file.getSize())
                         .isDir(FALSE)

@@ -93,7 +93,7 @@ public class BlogFileServiceImpl extends ServiceImpl<BlogFileMapper, BlogFile> i
             BlogFile newFile = BlogFile.builder()
                     .fileUrl(url)
                     .fileName(md5)
-                    .filePath(path)
+                    .filePath("/" + path)
                     .extendName(extName)
                     .fileSize((int) file.getSize())
                     .isDir(FALSE)
