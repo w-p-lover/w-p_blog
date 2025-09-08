@@ -5,6 +5,7 @@ import com.ican.entity.Game;
 import com.ican.model.dto.ConditionDTO;
 import com.ican.model.dto.GameDTO;
 import com.ican.model.vo.GameVO;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -56,4 +57,11 @@ public interface GameService extends IService<Game> {
      */
     void deleteGameBatch(List<Long> ids);
 
+    /**
+     * 上传说说图片
+     *
+     * @param file 文件
+     * @return 文件路径
+     */
+    String uploadTalkCover(MultipartFile file);
 }

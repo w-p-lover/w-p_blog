@@ -1,16 +1,22 @@
 package com.ican.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
+import com.ican.annotation.OptLogger;
 import com.ican.model.dto.ConditionDTO;
 import com.ican.model.dto.GameDTO;
 import com.ican.model.vo.GameVO;
 import com.ican.model.vo.Result;
 import com.ican.service.GameService;
+import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
+
+import static com.ican.constant.OptTypeConstant.UPLOAD;
 
 @RestController
 @RequestMapping("/games")
@@ -29,6 +35,20 @@ public class GameController {
     }
 
     /**
+     * 上传说说图片
+     *
+     * @param file 文件
+     * @return {@link Result<String>}
+     */
+    @OptLogger(value = UPLOAD)
+    @ApiOperation(value = "上传截图图片")
+    @ApiImplicitParam(name = "file", value = "截图图片", required = true, dataType = "MultipartFile")
+    @SaCheckPermission("game:upload")
+    @PostMapping("/admin/upload")
+    public Result<String> uploadTalkCover(@RequestParam("file") MultipartFile file) {
+        return Result.success(gameService.uploadTalkCover(file));
+    }
+    /**
      * 获取游戏列表（分页）
      */
     @ApiOperation("查看游戏库列表")
@@ -37,14 +57,14 @@ public class GameController {
         return Result.success(gameService.getAdminGameList(condition));
     }
 
-    /**
+/*    *//**
      * 获取单个游戏详情
-     */
+     *//*
     @ApiOperation("获取游戏详情")
     @GetMapping("/admin/{id}")
     public Result<GameVO> getGame(@PathVariable("id") Long id) {
         return Result.success(gameService.getGameById(id));
-    }
+    }*/
 
     /**
      * 新增游戏

@@ -104,7 +104,7 @@ const menuList = [
         path: "/trend"
       },
       {
-        name: "游戏库",
+        name: "游戏",
         icon: "search",
         path: "/steam"
       },
