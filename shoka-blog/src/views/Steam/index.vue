@@ -214,6 +214,7 @@ const data = reactive({
     rating?: number;
     releaseDate?: string;
     developer?: string;
+    screenshotUrl?:string[];
   }>
 });
 
@@ -663,7 +664,7 @@ $steam-shadow: 0 0 12px rgba(102, 192, 244, 0.4); // 高亮阴影
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 12px;
+        margin-bottom: 10px;
 
         .detail-title {
           font-size: 1.8rem;
