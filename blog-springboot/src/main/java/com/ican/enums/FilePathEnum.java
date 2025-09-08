@@ -42,10 +42,16 @@ public enum FilePathEnum {
      * 聊天记录文件
      */
     CHAT_FILE("chatFile/","/chatFile","聊天记录文件路径"),
+
     /**
      * 聊天记录图片
      */
-    CHAT("chat/","/chat","聊天记录图片路径");
+    CHAT("chat/","/chat","聊天记录图片路径"),
+
+    /**
+     * 游戏图片
+     */
+    GAME("game/","/game","游戏截图图片路径");
 
     /**
      * 路径
