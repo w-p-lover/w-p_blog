@@ -126,6 +126,11 @@ const menuList = [
         path: "/steam"
       },
       {
+        name: "路线",
+        icon: "search",
+        path: "/life"
+      },
+      {
         name: "书目",
         icon: "qizhi",
         path: "/book"

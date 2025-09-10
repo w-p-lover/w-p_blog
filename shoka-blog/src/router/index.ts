@@ -84,6 +84,13 @@ const routes: RouteRecordRaw[] = [
         },
     },
     {
+        path: "/life",
+        component: () => import("@/views/Life/index.vue"),
+        meta: {
+            title: "路线",
+        },
+    },
+    {
         path: "/book",
         component: () => import("@/views/Book/index.vue"),
         meta: {
