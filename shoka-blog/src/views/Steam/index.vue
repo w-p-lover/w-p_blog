@@ -51,7 +51,7 @@
             <!-- 截图区域 -->
             <div class="card-img-area">
               <el-tooltip
-                  v-for="(img, idx) in (game.screenshots || [game.coverUrl, game.coverUrl])"
+                  v-for="(img, idx) in (game.screenshotUrl || [game.coverUrl, game.coverUrl])"
                   :key="idx"
                   effect="dark"
                   placement="top"
@@ -61,7 +61,7 @@
                   :show-after="400"
               >
                 <template #content>
-                  <img :src="img" alt="截图大图" style="max-width:400px; max-height:300px;" />
+                  <img :src="img" alt="截图大图" style="max-width:400px; max-height:300px;"/>
                 </template>
                 <img
                     :src="img"
@@ -214,7 +214,7 @@ const data = reactive({
     rating?: number;
     releaseDate?: string;
     developer?: string;
-    screenshotUrl?:string[];
+    screenshotUrl?: string[];
   }>
 });
 
@@ -345,10 +345,11 @@ $steam-shadow: 0 0 12px rgba(102, 192, 244, 0.4); // 高亮阴影
     }
   }
 
-    &:hover {
+  &:hover {
     .card-info {
       display: none;
     }
+
     box-shadow: 0 4px 8px rgba(102, 192, 244, 0.3);
     border: 1px solid rgba(102, 192, 244, 0.6);
   }
@@ -388,6 +389,7 @@ $steam-shadow: 0 0 12px rgba(102, 192, 244, 0.4); // 高亮阴影
       display: flex;
       align-items: center;
       gap: 4px;
+
       .tag-icon {
         font-size: 0.8rem;
       }

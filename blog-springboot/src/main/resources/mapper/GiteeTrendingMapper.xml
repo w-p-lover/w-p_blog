@@ -28,7 +28,7 @@
                 AND language = #{condition.language}
             </if>
         </where>
-        ORDER BY ${condition.trendingOrder} DESC
+        ORDER BY ${condition.sortType} DESC
         LIMIT #{limit}, #{size}
     </select>
 
