@@ -116,7 +116,7 @@ onMounted(async () => {
   right: -105px;
   bottom: 0;
   width: 340px;
-  height: 400px;
+  height: 40px;
 }
 
 .message-box {
