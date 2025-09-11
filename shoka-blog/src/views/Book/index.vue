@@ -42,51 +42,54 @@
         <!-- 3D书籍网格 -->
         <div class="books-grid">
           <!-- 3D书籍组件 -->
-          <div
-              class="book-3d-container"
-              v-for="book in sortedBooks"
-              :key="book.id"
-              @click="showBookDetail(book)"
-              @mouseenter="book.hover = true"
-              @mouseleave="book.hover = false"
-          >
-            <el-tooltip
-                raw-content
-                effect="light"
-                placement="top"
-                :hide-after="0"
-                popper-class="custom-tooltip"
-                :enterable="false"
+          <TransitionGroup name="book-move" tag="div" class="books-grid" style="display: contents">
+            <div
+                class="book-3d-container"
+                v-for="book in sortedBooks"
+                :key="book.id"
+                @click="showBookDetail(book)"
+                @mouseenter="book.hover = true"
+                @mouseleave="book.hover = false"
             >
-              <template #content>
-                <img :src="book.briefImg || book.cover || defaultCover" alt="封面" class="tooltip-cover"/>
-                <div class="book-label">
-                  <div class="label-header">
-                    <div class="label-title" :title="book.title">{{ book.title }}</div>
-                    <div class="label-author">{{ book.author || '未知作者' }}</div>
-                  </div>
-                  <div class="label-bottom">
-                    <div class="label-tags">{{ book.tags || '未分类' }}</div>
-                    <div class="label-status" :class="book.status">
-                      {{ getStatusLabel(book.status) }}
+              <el-tooltip
+                  raw-content
+                  effect="light"
+                  placement="top"
+                  :hide-after="0"
+                  popper-class="custom-tooltip"
+                  :enterable="false"
+                  :show-after="200"
+              >
+                <template #content>
+                  <img :src="book.briefImg || book.cover || defaultCover" alt="封面" style="max-width:250px"/>
+                  <div class="book-label">
+                    <div class="label-header">
+                      <div class="label-title" :title="book.title">{{ book.title }}</div>
+                      <div class="label-author">{{ book.author || '未知作者' }}</div>
+                    </div>
+                    <div class="label-bottom">
+                      <div class="label-tags">{{ book.tags || '未分类' }}</div>
+                      <div class="label-status" :class="book.status">
+                        {{ getStatusLabel(book.status) }}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </template>
+                </template>
 
-              <!-- 3D书籍结构 -->
-              <div class="book-3d" :class="{ 'hovered': book.hover }">
-                <div class="book-spine" :style="{ backgroundColor: getSpineColor(book.tags) }">
-                  <div class="spine-text">{{ book.title }}</div>
+                <!-- 3D书籍结构 -->
+                <div class="book-3d" :class="{ 'hovered': book.hover }">
+                  <div class="book-spine" :style="{ backgroundColor: getSpineColor(book.tags) }">
+                    <div class="spine-text">{{ book.title }}</div>
+                  </div>
+                  <div class="book-cover">
+                    <img :src="book.cover || defaultCover" :alt="book.title" class="cover-img"/>
+                    <div class="cover-reflection"></div>
+                  </div>
+                  <div class="book-edge"></div>
                 </div>
-                <div class="book-cover">
-                  <img :src="book.cover || defaultCover" :alt="book.title" class="cover-img"/>
-                  <div class="cover-reflection"></div>
-                </div>
-                <div class="book-edge"></div>
-              </div>
-            </el-tooltip>
-          </div>
+              </el-tooltip>
+            </div>
+          </TransitionGroup>
         </div>
 
 
@@ -447,434 +450,17 @@ onMounted(() => {
 </script>
 
 <style scoped>
+@import "@/views/Book/css/book-info.scss";
+@import "@/views/Book/css/base.scss";
+@import "@/views/Book/css/book-3d.scss";
+
 :root {
-  --bg-gradient-1: #f6fbff;
+  --bg-gradient-1: #0290fb;
   --bg-gradient-2: #f3f8ff;
   --card-bg: #ffffff;
   --muted: #6b7280;
-  --primary: #3b82f6; /* 主要色 */
+  --primary: #3b82f6;
   --glass: rgba(255, 255, 255, 0.6);
   --soft-shadow: 0 8px 30px rgba(20, 20, 30, 0.06);
-}
-
-:deep(.el-overlay-dialog) {
-  bottom: -33px;
-}
-
-/* 容器 */
-.book-container {
-  position: relative;
-  width: calc(70% - 0.625rem);
-  margin: 3.5rem auto;
-  padding: 1.75rem 2.25rem;
-  border-radius: 0.75rem;
-  box-shadow: 0 0 1rem var(--box-bg-shadow);
-  animation: slideUpIn 1s;
-  background: linear-gradient(180deg, var(--bg-gradient-1), var(--bg-gradient-2));
-  min-height: 60vh;
-  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
-  color: #222;
-}
-
-.title-group .title {
-  margin: 0;
-  font-size: 22px;
-  letter-spacing: -0.3px;
-  color: #172554;
-}
-
-.title-group .subtitle {
-  margin: 4px 0 0;
-  color: var(--muted);
-  font-size: 13px;
-}
-
-.count-chip .count {
-  font-weight: 700;
-  color: var(--primary);
-}
-
-.count-chip .count-label {
-  color: var(--muted);
-  font-size: 13px;
-}
-
-/* 主卡片 */
-.book-showcase {
-  max-width: 1200px;
-  margin: 10px auto 60px;
-}
-
-/* 操作区卡片 */
-.controls.card {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 14px;
-  border-radius: 12px;
-  background: var(--card-bg);
-  box-shadow: var(--soft-shadow);
-  margin-bottom: 28px;
-}
-
-/* 按钮 */
-.add-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.add-btn .el-icon {
-  font-size: 16px;
-}
-
-/* 书籍网格 */
-.books-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 34px;
-  align-items: start;
-}
-
-/* 单个书籍容器 */
-.book-3d-container {
-  height: 300px;
-  cursor: pointer;
-  position: relative;
-  transform-style: preserve-3d;
-  transform: translate3d(0, 0, 0);
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-}
-
-/* 书籍3D主体 */
-.book-3d {
-  width: 160px;
-  height: 230px;
-  position: relative;
-  transform-style: preserve-3d;
-  transform: rotateY(22deg) rotateX(6deg) translateZ(0);
-  transition: transform 380ms cubic-bezier(.2, .9, .3, 1), box-shadow 280ms ease, filter 220ms ease;
-  margin-top: 6px;
-  will-change: transform;
-}
-
-/* 悬停 */
-.book-3d.hovered {
-  transform: rotateY(0deg) rotateX(0deg) translateZ(28px) scale(1.06);
-  filter: drop-shadow(0 22px 30px rgba(20, 24, 40, 0.14));
-}
-
-/* 书脊 */
-.book-spine {
-  position: absolute;
-  width: 14px;
-  height: 100%;
-  left: -20px;
-  bottom: 0;
-  transform: rotateY(102deg) translateZ(12px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-weight: 700;
-  box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.28);
-  border-radius: 2px;
-}
-
-.spine-text {
-  writing-mode: vertical-rl;
-  transform: rotateY(-160deg);
-  transform-origin: center;
-  font-size: 12px;
-  color: #fff;
-  text-align: center;
-}
-
-
-/* 封面 */
-.book-cover {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  backface-visibility: hidden;
-  border-radius: 5px;
-  overflow: hidden;
-  box-shadow: 0 6px 18px rgba(17, 24, 39, 0.06);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(0, 0, 0, 0.02));
-  border: 1px solid rgba(10, 20, 40, 0.03);
-}
-
-.cover-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 420ms ease;
-  display: block;
-}
-
-.book-3d.hovered .cover-img {
-  transform: scale(1.06);
-}
-
-/* 封面反光 */
-.cover-reflection {
-  position: absolute;
-  left: -10%;
-  top: -20%;
-  width: 120%;
-  height: 70%;
-  background: linear-gradient(120deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.03) 40%, rgba(255, 255, 255, 0));
-  transform: rotate(-12deg);
-  pointer-events: none;
-  mix-blend-mode: overlay;
-  opacity: 0.65;
-}
-
-/* 书籍厚度（侧面） */
-.book-edge {
-  position: absolute;
-  width: 95%;
-  height: 47px;
-  bottom: -24px;
-  transform: rotateX(92deg) translateZ(0px);
-  background-image: linear-gradient(90deg, #eee 0%, #fff 50%, #e9e9e9 100%);
-  border-radius: 4px;
-  box-shadow: 0 -10px 30px rgb(11 55 98 / 49%);
-}
-
-/* 悬停信息卡 */
-.book-label {
-  width: 300px;
-  padding: 10px 14px;
-  background: rgba(255, 255, 255, 0.98);
-  border-radius: 10px;
-  box-shadow: 0 12px 30px rgba(16, 24, 40, 0.12);
-  text-align: left;
-  transition: transform 220ms ease, opacity 220ms ease;
-}
-
-.label-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.label-title {
-  font-weight: 700;
-  font-size: 14px;
-  color: #172554;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin-right: 8px;
-}
-
-.label-author {
-  font-size: 12px;
-  color: #6b7280;
-}
-
-.label-bottom {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 8px;
-}
-
-.label-tags {
-  font-size: 12px;
-  color: #374151;
-  background: #f3f6ff;
-  padding: 4px 8px;
-  border-radius: 8px;
-}
-
-.label-status {
-  font-size: 12px;
-  padding: 4px 8px;
-  border-radius: 12px;
-  color: #fff;
-}
-
-.label-status.wish {
-  background-color: #3b82f6;
-}
-
-.label-status.reading {
-  background-color: #10b981;
-}
-
-.label-status.read {
-  background-color: #f59e0b;
-}
-
-
-/* 详情页 */
-.book-detail {
-  display: flex;
-  gap: 28px;
-  padding: 0 6px;
-  align-items: flex-start;
-  flex-wrap: wrap;
-}
-
-.detail-left {
-  flex: 0 0 200px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 35px;
-}
-
-.book-3d.preview {
-  width: 200px;
-  height: 300px;
-  transform: rotateY(0) rotateX(0);
-  transition: transform 220ms ease;
-}
-
-.detail-right {
-  flex: 1;
-  min-width: 360px;
-}
-
-.book-title {
-  margin: 0 0 8px 0;
-  font-size: 20px;
-  color: #0f172a;
-}
-
-.book-author {
-  margin: 0 0 12px 0;
-  color: var(--muted);
-  font-size: 14px;
-}
-
-/* 标签与状态区 */
-.tags-status {
-  display: flex;
-  gap: 16px;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.tags {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.status-tag {
-  padding: 6px 12px;
-  border-radius: 14px;
-  color: #fff;
-  font-size: 13px;
-}
-
-.status-tag.wish {
-  background-color: #4299e1;
-}
-
-.status-tag.reading {
-  background-color: #48bb78;
-}
-
-.status-tag.read {
-  background-color: #ed8936;
-}
-
-/* 按钮组 */
-.status-buttons {
-  display: flex;
-  gap: 10px;
-  margin: 14px 0 18px;
-}
-
-/* 简介与书源 */
-.book-intro, .book-sources {
-  margin-top: 10px;
-  padding: 8px 5px;
-  background: linear-gradient(180deg, #fff, #fbfdff);
-  border-radius: 10px;
-  box-shadow: 0 6px 20px rgba(37, 51, 73, 0.04);
-}
-
-.book-intro h3, .book-sources h3 {
-  margin: 0 0 8px 0;
-  font-size: 15px;
-  color: #17325a;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.book-intro p {
-  margin: 0;
-  color: #394050;
-  line-height: 1.6;
-  font-size: 14px;
-}
-
-/* 无书源 */
-.no-sources {
-  padding: 18px 0;
-}
-
-/* 响应式 */
-@media (max-width: 980px) {
-  .books-grid {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 24px;
-  }
-
-  .book-3d {
-    width: 140px;
-    height: 200px;
-  }
-
-  .book-3d.preview {
-    width: 160px;
-    height: 230px;
-  }
-
-  .book-detail {
-    flex-direction: column;
-    gap: 18px;
-  }
-}
-
-.controls-right {
-  display: flex;
-  align-items: center;
-}
-
-.select-group {
-  display: flex;
-  gap: 10px;
-  padding: 6px 12px;
-  background: #f3f6ff;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(16, 24, 40, 0.08);
-}
-
-.select-group .el-select {
-  min-width: 170px;
-  border-radius: 6px;
-  font-size: 13px;
-}
-
-.select-group .el-select .el-input__inner {
-  height: 32px;
-  line-height: 32px;
-}
-
-.custom-tooltip img {
-  display: block;
-  max-width: 300px;
-  max-height: 450px;
-  margin-top: 5px;
-  border-radius: 8px;
 }
 </style>
