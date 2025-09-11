@@ -1,0 +1,224 @@
+/* 悬停信息卡 */
+.book-label {
+  width: 250px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.98);
+  border-radius: 10px;
+  box-shadow: 0 12px 30px rgba(16, 24, 40, 0.12);
+  text-align: left;
+  transition: transform 220ms ease, opacity 220ms ease;
+}
+
+.label-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.label-title {
+  font-weight: 700;
+  font-size: 14px;
+  color: #172554;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-right: 8px;
+}
+
+.label-author {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.label-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.label-tags {
+  font-size: 12px;
+  color: #374151;
+  background: #f3f6ff;
+  padding: 4px 8px;
+  border-radius: 8px;
+}
+
+.label-status {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  color: #fff;
+}
+
+.label-status.wish {
+  background-color: #3b82f6;
+}
+
+.label-status.reading {
+  background-color: #10b981;
+}
+
+.label-status.read {
+  background-color: #f59e0b;
+}
+
+.label-status.wish {
+  background-color: #3b82f6;
+}
+
+.label-status.reading {
+  background-color: #10b981;
+}
+
+.label-status.read {
+  background-color: #f59e0b;
+}
+
+/* 详情页布局 */
+.book-detail {
+  display: flex;
+  gap: 28px;
+  padding: 0 6px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.detail-left {
+  flex: 0 0 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 35px;
+}
+
+.detail-right {
+  flex: 1;
+  min-width: 360px;
+}
+
+.book-title {
+  margin: 0 0 8px 0;
+  font-size: 20px;
+  color: #0f172a;
+}
+
+.book-author {
+  margin: 0 0 12px 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* 标签与状态区 */
+.tags-status {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.status-tag {
+  padding: 6px 12px;
+  border-radius: 14px;
+  color: #fff;
+  font-size: 13px;
+}
+
+.status-tag.wish {
+  background-color: #4299e1;
+}
+
+.status-tag.reading {
+  background-color: #48bb78;
+}
+
+.status-tag.read {
+  background-color: #ed8936;
+}
+
+/* 按钮组 */
+.status-buttons {
+  display: flex;
+  gap: 10px;
+  margin: 14px 0 18px;
+}
+
+/* 简介与书源 */
+.book-intro, .book-sources {
+  margin-top: 10px;
+  padding: 8px 5px;
+  background: linear-gradient(180deg, #fff, #fbfdff);
+  border-radius: 10px;
+  box-shadow: 0 6px 20px rgba(37, 51, 73, 0.04);
+}
+
+.book-intro h3, .book-sources h3 {
+  margin: 0 0 8px 0;
+  font-size: 15px;
+  color: #17325a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.book-intro p {
+  margin: 0;
+  color: #394050;
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+/* 无书源 */
+.no-sources {
+  padding: 18px 0;
+}
+
+/* 响应式调整 */
+@media (max-width: 980px) {
+  .book-detail {
+    flex-direction: column;
+    gap: 18px;
+  }
+}
+
+/* 选择器与控件 */
+.controls-right {
+  display: flex;
+  align-items: center;
+}
+
+.select-group {
+  display: flex;
+  gap: 10px;
+  padding: 6px 12px;
+  background: #f3f6ff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(16, 24, 40, 0.08);
+}
+
+.select-group .el-select {
+  min-width: 170px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.select-group .el-select .el-input__inner {
+  height: 32px;
+  line-height: 32px;
+}
+
+/* 自定义 tooltip 图 */
+.custom-tooltip img {
+  display: block;
+  max-width: 300px;
+  max-height: 450px;
+  margin-top: 5px;
+  border-radius: 8px;
+}

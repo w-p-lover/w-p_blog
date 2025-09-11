@@ -1,0 +1,130 @@
+/* 单个书籍容器 */
+.book-3d-container {
+  height: 300px;
+  cursor: pointer;
+  position: relative;
+  transform-style: preserve-3d;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+/* 书籍 3D 主体 */
+.book-3d {
+  width: 160px;
+  height: 230px;
+  position: relative;
+  transform-style: preserve-3d;
+  transform: rotateY(22deg) rotateX(6deg) translateZ(0);
+  transition: transform 380ms cubic-bezier(.2, .9, .3, 1), box-shadow 280ms ease, filter 220ms ease;
+  margin-top: 6px;
+  will-change: transform;
+}
+
+/* 悬停 */
+.book-3d.hovered {
+  transform: rotateY(0deg) rotateX(0deg) translateZ(28px) scale(1.06);
+  filter: drop-shadow(0 22px 30px rgba(20, 24, 40, 0.14));
+}
+
+/* 封面 */
+.book-cover {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: 5px;
+  overflow: hidden;
+  box-shadow: 0 6px 18px rgba(17, 24, 39, 0.06);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(0, 0, 0, 0.02));
+  border: 1px solid rgba(10, 20, 40, 0.03);
+}
+
+.cover-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 420ms ease;
+  display: block;
+}
+
+.book-3d.hovered .cover-img {
+  transform: scale(1.06);
+}
+
+/* 封面反光 */
+.cover-reflection {
+  position: absolute;
+  left: -10%;
+  top: -20%;
+  width: 120%;
+  height: 70%;
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.03) 40%, rgba(255, 255, 255, 0));
+  transform: rotate(-12deg);
+  pointer-events: none;
+  mix-blend-mode: overlay;
+  opacity: 0.65;
+}
+
+/* 书脊 */
+.book-spine {
+  position: absolute;
+  width: 14px;
+  height: 100%;
+  left: -20px;
+  bottom: 0;
+  transform: rotateY(102deg) translateZ(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.28);
+  border-radius: 2px;
+}
+
+.spine-text {
+  writing-mode: vertical-rl;
+  transform: rotateY(-160deg);
+  transform-origin: center;
+  font-size: 12px;
+  color: #fff;
+  text-align: center;
+}
+
+/* 书籍厚度（侧面） */
+.book-edge {
+  position: absolute;
+  width: 95%;
+  height: 47px;
+  bottom: -24px;
+  transform: rotateX(92deg) translateZ(0px);
+  background-image: linear-gradient(90deg, #eee 0%, #fff 50%, #e9e9e9 100%);
+  border-radius: 4px;
+  box-shadow: 0 -10px 30px rgb(11 55 98 / 49%);
+}
+
+/* 移动过渡 */
+.book-move-move {
+  transition: transform 0.6s ease;
+}
+
+/* 进入和离开动画 */
+.book-move-enter-active,
+.book-move-leave-active {
+  transition: all 0.4s ease;
+}
+
+.book-move-enter-from,
+.book-move-leave-to {
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+/* 详情页书籍预览 */
+.book-3d.preview {
+  width: 200px;
+  height: 300px;
+  transform: rotateY(0) rotateX(0);
+  transition: transform 220ms ease;
+}

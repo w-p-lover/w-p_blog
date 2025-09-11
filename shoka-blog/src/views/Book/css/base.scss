@@ -1,0 +1,83 @@
+/* 容器优化：增强主题感与层次感 */
+.book-container {
+  position: relative;
+  width: calc(70% - 0.625rem);
+  margin: 3.5rem auto;
+  padding: 1.75rem 2.25rem;
+  border-radius: 1rem; /* 柔和圆角 */
+  background: linear-gradient(180deg, rgba(228, 219, 219, 0.94), rgba(145, 157, 197, 0.42));
+  background-blend-mode: overlay;
+  background-size: cover;
+  box-shadow: 0 0 1rem var(--box-bg-shadow);
+  animation: slideUpIn 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* 标题 */
+.title-group .title {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: -0.3px;
+  color: #172554;
+}
+
+.title-group .subtitle {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* 计数徽章 */
+.count-chip .count {
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.count-chip .count-label {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* 主卡片 */
+.book-showcase {
+  max-width: 1200px;
+  margin: 10px auto 60px;
+}
+
+/* 操作区卡片 */
+.controls.card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px;
+  border-radius: 12px;
+  background: var(--card-bg);
+  box-shadow: var(--soft-shadow);
+  margin-bottom: 20px;
+}
+
+/* 按钮 */
+.add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.add-btn .el-icon {
+  font-size: 16px;
+}
+
+/* 网格布局 */
+.books-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 34px;
+  align-items: start;
+}
+
+/* 响应式 */
+@media (max-width: 980px) {
+  .books-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 24px;
+  }
+}
