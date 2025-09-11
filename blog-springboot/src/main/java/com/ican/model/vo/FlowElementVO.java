@@ -59,7 +59,7 @@ public class FlowElementVO {
     /**
      * 元素描述信息
      */
-    private String desc;
+    private String description;
 
     /**
      * 元素关键点列表

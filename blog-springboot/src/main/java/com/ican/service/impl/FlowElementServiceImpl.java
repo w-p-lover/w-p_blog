@@ -16,8 +16,7 @@ import java.sql.Array;
 import java.util.*;
 
 @Service
-public class FlowElementServiceImpl extends ServiceImpl<FlowElementMapper, FlowElement>
-        implements FlowElementService {
+public class FlowElementServiceImpl extends ServiceImpl<FlowElementMapper, FlowElement> implements FlowElementService {
 
     @Autowired
     private FlowElementMapper flowElementMapper;
@@ -30,12 +29,12 @@ public class FlowElementServiceImpl extends ServiceImpl<FlowElementMapper, FlowE
     @Override
     public List<FlowElementVO> getElementList() {
         List<FlowElementVO> list = new ArrayList<>();
-        // 查询符合条件的流程图元素列表（分页）
         List<FlowElement> elements = flowElementMapper.getElementList();
         // 将实体对象转换为VO对象，并处理关键点字段
         for (FlowElement element : elements) {
             FlowElementVO vo = BeanCopyUtils.copyBean(element, FlowElementVO.class);
-            if (element.getKeyPoints() != null) vo.setKeyPoints(Arrays.asList(element.getKeyPoints().split(",")));
+            if (element.getKeyPoints() != null)
+                vo.setKeyPoints(Arrays.asList(element.getKeyPoints().split(",")));
             list.add(vo);
         }
         return list;
@@ -51,8 +50,9 @@ public class FlowElementServiceImpl extends ServiceImpl<FlowElementMapper, FlowE
     public FlowElementVO getElementById(Long id) {
         FlowElement element = flowElementMapper.selectById(id);
         FlowElementVO vo = BeanCopyUtils.copyBean(element, FlowElementVO.class);
-        // 处理关键点字段
-        if (element.getKeyPoints() != null) vo.setKeyPoints(Arrays.asList(element.getKeyPoints().split(",")));
+
+        if (element.getKeyPoints() != null)
+            vo.setKeyPoints(Arrays.asList(element.getKeyPoints().split(",")));
         return vo;
     }
 
@@ -64,8 +64,8 @@ public class FlowElementServiceImpl extends ServiceImpl<FlowElementMapper, FlowE
     @Override
     public void addElement(FlowElementDTO elementDTO) {
         FlowElement element = BeanCopyUtils.copyBean(elementDTO, FlowElement.class);
-        // 处理关键点字段，将其转换为逗号分隔字符串存储
-        if (elementDTO.getKeyPoints() != null) element.setKeyPoints(String.join(",", elementDTO.getKeyPoints()));
+        if (elementDTO.getKeyPoints() != null)
+            element.setKeyPoints(String.join(",", elementDTO.getKeyPoints()));
         flowElementMapper.insert(element);
     }
 
@@ -78,7 +78,10 @@ public class FlowElementServiceImpl extends ServiceImpl<FlowElementMapper, FlowE
     public void updateElement(FlowElementDTO elementDTO) {
         FlowElement element = BeanCopyUtils.copyBean(elementDTO, FlowElement.class);
         // 设置关键点字段
-        if (elementDTO.getKeyPoints() != null) element.setKeyPoints(elementDTO.getKeyPoints());
+        if (elementDTO.getKeyPoints() != null) {
+            String keyPointsStr = String.join(",", elementDTO.getKeyPoints());
+            element.setKeyPoints(keyPointsStr);
+        }
         flowElementMapper.updateById(element);
     }
 
