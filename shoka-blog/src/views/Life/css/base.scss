@@ -1,0 +1,91 @@
+/* 1. Reset & 基础布局 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.container {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* 分割线 */
+.custom-divider {
+  margin: 16px 0;
+  border-color: #e5e7eb;
+}
+
+/* 2. 按钮样式 */
+.btn-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.custom-btn {
+  border-radius: 8px !important;
+  padding: 8px 16px !important;
+  font-size: 14px !important;
+  transition: all 0.2s ease !important;
+  border: none !important;
+}
+
+.custom-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* 阶段配色按钮 */
+.btn-birth {
+  background-color: #409EFF !important;
+}
+
+.btn-birth:hover {
+  background-color: #2563eb !important;
+}
+
+.btn-study {
+  background-color: #67C23A !important;
+}
+
+.btn-study:hover {
+  background-color: #52C41A !important;
+}
+
+.btn-work {
+  background-color: #FAAD14 !important;
+}
+
+.btn-work:hover {
+  background-color: #FA8C16 !important;
+}
+
+.btn-retire {
+  background-color: #9254DE !important;
+}
+
+.btn-retire:hover {
+  background-color: #722ED1 !important;
+}
+
+.btn-add {
+  background-color: #13C2C2 !important;
+}
+
+.btn-add:hover {
+  background-color: #0FB8B8 !important;
+}
+
+/* 关键事项徽章 */
+.keyPoint-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  margin: 2px;
+  font-size: 12px;
+  border-radius: 12px;
+  background: rgba(100, 100, 100, 0.1);
+  color: #333;
+}

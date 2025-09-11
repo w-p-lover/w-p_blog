@@ -1,0 +1,332 @@
+/* 黑暗主题覆盖节点背景、边框和文字 */
+.dark-theme :deep(.vue-flow__node) {
+  background: #2a2a2a !important;
+  border: 1px solid #555 !important;
+  color: #eee !important;
+}
+
+.dark-theme :deep(.my-flow) {
+  margin: 16px 0;
+  height: 650px;
+  border-radius: 12px;
+  background-color: #3a3939;
+  box-shadow: 0 4px 20px rgba(189, 186, 186, 0.42);
+  overflow: hidden;
+}
+
+.dark-theme :deep(.panel-control) {
+  background: #2c2c2c !important;
+  border: 1px solid #555 !important;
+}
+
+.dark-theme :deep(.hidden-label:hover .label-text) {
+  color: #95abb6;
+}
+
+.dark-theme :deep(.label-text) {
+  transition: color 0.2s ease;
+  color: #f6f6f6;
+}
+
+/* Vue Flow 容器 */
+.my-flow {
+  margin: 16px 0;
+  height: 650px;
+  border-radius: 12px;
+  background-color: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.11);
+  overflow: hidden;
+}
+
+/* 节点样式 */
+:deep(.stage-birth),
+:deep(.stage-study),
+:deep(.stage-work),
+:deep(.stage-retire) {
+  border-radius: 10px;
+  padding: 14px;
+  min-width: 130px;
+  font-size: 15px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+:deep(.stage-birth) {
+  background: linear-gradient(135deg, #F0F9FF, #E0F2FE);
+  border: 2px solid #409EFF;
+  color: #333;
+}
+
+:deep(.stage-study) {
+  background: linear-gradient(135deg, #F0FFF4, #ECFDF5);
+  border: 2px solid #67C23A;
+  color: #333;
+}
+
+:deep(.stage-work) {
+  background: linear-gradient(135deg, #FFF7E6, #FFFBEB);
+  border: 2px solid #FAAD14;
+  color: #333;
+}
+
+:deep(.stage-retire) {
+  background: linear-gradient(135deg, #F9F0FF, #F5F3FF);
+  border: 2px solid #9254DE;
+  color: #333;
+}
+
+/* 节点active状态 */
+:deep(.stage-birth-active) {
+  background: linear-gradient(135deg, #F0F9FF, #E0F2FE);
+  border: 2px solid #409EFF;
+  box-shadow: 0 0 15px rgba(82, 196, 26, 0.2);
+}
+
+:deep(.stage-study-active) {
+  background: linear-gradient(135deg, #F0FFF4, #ECFDF5);
+  border: 2px solid #67C23A;
+  box-shadow: 0 0 15px rgba(82, 196, 26, 0.2);
+}
+
+:deep(.stage-work-active) {
+  background: linear-gradient(135deg, #FFF7E6, #FFFBEB);
+  border: 2px solid #FAAD14;
+  box-shadow: 0 0 15px rgba(250, 140, 22, 0.2);
+}
+
+:deep(.stage-retire-active) {
+  background: linear-gradient(135deg, #F9F0FF, #F5F3FF);
+  border: 2px solid #9254DE;
+  box-shadow: 0 0 15px rgba(114, 46, 209, 0.2);
+}
+
+
+/* 节点 hover */
+:deep(.vue-flow__node):hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  z-index: 10;
+}
+
+/* 边样式 */
+:deep(.vue-flow__edge path) {
+  transition: stroke-width 0.2s ease, stroke 0.2s ease;
+}
+
+:deep(.edge-birth path) {
+  stroke: #3a92c2;
+}
+
+:deep(.edge-study path) {
+  stroke: #67C23A;
+}
+
+:deep(.edge-work path) {
+  stroke: #FAAD14;
+}
+
+:deep(.edge-retire path) {
+  stroke: #9254DE;
+}
+
+:deep(.vue-flow__edge:hover path) {
+  stroke-opacity: 0.9;
+}
+
+/* 面板与复选框 */
+.custom-panel {
+  z-index: 100;
+}
+
+.panel-control {
+  background: #ffffff;
+  padding: 10px 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  font-size: 14px;
+}
+
+.hidden-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  color: #666;
+}
+
+.custom-checkbox {
+  display: none;
+}
+
+.checkbox-icon {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.custom-checkbox:checked + .checkbox-icon {
+  background-color: #409EFF;
+  border-color: #409EFF;
+}
+
+.custom-checkbox:checked + .checkbox-icon::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 5px;
+  width: 4px;
+  height: 8px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* 底部控制栏 */
+:deep(.custom-controls) {
+  display: flex;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.8) !important;
+  border-radius: 8px !important;
+  padding: 8px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+  gap: 10px;
+}
+
+:deep(.vue-flow__controls-button) {
+  border-radius: 6px !important;
+  width: 32px !important;
+  height: 32px !important;
+  margin: 0 4px !important;
+  transition: all 0.2s ease !important;
+}
+
+:deep(.vue-flow__controls-button:hover) {
+  background-color: #f3f4f6 !important;
+  transform: translateY(-1px);
+}
+
+/* 弹窗 */
+.custom-dialog {
+  border-radius: 16px !important;
+  overflow: hidden;
+  background: linear-gradient(135deg, #fff, #f7f9fc);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+}
+
+.dialog-content {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  padding: 24px;
+}
+
+.stage-icon {
+  min-width: 60px;
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  margin-top: 4px;
+}
+
+.stage-icon i {
+  font-size: 24px;
+}
+
+.stage-info {
+  flex: 1;
+}
+
+.info-label {
+  color: #666;
+  font-weight: 500;
+  margin-right: 4px;
+}
+
+.stage-time {
+  color: #333;
+  font-size: 15px;
+  margin-bottom: 12px;
+}
+
+.stage-desc {
+  color: #333;
+  font-size: 15px;
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+
+/* 关键事项列表 */
+.keyPoints-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.keyPoints-title i {
+  color: #666;
+  font-size: 14px;
+}
+
+.keyPoint-item i {
+  color: #67C23A;
+  margin-top: 4px;
+  flex-shrink: 0;
+}
+
+/* 表单适配 */
+:deep(.el-form) {
+  margin-top: 10px;
+}
+
+:deep(.el-form-item) {
+  margin-bottom: 16px;
+}
+
+:deep(.el-input__inner), :deep(.el-select__inner) {
+  border-radius: 6px;
+  border-color: #e5e7eb;
+}
+
+:deep(.el-form-item__label) {
+  color: #666;
+  font-weight: 500;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .page-header {
+    height: 180px;
+  }
+  .page-title {
+    font-size: 24px;
+  }
+  .container {
+    padding: 16px;
+  }
+  .my-flow {
+    height: 400px;
+  }
+  .btn-group {
+    justify-content: center;
+  }
+  .custom-btn {
+    width: 100%;
+  }
+  .dialog-content {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+}
