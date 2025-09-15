@@ -1,11 +1,11 @@
 <template>
   <div class="person-card" :class="{ activeCard: personInfo.id == current }">
     <div class="info">
-          <HeadPortrait :imgUrl="personInfo.headImg"></HeadPortrait>
-          <div class="info-detail">
-            <div class="name">{{ personInfo.name }}</div>
-            <div class="detail">{{ personInfo.detail }}</div>
-          </div>
+      <HeadPortrait :imgUrl="personInfo.headImg"></HeadPortrait>
+      <div class="info-detail">
+        <div class="name">{{ personInfo.name }}</div>
+        <div class="detail">{{ personInfo.detail }}</div>
+      </div>
 
     </div>
   </div>
@@ -17,8 +17,7 @@ import HeadPortrait from "./HeadPortrait.vue";
 export default {
   props: {
     personInfo: {
-      default: {
-      },
+      default: {},
     },
     pcCurrent: {
       default: ''
@@ -33,7 +32,7 @@ export default {
     }
   },
   watch: {
-    pcCurrent: function() {
+    pcCurrent: function () {
       this.isActive()
     }
   },
@@ -54,6 +53,7 @@ export default {
   position: relative;
   margin: 25px 0;
   cursor: pointer;
+
   .info {
     position: absolute;
     left: 50%;
@@ -62,9 +62,11 @@ export default {
     transform: translate(-50%, -50%);
     overflow: hidden;
     display: flex;
+
     .info-detail {
       margin-top: 5px;
       margin-left: 20px;
+
       .name {
         color: #fff;
         overflow: hidden;
@@ -72,6 +74,7 @@ export default {
         text-overflow: ellipsis;
         margin-bottom: 5px;
       }
+
       .detail {
         color: #5c6675;
         overflow: hidden;
@@ -81,6 +84,7 @@ export default {
       }
     }
   }
+
   &:hover {
     background-color: #1d90f5;
     transition: 0.3s;
@@ -95,16 +99,18 @@ export default {
     }
   }
 }
+
 .activeCard {
-    background-color: #1d90f5;
-    transition: 0.3s;
-    box-shadow: 3px 2px 10px 0px rgba(0, 136, 255);
-    .info {
-      .info-detail {
-        .detail {
-          color: #fff;
-        }
+  background-color: #1d90f5;
+  transition: 0.3s;
+  box-shadow: 3px 2px 10px 0px rgba(0, 136, 255);
+
+  .info {
+    .info-detail {
+      .detail {
+        color: #fff;
       }
     }
+  }
 }
 </style>
