@@ -126,6 +126,11 @@ const menuList = [
         path: "/steam"
       },
       {
+        name: "共享",
+        icon: "search",
+        path: "/collab"
+      },
+      {
         name: "路线",
         icon: "search",
         path: "/life"
