@@ -63,6 +63,13 @@ const routes: RouteRecordRaw[] = [
         },
     },
     {
+        path: "/collab",
+        component: () => import("@/views/Collab/index.vue"),
+        meta: {
+            title: "共享",
+        },
+    },
+    {
         path: "/weather",
         component: () => import("@/views/Weather/index.vue"),
         meta: {
