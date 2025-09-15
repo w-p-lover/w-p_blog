@@ -351,7 +351,7 @@ export default {
 @import url('@/assets/fonts/iconfont.css');
 
 .iconfont {
-  font-family: "iconfont" !important;
+  font-family: "iconfont",serif !important;
   font-style: normal;
   font-size: 25px;
   vertical-align: middle;
@@ -368,7 +368,8 @@ export default {
   background-color: rgb(39, 42, 55);
 
   .top {
-    margin-bottom: 40px;
+    margin-top: 20px;
+    margin-bottom: 30px;
     display: flex; /* 使用 Flexbox 布局 */
     align-items: center; /* 垂直居中对齐 */
 
@@ -401,8 +402,7 @@ export default {
 
     .other-fun {
       float: right;
-      margin-top: 20px;
-      display: table-column;
+      display: contents;
 
       span {
         margin-left: 30px;
@@ -429,7 +429,7 @@ export default {
       width: 100%;
       height: 85%;
       overflow-y: auto;
-      padding: 20px;
+      padding: 40px;
       box-sizing: border-box;
 
       &::-webkit-scrollbar {

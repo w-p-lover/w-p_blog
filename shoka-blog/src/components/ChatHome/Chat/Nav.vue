@@ -64,7 +64,7 @@ export default {
 @import url('@/assets/fonts/iconfont.css');
 
 .iconfont {
-  font-family: "iconfont" !important;
+  font-family: "iconfont",serif !important;
   font-style: normal;
   font-size: 25px;
   vertical-align: middle;
