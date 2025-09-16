@@ -8,16 +8,20 @@
   <div class="bg">
     <div class="page-container">
       <div class="collab-browsing-page">
-        <!-- 顶部导航：保留博客入口（跳转你现有界面），聚焦协作内容 -->
+        <!-- 顶部导航，聚焦协作内容 -->
         <header class="main-header">
           <div class="logo">知识空间</div>
           <nav class="main-nav">
-            <!-- 跳转你已有的博客展示界面（用你现有博客的路由） -->
-            <router-link to="/blog" class="nav-item">我的博客</router-link>
-            <!-- 当前协作浏览层：标记为活跃状态 -->
-            <router-link to="/collab/browse" class="nav-item active">协作空间</router-link>
-            <router-link to="/collab/my-edit" class="nav-item">我的编辑</router-link>
-            <router-link to="/favorites" class="nav-item">收藏</router-link>
+            <router-link to="/" class="nav-item">我的博客</router-link>
+            <router-link to="/collab" class="nav-item"
+                         :class="{ active: currentActive === 'collab' }"
+                         @click="handleRouterLinkActive('collab')">协作空间
+            </router-link>
+
+            <button @click="handleMyEdit" class="nav-item" :class="{ active: currentActive === 'my-edit' }">我的编辑
+            </button>
+            <button @click="handleFavorites" class="nav-item" :class="{ active: currentActive === 'favorites' }">收藏
+            </button>
           </nav>
           <!-- 搜索：只搜索协作内容（不关联博客） -->
           <div class="search-bar">
@@ -62,8 +66,7 @@
             </div>
           </div>
         </div>
-
-        <!-- 内容展示区：完全聚焦协作文档，无博客内容 -->
+        <router-view></router-view>
         <main class="content-container">
           <!-- 协作内容统计与创建入口 -->
           <div class="collab-header">
@@ -71,7 +74,6 @@
               协作文档
               <span class="count-badge">{{ filteredCollabs.length }} 篇</span>
             </h1>
-            <!-- 新建协作文档按钮（跳转创建页） -->
             <router-link to="/collab/create" class="create-btn">
               <i class="fa fa-plus"></i> 新建文档
             </router-link>
@@ -80,7 +82,6 @@
           <!-- 协作文档列表 -->
           <div class="content-grid">
             <article class="content-card collab-card" v-for="doc in filteredCollabs" :key="'collab-' + doc.id">
-              <!-- 文档状态标签（新增：突出协作状态） -->
               <div class="doc-status" :class="doc.isEditing ? 'status-editing' : 'status-finished'">
                 {{ doc.isEditing ? '正在编辑' : '已完成' }}
               </div>
@@ -104,12 +105,16 @@
                   <div class="collaborators">
                     <span class="collab-label">协作者:</span>
                     <div class="avatar-group">
-                      <img :src="`/avatars/${collaborator.replace(/\s+/g, '') || 'default'}.png`" :alt="collaborator"
-                           class="avatar"
-                           v-for="(collaborator, index) in doc.collaborators" :key="collaborator" v-if="index < 3">
-                      <span class="more-avatars" v-if="doc.collaborators.length > 3">+{{
-                          doc.collaborators.length - 3
-                        }}</span>
+                      <template v-for="(collaborator, index) in doc.collaborators" :key="`collab-${doc.id}-${index}`">
+                        <img
+                            :src="`src/assets/img/head_portrait2.jpg`"
+                            :alt="collaborator"
+                            class="avatar"
+                            v-if="index < 3">
+                      </template>
+                      <span class="more-avatars" v-if="doc.collaborators.length > 3">+
+                          {{ doc.collaborators.length - 3 }}
+                        </span>
                     </div>
                   </div>
                   <div class="version-info">
@@ -125,7 +130,6 @@
                 </div>
                 <div class="action-btns">
                   <router-link :to="`/collab/${doc.id}`" class="read-btn">查看</router-link>
-                  <!-- 编辑权限控制：只有协作者能看到编辑按钮 -->
                   <router-link :to="`/collab/edit/${doc.id}`" class="edit-btn" v-if="isCollaborator(doc)">编辑
                   </router-link>
                 </div>
@@ -135,8 +139,7 @@
 
           <!-- 空状态提示 -->
           <div class="no-content" v-if="filteredCollabs.length === 0">
-            <img src="/images/empty-collab.png" alt="暂无协作文档" class="empty-img">
-            <p class="empty-text">暂无符合条件的协作文档</p>
+            <el-empty description="暂无符合条件的协作文档"/>
             <router-link to="/collab/create" class="empty-btn">立即创建第一篇文档</router-link>
           </div>
         </main>
@@ -146,7 +149,7 @@
           <div class="footer-content">
             <p>知识空间 &copy; 2024 - 个人博客与团队协作平台</p>
             <p class="link-group">
-              <a href="/blog">返回我的博客</a> |
+              <a href="/">返回我的博客</a> |
               <a href="/collab/help">协作指南</a>
             </p>
           </div>
@@ -243,13 +246,14 @@ const sortBy = ref<string>("latest"); // 排序：最新更新/热门浏览/编�
 const docStatus = ref<string>("all"); // 文档状态：全部/正在编辑/已完成
 const selectedTag = ref<string>("all"); // 标签筛选
 const currentUser = ref<string>("张开发"); // 当前登录用户（模拟，实际从登录态获取）
+const currentActive = ref('');
+const route = useRoute();
 
 // 4. 提取协作专属标签（去重）
 const allTags = computed(() => {
   const tagList = collabDocuments.value.flatMap(doc => doc.tags);
   return [...new Set(tagList)];
 });
-
 // 5. 协作文档筛选（多维度：搜索、状态、标签）
 const filteredCollabs = computed(() => {
   return collabDocuments.value
@@ -264,13 +268,11 @@ const filteredCollabs = computed(() => {
         }
 
         // 2. 文档状态筛选
-        /*        if (docStatus === "editing" && !doc.isEditing) return false;
-                if (docStatus === "finished" && doc.isEditing) return false;*/
+        if (docStatus.value === "editing" && !doc.isEditing) return false;
+        if (docStatus.value === "finished" && doc.isEditing) return false;
 
         // 3. 标签筛选
-        if (selectedTag.value !== "all" && !doc.tags.includes(selectedTag.value)) return false;
-
-        return true;
+        return !(selectedTag.value !== "all" && !doc.tags.includes(selectedTag.value));
       })
       .sort((a, b) => {
         // 排序逻辑
@@ -300,6 +302,31 @@ const formatDate = (dateStr: string) => {
   const date = new Date(dateStr);
   return date.toLocaleDateString("zh-CN", {year: "numeric", month: "short", day: "numeric"});
 };
+onMounted(() => {
+  if (route.path === '/blog') currentActive.value = 'blog';
+  if (route.path === '/collab') currentActive.value = 'collab';
+  // 其他路由可补充
+});
+
+const handleMyEdit = () => {
+  currentActive.value = 'my-edit'; // 标记当前按钮为活跃
+  collabDocuments.value = collabDocuments.value.filter(item => {
+    return false; // 替换为实际逻辑
+  });
+};
+
+const handleFavorites = () => {
+  currentActive.value = 'favorites'; // 标记当前按钮为活跃
+  collabDocuments.value = collabDocuments.value.filter(item => {
+    return false; // 替换为实际逻辑
+  });
+};
+
+const handleRouterLinkActive = (key: string) => {
+  collabDocuments.value = mockCollabs
+  currentActive.value = key;
+};
+
 </script>
 
 <style lang="scss" scoped>
@@ -341,10 +368,12 @@ const formatDate = (dateStr: string) => {
       text-decoration: none;
       padding: 0.5rem 0;
       position: relative;
+      font-size: 14px;
 
       &.active {
         color: #4299e1;
         font-weight: 500;
+        border-bottom: 2px solid #4299e1;
 
         &:after {
           content: "";
@@ -411,6 +440,7 @@ const formatDate = (dateStr: string) => {
     align-items: center;
     gap: 0.5rem;
     flex: auto;
+
     .filter-label {
       width: 80px;
       font-weight: 700;
@@ -727,11 +757,6 @@ const formatDate = (dateStr: string) => {
     opacity: 0.5;
   }
 
-  .empty-text {
-    color: #999;
-    margin-bottom: 1.5rem;
-    font-size: 1rem;
-  }
 
   .empty-btn {
     background-color: #4299e1;
