@@ -14,7 +14,7 @@
           <div class="controls-left">
             <el-button type="primary" @click="showAddDialog = true" class="add-btn">
               <el-icon>
-                <Plus/>
+                <Edit/>
               </el-icon>
               添加书籍
             </el-button>
@@ -124,7 +124,7 @@
                       style="display: flex; align-items: center;"
                   >
                     <el-icon class="mr-1">
-                      <ElementPlus/>
+                      <Edit/>
                     </el-icon>
                     <span>{{ value }}</span>
                   </el-tag>
@@ -273,7 +273,7 @@ import {
   getBookList,
   updateBookStatus as apiChangeBookStatus,
 } from "@/api/book";
-import {ElementPlus} from '@element-plus/icons-vue'
+import {Edit} from '@element-plus/icons-vue'
 import type {TagProps} from 'element-plus'
 
 const showAddDialog = ref(false);
