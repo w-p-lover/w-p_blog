@@ -1,18 +1,21 @@
-from turtledemo.penrose import start
+import os
 
 import requests
 from bs4 import BeautifulSoup
 import time
 import csv
+import pandas as pd
 import random
-
-from django.template.defaultfilters import first
-
+from urllib.parse import quote
+from download import down_main
 # -------------------------- 1. 配置 --------------------------
 BASE_LIST_URL = "https://8080txt.com/hot/index_{}.html"
-TOTAL_PAGES = 1  # 建议先测试1页
-DELAY_MIN = 1  # 延迟最小值（秒）
-DELAY_MAX = 2  # 延迟最大值（秒）
+FIRST_PAGES = 6
+FINAL_PAGES = 10
+TOTAL_PAGES = FINAL_PAGES - FIRST_PAGES + 1
+
+DELAY_MIN = 1
+DELAY_MAX = 3
 CSV_FILENAME = "80电子书下载链接.csv"
 
 HEADERS = {
@@ -80,7 +83,7 @@ def get_real_txt_links(jump_url):
     ]
 
     links = list(set(links))
-    return "; ".join(links) if links else "未找到有效TXT下载链接"
+    return links if links else "未找到有效TXT下载链接"
 
 
 def parse_list_novel(novel_div):
@@ -130,21 +133,99 @@ def parse_list_novel(novel_div):
     # 下载跳转页 + 真实TXT链接
     info["下载跳转页URL"] = get_download_jump_url(info["小说详情页URL"])
     sleep_delay()
-    info["真实TXT下载链接"] = get_real_txt_links(info["下载跳转页URL"])
+    links = get_real_txt_links(info["下载跳转页URL"])
+
+    info["TXT下载链接1"] = links[0]
+    info["TXT下载链接2"] = links[1]
     sleep_delay()
 
     return info
 
 
 def save_to_csv(data):
-    """保存数据到CSV"""
-    fields = ["标题", "作者", "类别", "下载量", "简介", "小说详情页URL",
-              "下载跳转页URL", "真实TXT下载链接", "封面URL",
-              "发布时间", "小说状态", "文件格式", "文件大小"]
-    with open(CSV_FILENAME, "w", newline="", encoding="utf-8-sig") as f:
+    fields = [
+        "标题", "作者", "类别", "下载量", "简介", "小说详情页URL",
+        "下载跳转页URL", "TXT下载链接1", "TXT下载链接2", "封面URL",
+        "发布时间", "小说状态", "文件格式", "文件大小"
+    ]
+
+    existing_titles = set()
+    file_exists = os.path.exists(CSV_FILENAME)
+    file_empty = True
+
+    if file_exists:
+        file_empty = os.path.getsize(CSV_FILENAME) == 0
+        if not file_empty:
+            try:
+                df = pd.read_csv(CSV_FILENAME, encoding="utf-8-sig")
+                existing_titles = set(df["标题"].astype(str))
+            except Exception as e:
+                print(f"⚠️ 读取现有 CSV 失败: {e}")
+
+    # 过滤掉标题已存在的记录
+    filtered_data = [
+        row for row in data
+        if str(row.get("标题", "")).strip() not in existing_titles
+    ]
+    if not filtered_data:
+        print("没有新的数据需要写入。")
+        return
+
+    # 追加写入
+    with open(CSV_FILENAME, "a", newline="", encoding="utf-8-sig") as f:
         writer = csv.DictWriter(f, fieldnames=fields)
-        writer.writeheader()
-        writer.writerows(data)
+        if not file_exists or file_empty:
+            writer.writeheader()
+        writer.writerows(filtered_data)
+
+    print(f"新增写入 {len(filtered_data)} 条记录。")
+
+
+def main_writer():
+    print("===== 按作者抓取 80电子书 下载排行榜 =====")
+    first_time = time.time()
+    all_data = []
+
+    # 这里放你想要抓取的作者列表
+    authors = [
+        "辰东",
+    ]
+
+    for author in authors:
+        start_time = time.time()
+        url = f"https://8080txt.com/writer/{quote(author)}/"
+        print(f"\n===== 作者：{author} -> {url} =====")
+
+        soup = get_page_soup(url)
+        if not soup:
+            print(f"⚠️ {author} 页面爬取失败，跳过")
+            sleep_delay()
+            continue
+
+        novels = soup.find_all("div", class_="slist")
+        if not novels:
+            print(f"⚠️ {author} 未找到小说数据")
+            sleep_delay()
+            continue
+
+        for idx, novel_div in enumerate(novels, 1):
+            try:
+                info = parse_list_novel(novel_div)
+                all_data.append(info)
+                down_time = time.time()
+                print(f"✅ {author} - {idx}：《{info['标题']}》 "
+                      f"链接：{info['TXT下载链接1'][:50]}... "
+                      f"耗时:{round(down_time - start_time, 2)}s")
+                start_time = down_time
+            except Exception as e:
+                print(f"❌ {author} 第{idx}本解析失败: {e}")
+            sleep_delay()
+
+    save_to_csv(all_data)
+    end_time = time.time()
+    print(f"\n===== 全部作者抓取完成，共 {len(all_data)} 本小说 =====")
+    print(f"总耗时: {round(end_time - first_time, 2)} 秒")
+    print(f"数据保存到: {CSV_FILENAME}")
 
 
 # -------------------------- 3. 主爬虫 --------------------------
@@ -154,9 +235,11 @@ def main():
     start_time = first_time
     all_data = []
 
-    for page in range(1, TOTAL_PAGES + 1):
+    for page in range(FIRST_PAGES, FINAL_PAGES + 1):
+        url = f"https://8080txt.com/page/{page}/"
+        page = page
         url = "https://8080txt.com/hot/" if page == 1 else BASE_LIST_URL.format(page)
-        print(f"\n===== 第{page}/{TOTAL_PAGES}页: {url} =====")
+        print(f"\n===== 第{page}/{FINAL_PAGES}页: {url} =====")
 
         soup = get_page_soup(url)
         if not soup:
@@ -175,8 +258,9 @@ def main():
                 info = parse_list_novel(novel_div)
                 all_data.append(info)
                 down_time = time.time()
-                print(f"消耗时间:{round(down_time - start_time, 2)}")
-                print(f"✅ {idx}：《{info['标题']}》链接：{info['真实TXT下载链接'][:50]}...")
+                print(f"✅ {idx}：《{info['标题']}》"
+                      f"链接：{info['TXT下载链接1'][:50]}..."
+                      f"耗时:{round(down_time - start_time, 2)}s")
                 start_time = down_time
             except Exception as e:
                 print(f"❌ 第{idx}本小说解析失败: {e}")
@@ -190,4 +274,6 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    # main()
+    main_writer()
+    down_main()
