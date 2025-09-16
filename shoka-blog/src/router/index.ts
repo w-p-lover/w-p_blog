@@ -68,6 +68,34 @@ const routes: RouteRecordRaw[] = [
         meta: {
             title: "共享",
         },
+        children: [
+            {
+                path: "my-edit", // 子路径名称
+                component: () => import("@/views/Collab/index.vue"),
+                meta: {
+                    title: "共享",
+                },
+            },
+            {
+                path: "favorites",
+                component: () => import("@/views/Collab/index.vue"),
+                meta: {
+                    title: "共享",
+                },
+            }
+        ],
+    },
+    {
+        path: "/collab/create", // 子路径名称
+        component: () => import("@/views/Collab/edit.vue"),
+    },
+    {
+        path: "/collab/:collabId", // 子路径名称
+        component: () => import("@/views/Collab/edit.vue"),
+    },
+    {
+        path: "/collab/edit/:collabId", // 子路径名称
+        component: () => import("@/views/Collab/edit.vue"),
     },
     {
         path: "/weather",
