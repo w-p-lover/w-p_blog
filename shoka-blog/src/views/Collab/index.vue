@@ -130,8 +130,7 @@
                 </div>
                 <div class="action-btns">
                   <router-link :to="`/collab/${doc.id}`" class="read-btn">查看</router-link>
-                  <router-link :to="`/collab/edit/${doc.id}`" class="edit-btn" v-if="isCollaborator(doc)">编辑
-                  </router-link>
+                  <router-link :to="`/collab/edit/${doc.id}`" class="edit-btn" v-if="isCollaborator(doc)">编辑</router-link>
                 </div>
               </div>
             </article>
@@ -160,141 +159,116 @@
 </template>
 
 <script setup lang="ts">
-import {ref, computed} from 'vue';
+import {ref, computed, reactive, toRefs} from 'vue';
 import 'font-awesome/css/font-awesome.min.css';
+import { listDocs } from "@/api/collab";
+import { Doc } from "@/api/collab/type";
+import {PageQuery} from "@/model";
+import useStore from '@/store';
 
-// 1. 协作文档类型定义（强化协作属性）
-interface CollabDocument {
-  id: number;
-  title: string;
-  leadAuthor: string; // 主导者（创建者）
-  lastUpdateDate: string; // 最后更新时间
-  excerpt: string; // 摘要
-  tags: string[]; // 标签
-  collaborators: string[]; // 所有协作者
-  views: number; // 浏览量
-  editCount: number; // 编辑次数
-  version: number; // 版本号
-  isEditing: boolean; // 是否正在编辑
-  comments: number; // 评论数
-}
-
-// 2. 模拟协作数据（更贴近实际协作场景）
-const mockCollabs: CollabDocument[] = [
-  {
-    id: 1,
-    title: "项目开发规范V2.0",
-    leadAuthor: "项目经理",
-    lastUpdateDate: "2024-09-14",
-    excerpt: "团队最新的开发规范，包括代码风格、提交规范、分支管理策略和Code Review流程...",
-    tags: ["团队协作", "规范", "开发流程"],
-    collaborators: ["项目经理", "张开发", "李程序", "王后端"],
-    views: 324,
-    editCount: 18,
-    version: 5,
-    isEditing: false,
-    comments: 12
-  },
-  {
-    id: 2,
-    title: "用户认证系统设计方案",
-    leadAuthor: "李程序",
-    lastUpdateDate: "2024-09-12",
-    excerpt: "包含JWT认证、OAuth集成和权限管理的完整设计方案，附实现代码和测试用例...",
-    tags: ["系统设计", "安全", "认证"],
-    collaborators: ["李程序", "王后端", "张开发"],
-    views: 256,
-    editCount: 12,
-    version: 3,
-    isEditing: true,
-    comments: 8
-  },
-  {
-    id: 3,
-    title: "前端组件库开发文档",
-    leadAuthor: "张开发",
-    lastUpdateDate: "2024-09-08",
-    excerpt: "内部组件库的使用文档和开发指南，包括组件API、样式定制和版本更新日志...",
-    tags: ["前端", "组件库", "文档"],
-    collaborators: ["张开发", "赵设计"],
-    views: 189,
-    editCount: 23,
-    version: 7,
-    isEditing: false,
-    comments: 5
-  },
-  {
-    id: 4,
-    title: "数据库表结构设计（V1.1）",
-    leadAuthor: "王后端",
-    lastUpdateDate: "2024-09-05",
-    excerpt: "包含用户表、文档表、权限表的结构设计，字段说明和索引优化建议...",
-    tags: ["数据库", "后端", "设计"],
-    collaborators: ["王后端", "项目经理"],
-    views: 156,
-    editCount: 9,
-    version: 2,
-    isEditing: true,
-    comments: 3
-  }
-];
-
-// 3. 状态管理（只针对协作内容）
-const collabDocuments = ref<CollabDocument[]>(mockCollabs);
-const searchKeyword = ref<string>("");
-const sortBy = ref<string>("latest"); // 排序：最新更新/热门浏览/编辑最多
-const docStatus = ref<string>("all"); // 文档状态：全部/正在编辑/已完成
-const selectedTag = ref<string>("all"); // 标签筛选
-const currentUser = ref<string>("张开发"); // 当前登录用户（模拟，实际从登录态获取）
-const currentActive = ref('');
+const {user} = useStore();
+const data = reactive({
+  count: 0,
+  queryParams: {
+    current: 1,
+    size: 5,
+    tag : '',
+    status: '',
+    keyword : '',
+    sortType: ''
+  } as PageQuery,
+  collabDocuments: [] as Array<{
+    id: number;
+    title: string;
+    leadAuthor: string; // 主导者（创建者）
+    lastUpdateDate: string; // 最后更新时间
+    excerpt: string; // 摘要
+    tags: string[]; // 标签
+    collaborators: string[]; // 所有协作者
+    views: number; // 浏览量
+    editCount: number; // 编辑次数
+    version: number; // 版本号
+    isEditing: boolean; // 是否正在编辑
+    comments: number; // 评论数
+  }>
+});
+const {count, queryParams, collabDocuments} = toRefs(data);
+// 3. 其他状态
+const searchKeyword = ref("");
+const sortBy = ref("latest");
+const docStatus = ref("all");
+const selectedTag = ref("all");
+const currentActive = ref("");
 const route = useRoute();
+const currentUser = computed(() => user.nickname || '默认用户');
 
-// 4. 提取协作专属标签（去重）
+// 4. 取后端数据并做字段映射
+const fetchDocs = async () => {
+  try {
+    const { data } = await listDocs(queryParams.value);
+    if (data.code === 200) {
+      console.log("获取协作文档成功", data);
+      collabDocuments.value = (data.data || []).map((d: Doc) => ({
+        id: d.id,
+        title: d.title,
+        leadAuthor: d.leadAuthor,
+        lastUpdateDate: d.lastUpdateDate,
+        excerpt: d.description || "",               // 后端字段是 desc，这里转成 excerpt
+        tags: d.tags || [],
+        collaborators: d.collaborators || [],
+        views: d.views || 0,
+        editCount: d.editCount || 0,
+        version: d.version || 1,
+        isEditing: d.isEditing || false,
+        comments: d.comments || 0,
+      }));
+    }
+  } catch (e) {
+    console.error("获取协作文档失败", e);
+  }
+};
+
+// 5. 计算属性
 const allTags = computed(() => {
   const tagList = collabDocuments.value.flatMap(doc => doc.tags);
   return [...new Set(tagList)];
 });
-// 5. 协作文档筛选（多维度：搜索、状态、标签）
+
 const filteredCollabs = computed(() => {
   return collabDocuments.value
       .filter(doc => {
-        // 1. 搜索筛选：标题/摘要/标签匹配
         if (searchKeyword.value) {
-          const keyword = searchKeyword.value.trim().toLowerCase();
-          const matchTitle = doc.title.toLowerCase().includes(keyword);
-          const matchExcerpt = doc.excerpt.toLowerCase().includes(keyword);
-          const matchTag = doc.tags.some(tag => tag.toLowerCase().includes(keyword));
+          const kw = searchKeyword.value.trim().toLowerCase();
+          const matchTitle = doc.title.toLowerCase().includes(kw);
+          const matchExcerpt = doc.excerpt.toLowerCase().includes(kw);
+          const matchTag = doc.tags.some(tag => tag.toLowerCase().includes(kw));
           if (!matchTitle && !matchExcerpt && !matchTag) return false;
         }
-
-        // 2. 文档状态筛选
         if (docStatus.value === "editing" && !doc.isEditing) return false;
         if (docStatus.value === "finished" && doc.isEditing) return false;
-
-        // 3. 标签筛选
         return !(selectedTag.value !== "all" && !doc.tags.includes(selectedTag.value));
       })
       .sort((a, b) => {
-        // 排序逻辑
         if (sortBy.value === "latest") {
           return new Date(b.lastUpdateDate).getTime() - new Date(a.lastUpdateDate).getTime();
         } else if (sortBy.value === "popular") {
           return b.views - a.views;
-        } else { // editCount：编辑最多
+        } else {
           return b.editCount - a.editCount;
         }
       });
 });
 
 // 6. 权限控制：判断当前用户是否为文档协作者（决定是否显示编辑按钮）
-const isCollaborator = (doc: CollabDocument) => {
-  return doc.collaborators.includes(currentUser.value);
+const isCollaborator = (doc) => {
+console.log("当前用户：", currentUser.value);
+return doc.collaborators.some(collab => collab.name === currentUser.value);
 };
+
 
 // 7. 搜索处理
 const handleSearch = () => {
   console.log("搜索协作关键词：", searchKeyword.value);
-  // 实际项目可加防抖：setTimeout + 清除定时器，避免频繁筛选
 };
 
 // 8. 日期格式化
@@ -302,29 +276,28 @@ const formatDate = (dateStr: string) => {
   const date = new Date(dateStr);
   return date.toLocaleDateString("zh-CN", {year: "numeric", month: "short", day: "numeric"});
 };
+
 onMounted(() => {
   if (route.path === '/blog') currentActive.value = 'blog';
-  if (route.path === '/collab') currentActive.value = 'collab';
-  // 其他路由可补充
+  if (route.path.startsWith('/collab')) currentActive.value = 'collab';
+  fetchDocs();
 });
 
 const handleMyEdit = () => {
-  currentActive.value = 'my-edit'; // 标记当前按钮为活跃
-  collabDocuments.value = collabDocuments.value.filter(item => {
-    return false; // 替换为实际逻辑
-  });
+  currentActive.value = 'my-edit';
+  collabDocuments.value = collabDocuments.value.filter(doc =>
+      doc.collaborators.includes(currentUser.value)
+  );
 };
 
 const handleFavorites = () => {
-  currentActive.value = 'favorites'; // 标记当前按钮为活跃
-  collabDocuments.value = collabDocuments.value.filter(item => {
-    return false; // 替换为实际逻辑
-  });
+  currentActive.value = 'favorites';
+  collabDocuments.value = [];
 };
 
 const handleRouterLinkActive = (key: string) => {
-  collabDocuments.value = mockCollabs
   currentActive.value = key;
+  fetchDocs();
 };
 
 </script>
