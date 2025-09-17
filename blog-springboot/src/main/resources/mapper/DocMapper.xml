@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ican.mapper.DocMapper">
+
+    <!-- 前台文档列表：分页 + 可按条件排序 -->
+    <select id="getDocList" resultType="com.ican.entity.Doc">
+        SELECT id,
+        title,
+        category_name,
+        description,
+        content,
+        lead_author,
+        version,
+        views,
+        edit_count,
+        is_editing,
+        last_update_date,
+        tags,
+        collaborators,
+        comments
+        FROM t_doc
+        <where>
+            <if test="condition.keyword != null and condition.keyword != ''">
+                AND (title LIKE CONCAT('%', #{condition.keyword}, '%')
+                OR description LIKE CONCAT('%', #{condition.keyword}, '%'))
+            </if>
+
+            <if test="condition.status == 'editing'">
+                AND is_editing = 1
+            </if>
+            <if test="condition.status == 'finished'">
+                AND is_editing = 0
+            </if>
+        </where>
+
+        <!--<choose>
+            <when test="condition.sortType == 'latest'">
+                ORDER BY last_update_date DESC
+            </when>
+            <when test="condition.sortType == 'popular'">
+                ORDER BY views DESC
+            </when>
+            <when test="condition.sortType == 'editCount'">
+                ORDER BY edit_count DESC
+            </when>
+            <otherwise>
+                ORDER BY last_update_date DESC
+            </otherwise>
+        </choose>-->
+        LIMIT #{limit}, #{size}
+    </select>
+
+    <!-- 后台管理文档列表：分页 + 条件 -->
+    <select id="getAdminDocList" resultType="com.ican.entity.Doc">
+        SELECT id,
+        title,
+        category_name,
+        description,
+        content,
+        lead_author,
+        version,
+        views,
+        edit_count,
+        is_editing,
+        last_update_date,
+        tags,
+        collaborators,
+        comments
+        FROM t_doc
+        <where>
+            <if test="condition.keyword != null and condition.keyword != ''">
+                AND title LIKE CONCAT('%', #{condition.keyword}, '%')
+            </if>
+            <!-- 可添加管理员筛选条件 -->
+        </where>
+        ORDER BY last_update_date DESC
+        LIMIT #{limit}, #{size}
+    </select>
+
+    <!-- 根据标题或摘要搜索 -->
+    <select id="searchDoc" resultType="com.ican.entity.Doc">
+        SELECT id,
+               title,
+               category_name,
+               description,
+               content,
+               lead_author,
+               version,
+               views,
+               edit_count,
+               is_editing,
+               last_update_date,
+               tags,
+               collaborators,
+               comments
+        FROM t_doc
+        WHERE title LIKE CONCAT('%', #{keyword}, '%')
+           OR `desc` LIKE CONCAT('%', #{keyword}, '%')
+    </select>
+
+</mapper>
