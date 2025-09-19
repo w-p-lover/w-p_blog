@@ -40,22 +40,10 @@
 import {ref, onMounted} from 'vue';
 import {getTagList} from "@/api/tag";
 import {Tag} from "@/api/tag/types";
+import {getDocTags} from "@/api/collab";
+import {CollabTag} from "@/api/collab/type";
 
-// 类型定义
-interface CollabTag {
-  id: number;
-  tagName: string;
-  docCount: number
-}
 
-// 模拟协作标签数据
-const mockCollabTags: CollabTag[] = [
-  {id: 1, tagName: "前端开发", docCount: 1},
-  {id: 2, tagName: "团队协作", docCount: 5},
-  {id: 3, tagName: "文档规范", docCount: 2},
-  {id: 4, tagName: "测试用例", docCount: 1},
-  {id: 5, tagName: "接口设计", docCount: 8},
-];
 
 // 数据变量
 const blogTagList = ref<Tag[]>([]);
@@ -88,7 +76,9 @@ onMounted(() => {
   getTagList().then(({data}) => {
     blogTagList.value = data.data;
   });
-  collabTagList.value = mockCollabTags;
+  getDocTags().then(({data}) => {
+    collabTagList.value = data.data;
+  });
 });
 
 </script>
