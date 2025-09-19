@@ -34,21 +34,6 @@
                 AND is_editing = 0
             </if>
         </where>
-
-        <!--<choose>
-            <when test="condition.sortType == 'latest'">
-                ORDER BY last_update_date DESC
-            </when>
-            <when test="condition.sortType == 'popular'">
-                ORDER BY views DESC
-            </when>
-            <when test="condition.sortType == 'editCount'">
-                ORDER BY edit_count DESC
-            </when>
-            <otherwise>
-                ORDER BY last_update_date DESC
-            </otherwise>
-        </choose>-->
         LIMIT #{limit}, #{size}
     </select>
 

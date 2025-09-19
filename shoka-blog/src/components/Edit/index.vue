@@ -19,8 +19,10 @@ import {QuillEditor} from '@vueup/vue-quill'
 import '@vueup/vue-quill/dist/vue-quill.snow.css'
 import {reactive, ref, onMounted, toRaw, watch} from 'vue'
 
+// 定义props，接收父组件的value
 const props = defineProps(['value'])
-const emit = defineEmits(['updateValue'])
+// 定义发射事件，必须是update:value才能被v-model:value识别
+const emit = defineEmits(['update:value'])
 
 const content = ref('')
 const myQuillEditor = ref()
@@ -47,18 +49,25 @@ const data = reactive({
   }
 })
 
-// 回显内容
+// 回显内容：监听父组件传入的value变化
 watch(() => props.value, (val) => {
   if (val && myQuillEditor.value) {
-    toRaw(myQuillEditor.value).setHTML(val)
+    // 确保内容不同时才更新，避免死循环
+    if (val !== toRaw(myQuillEditor.value).getHTML()) {
+      toRaw(myQuillEditor.value).setHTML(val)
+      content.value = val // 同步更新本地content
+    }
   }
-}, {deep: true})
+}, {deep: true, immediate: true}) // 增加immediate确保初始值能正确设置
 
-// 设置内容并抛出到父组件
+// 设置内容并发射事件给父组件（关键修复：事件名称改为update:value）
 const setValue = () => {
   if (!myQuillEditor.value) return
   const text = toRaw(myQuillEditor.value).getHTML()
-  emit('updateValue', text)
+  // 只有内容变化时才发射事件，避免无效更新
+  if (text !== props.value) {
+    emit('update:value', text)
+  }
 }
 
 // 自定义图片上传
@@ -74,14 +83,20 @@ const handleUpload = (e) => {
   const formdata = new FormData()
   formdata.append('file', files[0])
 
-  backsite.uploadFile(formdata) // 服务端接口
+  // 注意：确保backsite是全局可用的，或改为import引入的API
+  backsite.uploadFile(formdata)
       .then(res => {
-        if (res.data.url) {
+        if (res.data?.url) {
           const quill = toRaw(myQuillEditor.value).getQuill()
           const length = quill.getSelection()?.index || 0
           quill.insertEmbed(length, 'image', res.data.url)
           quill.setSelection(length + 1)
+          // 上传后手动触发一次内容更新
+          setValue()
         }
+      })
+      .catch(err => {
+        console.error('图片上传失败', err)
       })
 }
 
@@ -89,11 +104,15 @@ const handleUpload = (e) => {
 onMounted(() => {
   const quill = toRaw(myQuillEditor.value).getQuill()
   quill.getModule('toolbar').addHandler('image', imgHandler)
+  // 初始化时设置初始值
+  if (props.value) {
+    quill.setHTML(props.value)
+  }
 })
 </script>
 
 <style scoped lang="scss">
-/* 外层卡片 */
+/* 保持原有样式不变 */
 .quill-card {
   border-radius: 8px;
   padding: 0;
@@ -112,7 +131,6 @@ onMounted(() => {
   margin-right: 0;
 }
 
-/* 工具栏样式 */
 :deep(.ql-toolbar) {
   border-bottom: 1px solid rgba(105, 119, 165, 0.73);
   padding: 0 0 6px 10px;
@@ -126,7 +144,6 @@ onMounted(() => {
   margin-right: 6px;
 }
 
-/* 编辑器区域 */
 :deep(.ql-editor) {
   min-height: 240px;
   font-size: 14px;
@@ -136,15 +153,13 @@ onMounted(() => {
   font-family: var(--el-font-family), serif;
 }
 
-/* 编辑器容器圆角边框 */
 :deep(.ql-container) {
   border: 1px solid #dcdfe6;
   border-radius: 0 0 8px 8px;
 }
 
-/* 工具栏按钮颜色 */
 :deep(.ql-toolbar button svg) {
-  stroke: #409eff; /* Element 主色 */
+  stroke: #409eff;
 }
 
 :deep(.ql-snow .ql-picker.ql-size) {

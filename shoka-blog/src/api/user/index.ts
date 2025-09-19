@@ -51,3 +51,13 @@ export function updateUserInfo(data: UserInfo): AxiosPromise<Result<null>> {
         data,
     });
 }
+
+/**
+ * 修改用户信息
+ */
+export function getUserList(): AxiosPromise<Result<any>> {
+    return request({
+        url: "/user/list",
+        method: "get",
+    });
+}
