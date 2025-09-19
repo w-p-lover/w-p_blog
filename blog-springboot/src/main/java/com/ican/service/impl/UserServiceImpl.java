@@ -22,6 +22,7 @@ import com.ican.service.UserService;
 import com.ican.strategy.context.UploadStrategyContext;
 import com.ican.utils.SecurityUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -259,6 +260,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         userMapper.update(new User(), new LambdaUpdateWrapper<User>()
                 .set(User::getPassword, SecurityUtils.sha256Encrypt(user.getPassword()))
                 .eq(User::getUsername, user.getUsername()));
+    }
+
+    @Override
+    public PageResult<DocDTO.CollabDTO> getUserLis(ConditionDTO condition) {
+        List<User> users = userMapper.selectList(new LambdaQueryWrapper<>());
+        return new PageResult<>(users.stream()
+                .map(user -> {
+                    DocDTO.CollabDTO collabDTO = new DocDTO.CollabDTO();
+                    collabDTO.setName(user.getNickname());
+                    collabDTO.setAvatar(user.getAvatar());
+                    return collabDTO;
+                })
+                .collect(Collectors.toList()), (long) users.size());
     }
 
     /**

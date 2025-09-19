@@ -51,9 +51,9 @@
           </el-form-item>
 
           <!-- 标签 -->
-          <el-form-item label="文章标签" prop="tagNameList">
+          <el-form-item label="文章标签" prop="tags">
             <el-tag
-                v-for="(item, index) in docForm.tagNameList"
+                v-for="(item, index) in docForm.tags"
                 :key="index"
                 closable
                 @close="removeTag(item)"
@@ -64,14 +64,15 @@
               {{ item }}
             </el-tag>
             <el-tag
-                v-for="(item, index) in docForm.tagNameList"
+                v-for="(item, index) in docForm.tags"
                 :key="'view-' + index"
                 v-if="mode === 'view'"
                 style="margin-right: 1rem"
             >
               {{ item }}
             </el-tag>
-            <el-popover placement="bottom-start" width="460" trigger="click" v-if="docForm.tagNameList.length < 3 && mode !== 'view'">
+            <el-popover placement="bottom-start" width="460" trigger="click"
+                        v-if="docForm.tags.length < 3 && mode !== 'view'">
               <template #reference>
                 <el-button type="success" plain>添加标签</el-button>
               </template>
@@ -100,7 +101,7 @@
 
           <!-- 描述 -->
           <el-form-item label="文档描述">
-            <el-input type="textarea" rows="3" v-model="docForm.description" :readonly="mode === '查看'"/>
+            <el-input type="textarea" :rows="3" v-model="docForm.description" :readonly="mode === '查看'"/>
           </el-form-item>
 
           <!-- 内容 -->
@@ -111,18 +112,38 @@
           <!-- 协作者 -->
           <el-form-item label="协作者">
             <div class="collab-group">
-              <div class="collab-row" v-for="(item, idx) in docForm.collabs" :key="idx">
-                <el-input v-model="item.name" placeholder="输入协作者姓名" :readonly="mode === '查看'"
-                          style="width:280px;margin-right:6px"/>
-                <el-select v-model="item.role" placeholder="选择角色" :disabled="mode === '查看'"
+              <div class="collab-row" v-for="(item, idx) in docForm.collaborators" :key="idx">
+                <el-select v-model="item.name" placeholder="选择协作者"
+                           :disabled="mode === '查看' || (item.name !== user.nickname && item.role == 'editor' && item.addMode !== true)"
+                           style=" width:180px ; margin-right:16px"
+                           @change="i => onCollabChange(item, i)">
+                  <el-option
+                      v-for="user in collabList"
+                      :key="user.name"
+                      :label="user.name"
+                      :value="user.name"
+                  />
+                </el-select>
+                <el-select v-model="item.role" placeholder="选择角色"
+                           :disabled="mode === '查看' || (item.name !== user.nickname && item.role == 'editor' && item.addMode !== true)"
                            style="width:180px;margin-right:16px">
                   <el-option label="编辑者" value="editor"/>
                   <el-option label="查看者" value="viewer"/>
                 </el-select>
-                <el-button icon="el-icon-delete" type="text" @click="removeCollab(idx)"
-                           :disabled="docForm.collabs.length===1 || mode==='查看'"/>
+                <el-input v-model="item.avatar" placeholder="请输入头像URL" :disabled="mode === '查看'">
+                </el-input>
+                <el-button
+                    type="primary"
+                    @click="removeCollab(idx)"
+                    :disabled="docForm.collaborators.length === 1 || mode === '查看'"
+                    style="margin-left: 15px"
+                >
+                  <el-icon><Delete /></el-icon>
+                </el-button>
+
               </div>
-              <el-button type="primary" @click="addCollab" v-if="mode!=='查看'" style="margin-top:8px">添加协作者
+              <el-button type="primary" @click="addCollab" v-if="mode!=='查看'" style="margin-top:8px">
+                添加协作者
               </el-button>
             </div>
           </el-form-item>
@@ -132,9 +153,14 @@
             <el-button type="primary" v-if="mode !== '查看'" @click="saveDraft()">
               {{ '保存草稿' }}
             </el-button>
-            <el-button type="success" v-if="mode !== '查看'" @click="editDoc()">
+            <el-button
+                type="success"
+                v-if="mode !== '查看'"
+                @click="mode === '新建' ? submitDoc() : editDoc()"
+            >
               {{ mode === '新建' ? '创建完成' : '保存修改' }}
             </el-button>
+
           </el-form-item>
 
         </el-form>
@@ -144,24 +170,34 @@
 </template>
 
 <script setup lang="ts">
-import {reactive, ref, onMounted} from 'vue';
+import {onMounted, reactive, ref} from 'vue';
 import {ElMessage} from 'element-plus';
-import {getDoc, listDocs} from '@/api/collab/index';
+import {createDoc, getDoc, getDocTags, updateDoc} from '@/api/collab';
 import RichTextEditor from '@/components/Edit/index.vue';
 import useStore from '@/store';
+import {getUserList} from "@/api/user";
+import {Delete} from '@element-plus/icons-vue';
+interface CollabUser {
+  name: string;
+  avatar: string;
+  role: string;
+}
 
 const {user} = useStore();
 
 // reactive 状态
 const docForm = reactive({
+  id: 0,
   title: '',
-  tagNameList: [] as string[],
+  tags: [] as string[],
   categoryName: '',
-  desc: '',
+  description: '',
   content: '',
-  collabs: [{name: user.nickname || '默认用户', role: 'editor'}]
+  collaborators: [{name: user.nickname || '默认用户', role: 'editor', avatar: user.avatar, addMode: false,}],
+  status: "docForm",
 });
 
+const collabList = ref<CollabUser[]>([]);
 const categoryName = ref('');
 const categoryList = reactive([
   {id: 1, categoryName: '前端开发'},
@@ -182,29 +218,61 @@ const mode = ref<'新建' | '编辑' | '查看'>('新建');
 // 表单规则
 const formRules = reactive({
   title: [{required: true, message: '请输入标题', trigger: 'blur'}],
-  tagNameList: [{type: 'array', min: 1, message: '请选择至少一个标签', trigger: 'change'}],
+  tags: [{type: 'array', min: 1, message: '请选择至少一个标签', trigger: 'change'}],
   categoryName: [{required: true, message: '请选择分类', trigger: 'change'}],
   content: [{required: true, message: '请输入内容', trigger: 'blur'}]
 });
 
 // 页面初始化
-onMounted(() => {
+onMounted(async () => {
   const path = location.pathname;
-  if (path.includes('/collab/edit/')) mode.value = '编辑';
-  else if (path.match(/^\/collab\/\d+$/)) mode.value = '查看';
-  if (mode.value !== '新建') {
-    const id = Number(location.pathname.split('/').pop());
-    fetchDoc(id);
+
+  // 判断模式
+  if (path.includes('/collab/edit/')) {
+    mode.value = '编辑';
+  } else if (path.match(/^\/collab\/\d+$/)) {
+    mode.value = '查看';
+  }
+
+  const id = Number(path.split('/').pop());
+  const draftKey = id ? `collabDocDraft-${id}` : 'collabDocDraft-new';
+  const draft = localStorage.getItem(draftKey);
+  if (draft) {
+    Object.assign(docForm, JSON.parse(draft));
+    ElMessage.info('已加载本地草稿');
+  }
+
+  if (mode.value !== '新建' && !draft) {
+    await fetchDoc(id);
+  }
+
+  // 加载协作者列表（新建或编辑模式）
+  if (mode.value !== '查看') {
+    const {data} = await getUserList();
+    collabList.value = data.data.recordList;
+    await fetchDocTag();
   }
 });
+
 
 // 获取文档
 async function fetchDoc(id: number) {
   try {
     const {data} = await getDoc(id);
+    docForm.id = id;
     Object.assign(docForm, data.data);
   } catch (error) {
     ElMessage.error('加载文档失败');
+  }
+}
+
+// 获取文档
+async function fetchDocTag() {
+  try {
+    const {data} = await getDocTags();
+    Object.assign(tagList, data.data);
+  } catch (error) {
+    ElMessage.error('加载文档标签失败');
   }
 }
 
@@ -212,6 +280,16 @@ async function fetchDoc(id: number) {
 function handleSelectCategory(item: any) {
   docForm.categoryName = item.categoryName;
 }
+
+function onCollabChange(item: any, selectedName: string) {
+  const selectedUser = collabList.value.find(u => u.name === selectedName)
+  if (selectedUser) {
+    item.avatar = selectedUser.avatar
+    // 可以根据需要同步更新 role
+    item.role = item.role || 'editor'
+  }
+}
+
 
 function addCategory(name: string) {
   docForm.categoryName = name;
@@ -231,27 +309,27 @@ function searchCategory(query: string, cb: any) {
 
 // 标签操作
 function tagClass(name: string) {
-  return docForm.tagNameList.includes(name) ? 'tag-item-select' : 'tag-item';
+  return docForm.tags.includes(name) ? 'tag-item-select' : 'tag-item';
 }
 
 function handleSelectTag(item: any) {
-  if (!docForm.tagNameList.includes(item.tagName))
-    docForm.tagNameList.push(item.tagName);
+  if (!docForm.tags.includes(item.tagName))
+    docForm.tags.push(item.tagName);
 }
 
 function addTag(name: string) {
-  if (!docForm.tagNameList.includes(name) && docForm.tagNameList.length < 3)
-    docForm.tagNameList.push(name);
+  if (!docForm.tags.includes(name) && docForm.tags.length < 3)
+    docForm.tags.push(name);
 }
 
 function saveTag() {
-  if (tagName.value && !docForm.tagNameList.includes(tagName.value) && docForm.tagNameList.length < 3)
-    docForm.tagNameList.push(tagName.value);
+  if (tagName.value && !docForm.tags.includes(tagName.value) && docForm.tags.length < 3)
+    docForm.tags.push(tagName.value);
   tagName.value = '';
 }
 
 function removeTag(name: string) {
-  docForm.tagNameList = docForm.tagNameList.filter(t => t !== name);
+  docForm.tags = docForm.tags.filter(t => t !== name);
 }
 
 function searchTag(query: string, cb: any) {
@@ -260,11 +338,12 @@ function searchTag(query: string, cb: any) {
 
 // 协作者操作
 function addCollab() {
-  docForm.collabs.push({name: '', role: 'viewer'});
+  docForm.collaborators.push({name: '', role: 'viewer', avatar: '', addMode: true});
+  console.log(docForm.collaborators)
 }
 
 function removeCollab(idx: number) {
-  docForm.collabs.splice(idx, 1);
+  docForm.collaborators.splice(idx, 1);
 }
 
 // 表单操作
@@ -276,20 +355,52 @@ async function handleCancel() {
   history.back();
 }
 
-async function saveDraft() {
-  if (!await validateForm()) return;
-  ElMessage.success('草稿保存成功');
+function saveDraft() {
+  // 1. 表单验证
+  validateForm().then((valid) => {
+    if (!valid) return;
+
+    try {
+      const key = 'collabDocDraft-' + (docForm.id || 'new'); // 可以加 id 区分不同文档
+      localStorage.setItem(key, JSON.stringify(docForm));
+      ElMessage.success('草稿已保存到本地');
+    } catch (err) {
+      console.error(err);
+      ElMessage.error('保存草稿失败');
+    }
+  });
 }
 
-async function submitDoc() {
-  if (!await validateForm()) return;
-  ElMessage.success('文档创建成功');
-}
 
-async function editDoc() {
+const submitDoc = async () => {
   if (!await validateForm()) return;
-  ElMessage.success('文档修改成功');
-}
+  try {
+    const payload = {...docForm};
+    const {data} = await createDoc(payload);
+    if (data.flag) {
+      ElMessage.success('文档创建成功');
+    } else {
+      ElMessage.error(data.msg || '文档创建失败');
+    }
+  } catch (error) {
+    ElMessage.error('网络错误，创建文档失败');
+  }
+};
+
+const editDoc = async () => {
+  if (!await validateForm()) return;
+  try {
+    const payload = {...docForm};
+    const {data} = await updateDoc(payload);
+    if (data.flag) {
+      ElMessage.success('文档修改成功');
+    } else {
+      ElMessage.error(data.msg || '修改失败');
+    }
+  } catch (error) {
+    ElMessage.error('网络错误，修改文档失败');
+  }
+};
 </script>
 
 <style scoped>

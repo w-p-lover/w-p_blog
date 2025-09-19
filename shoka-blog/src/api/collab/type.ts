@@ -36,13 +36,17 @@ export interface Doc {
     lastUpdateDate: string;
     /** 标签列表 */
     tags: string[];
-    /** 协作者列表（只包含名字） */
-    collaborators: string[];
+    /** 协作者列表（包含名字和可选头像） */
+    collaborators: Array<{
+        name: string;
+        avatar?: string;
+    }>;
     /** 评论数 */
     comments: number;
     /** 简介 */
     description: string;
 }
+
 
 /**
  * 文档创建/更新请求体
@@ -59,9 +63,35 @@ export interface DocDTO {
     /** 正文内容 */
     content: string;
     /** 标签名列表 */
-    tagNameList: string[];
+    tags: string[];
     /** 协作者列表（带角色） */
-    collabs: Collab[];
+    collaborators: Collab[];
     /** 版本号 */
     version?: number;
+    status?: string;
+
+}
+// 类型定义
+export interface CollabTag {
+    id: number;
+    tagName: string;
+    docCount: number
+}
+
+export interface DocCard {
+    id: number;
+    title: string;
+    leadAuthor: string;
+    lastUpdateDate: string;
+    excerpt: string;
+    tags: string[];
+    collaborators: {
+        name: string;
+        avatar?: string;
+    }[];
+    views: number;
+    editCount: number;
+    version: number;
+    isEditing: boolean;
+    comments: number;
 }

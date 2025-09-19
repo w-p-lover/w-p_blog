@@ -29,6 +29,7 @@
     "js-cookie": "^3.0.1",
     "live2d-render": "^0.0.6",
     "marked": "^16.2.1",
+    "md-editor-v3": "^6.0.1",
     "meting": "^2.0.1",
     "mitt": "^3.0.1",
     "nprogress": "^0.2.0",

@@ -2,9 +2,9 @@ package com.ican.controller;
 
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckPermission;
-import com.ican.model.dto.EmailDTO;
-import com.ican.model.dto.UserDTO;
-import com.ican.model.dto.UserInfoDTO;
+import com.ican.model.dto.*;
+import com.ican.model.vo.OnlineVO;
+import com.ican.model.vo.PageResult;
 import com.ican.model.vo.Result;
 import com.ican.model.vo.UserInfoVO;
 import com.ican.service.UserService;
@@ -93,5 +93,19 @@ public class UserInfoController {
         userService.updatePassword(user);
         return Result.success();
     }
+
+
+    /**
+     * 查看在线用户
+     *
+     * @param condition 条件
+     * @return {@link OnlineVO} 在线用户列表
+     */
+    @ApiOperation(value = "查看共享平台已存在用户")
+    @GetMapping("/user/list")
+    public Result<PageResult<DocDTO.CollabDTO>> getUserLis(ConditionDTO condition) {
+        return Result.success(userService.getUserLis(condition));
+    }
+
 
 }

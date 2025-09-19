@@ -15,12 +15,15 @@
             <router-link to="/" class="nav-item">我的博客</router-link>
             <router-link to="/collab" class="nav-item"
                          :class="{ active: currentActive === 'collab' }"
-                         @click="handleRouterLinkActive('collab')">协作空间
+                         @click="handleRouterLinkActive('collab')">
+              协作空间
             </router-link>
 
-            <button @click="handleMyEdit" class="nav-item" :class="{ active: currentActive === 'my-edit' }">我的编辑
+            <button @click="handleMyEdit" class="nav-item" :class="{ active: currentActive === 'my-edit' }">
+              我的编辑
             </button>
-            <button @click="handleFavorites" class="nav-item" :class="{ active: currentActive === 'favorites' }">收藏
+            <button @click="handleFavorites" class="nav-item" :class="{ active: currentActive === 'favorites' }">
+              收藏
             </button>
           </nav>
           <!-- 搜索：只搜索协作内容（不关联博客） -->
@@ -34,9 +37,11 @@
         <div class="filter-bar">
           <div class="filter-group">
             <span class="filter-label">排序方式:</span>
-            <button class="filter-btn" :class="{ active: sortBy === 'latest' }" @click="sortBy = 'latest'">最新更新
+            <button class="filter-btn" :class="{ active: sortBy === 'latest' }" @click="sortBy = 'latest'">
+              最新更新
             </button>
-            <button class="filter-btn" :class="{ active: sortBy === 'popular' }" @click="sortBy = 'popular'">热门浏览
+            <button class="filter-btn" :class="{ active: sortBy === 'popular' }" @click="sortBy = 'popular'">
+              热门浏览
             </button>
             <button class="filter-btn" :class="{ active: sortBy === 'editCount' }" @click="sortBy = 'editCount'">
               编辑最多
@@ -45,7 +50,8 @@
 
           <div class="filter-group">
             <span class="filter-label">文档状态:</span>
-            <button class="filter-btn" :class="{ active: docStatus === 'all' }" @click="docStatus = 'all'">全部状态
+            <button class="filter-btn" :class="{ active: docStatus === 'all' }" @click="docStatus = 'all'">
+              全部状态
             </button>
             <button class="filter-btn" :class="{ active: docStatus === 'editing' }" @click="docStatus = 'editing'">
               正在编辑
@@ -58,7 +64,8 @@
           <div class="filter-group">
             <span class="filter-label">标签筛选:</span>
             <div class="tag-filter">
-              <button class="tag-btn" :class="{ active: selectedTag === 'all' }" @click="selectedTag = 'all'">全部
+              <button class="tag-btn" :class="{ active: selectedTag === 'all' }" @click="selectedTag = 'all'">
+                全部
               </button>
               <button class="tag-btn" :class="{ active: selectedTag === tag }" @click="selectedTag = tag"
                       v-for="tag in allTags" :key="tag">{{ tag }}
@@ -75,13 +82,23 @@
               <span class="count-badge">{{ filteredCollabs.length }} 篇</span>
             </h1>
             <router-link to="/collab/create" class="create-btn">
-              <i class="fa fa-plus"></i> 新建文档
+              <i class="fa fa-plus"></i>
+              新建文档
             </router-link>
           </div>
 
           <!-- 协作文档列表 -->
           <div class="content-grid">
             <article class="content-card collab-card" v-for="doc in filteredCollabs" :key="'collab-' + doc.id">
+              <button
+                  class="favorite-btn"
+                  @click="toggleFavorite(doc.id)"
+                  :title="isFavorite(doc.id) ? '取消收藏' : '收藏'">
+                <i class="fa"
+                   :class="isFavorite(doc.id) ? 'fa-star favorite-active' : 'fa-star-o'">
+                </i>
+              </button>
+
               <div class="doc-status" :class="doc.isEditing ? 'status-editing' : 'status-finished'">
                 {{ doc.isEditing ? '正在编辑' : '已完成' }}
               </div>
@@ -107,7 +124,7 @@
                     <div class="avatar-group">
                       <template v-for="(collaborator, index) in doc.collaborators" :key="`collab-${doc.id}-${index}`">
                         <img
-                            :src="`src/assets/img/head_portrait2.jpg`"
+                            :src="collaborator?.avatar || 'src/assets/img/head_portrait2.jpg'"
                             :alt="collaborator"
                             class="avatar"
                             v-if="index < 3">
@@ -130,7 +147,9 @@
                 </div>
                 <div class="action-btns">
                   <router-link :to="`/collab/${doc.id}`" class="read-btn">查看</router-link>
-                  <router-link :to="`/collab/edit/${doc.id}`" class="edit-btn" v-if="isCollaborator(doc)">编辑</router-link>
+                  <router-link :to="`/collab/edit/${doc.id}`" class="edit-btn" v-if="isCollaborator(doc)">
+                    编辑
+                  </router-link>
                 </div>
               </div>
             </article>
@@ -142,7 +161,11 @@
             <router-link to="/collab/create" class="empty-btn">立即创建第一篇文档</router-link>
           </div>
         </main>
-
+        <!-- 分页 -->
+        <Pagination v-if="count > 0"
+                    v-model:current="queryParams.current"
+                    :total="Math.ceil(count / queryParams.size)">
+        </Pagination>
         <!-- 页脚 -->
         <footer class="main-footer">
           <div class="footer-content">
@@ -154,46 +177,40 @@
           </div>
         </footer>
       </div>
+
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import {ref, computed, reactive, toRefs} from 'vue';
+import {ref, computed, reactive, toRefs, watch} from 'vue';
 import 'font-awesome/css/font-awesome.min.css';
-import { listDocs } from "@/api/collab";
-import { Doc } from "@/api/collab/type";
+import {listDocs, getDocCount, getUserFavorites, cancelFavorite, addFavorite} from "@/api/collab";
+import {Doc,DocCard} from "@/api/collab/type";
 import {PageQuery} from "@/model";
 import useStore from '@/store';
+import Pagination from "@/components/Pagination/index.vue";
+import {ElLoading, ElMessage} from 'element-plus'; // 引入提示组件
 
 const {user} = useStore();
 const data = reactive({
   count: 0,
   queryParams: {
     current: 1,
-    size: 5,
-    tag : '',
+    size: 20,
+    tag: '',
     status: '',
-    keyword : '',
+    keyword: '',
     sortType: ''
   } as PageQuery,
-  collabDocuments: [] as Array<{
-    id: number;
-    title: string;
-    leadAuthor: string; // 主导者（创建者）
-    lastUpdateDate: string; // 最后更新时间
-    excerpt: string; // 摘要
-    tags: string[]; // 标签
-    collaborators: string[]; // 所有协作者
-    views: number; // 浏览量
-    editCount: number; // 编辑次数
-    version: number; // 版本号
-    isEditing: boolean; // 是否正在编辑
-    comments: number; // 评论数
-  }>
+  allDocs: [] as DocCard[],
+  collabDocuments: [] as DocCard[],
+
+  favoriteDocIds: new Set<number>()
 });
-const {count, queryParams, collabDocuments} = toRefs(data);
-// 3. 其他状态
+const {count, queryParams, collabDocuments, favoriteDocIds,allDocs} = toRefs(data);
+
+// 其他原有状态
 const searchKeyword = ref("");
 const sortBy = ref("latest");
 const docStatus = ref("all");
@@ -202,13 +219,13 @@ const currentActive = ref("");
 const route = useRoute();
 const currentUser = computed(() => user.nickname || '默认用户');
 
-// 4. 取后端数据并做字段映射
+// 4. 取后端数据并做字段映射（保留原逻辑）
 const fetchDocs = async () => {
   try {
-    const { data } = await listDocs(queryParams.value);
+    favoriteDocIds.value.clear();
+    const {data} = await listDocs(queryParams.value);
     if (data.code === 200) {
-      console.log("获取协作文档成功", data);
-      collabDocuments.value = (data.data || []).map((d: Doc) => ({
+      allDocs.value = (data.data || []).map((d: Doc) => ({
         id: d.id,
         title: d.title,
         leadAuthor: d.leadAuthor,
@@ -222,13 +239,71 @@ const fetchDocs = async () => {
         isEditing: d.isEditing || false,
         comments: d.comments || 0,
       }));
+      collabDocuments.value = allDocs.value;
+      const response = await getDocCount();
+      count.value = response.data.data;
+      const favResponse = await getUserFavorites(user.id ?? 0);
+      favResponse.data.data.forEach((id: number) => favoriteDocIds.value.add(id));
+      console.log("获取文档数量成功", favoriteDocIds.value);
     }
   } catch (e) {
     console.error("获取协作文档失败", e);
   }
 };
 
-// 5. 计算属性
+// 5. 收藏相关核心方法
+const isFavorite = (docId: number) => {
+  return favoriteDocIds.value.has(docId);
+};
+
+const toggleFavorite = async (docId: number) => {
+  // 校验用户登录状态
+  if (!user.id) {
+    ElMessage.warning('请先登录再进行收藏操作');
+    return;
+  }
+
+  // 校验文档ID有效性
+  if (docId <= 0) {
+    ElMessage.error('无效的文档ID');
+    return;
+  }
+
+  // 防止重复点击（添加加载状态）
+  const loadingKey = `fav_${docId}`;
+  const loading = ElLoading.service({
+    target: `.favorite-btn[data-doc-id="${docId}"]`, // 只在当前按钮上显示加载
+    text: isFavorite(docId) ? '取消收藏中...' : '收藏中...',
+    background: 'rgba(255, 255, 255, 0.7)'
+  });
+
+  try {
+    if (isFavorite(docId)) {
+      // 取消收藏：调用后端接口
+      const { data } = await cancelFavorite(user.id, docId);
+      if (data.code === 200) {
+        favoriteDocIds.value.delete(docId);
+        ElMessage.success('已取消收藏');
+      } else {
+        ElMessage.error('取消收藏失败：' + (data.msg || '操作异常'));
+      }
+    } else {
+      const { data } = await addFavorite(user.id, docId);
+      if (data.code === 200) {
+        favoriteDocIds.value.add(docId);
+        ElMessage.success('收藏成功');
+      } else {
+        ElMessage.error('收藏失败：' + (data.msg || '操作异常'));
+      }
+    }
+  } catch (error) {
+    console.error('收藏接口调用失败：', error);
+    ElMessage.error('网络异常，请稍后重试');
+  } finally {
+    loading.close();
+  }
+};
+
 const allTags = computed(() => {
   const tagList = collabDocuments.value.flatMap(doc => doc.tags);
   return [...new Set(tagList)];
@@ -259,40 +334,30 @@ const filteredCollabs = computed(() => {
       });
 });
 
-// 6. 权限控制：判断当前用户是否为文档协作者（决定是否显示编辑按钮）
-const isCollaborator = (doc) => {
-console.log("当前用户：", currentUser.value);
-return doc.collaborators.some(collab => collab.name === currentUser.value);
+const isCollaborator = (doc: { collaborators: { name: string }[] }) => {
+  return doc.collaborators.some(collab => collab.name === currentUser.value);
 };
 
-
-// 7. 搜索处理
 const handleSearch = () => {
   console.log("搜索协作关键词：", searchKeyword.value);
 };
 
-// 8. 日期格式化
 const formatDate = (dateStr: string) => {
   const date = new Date(dateStr);
   return date.toLocaleDateString("zh-CN", {year: "numeric", month: "short", day: "numeric"});
 };
 
-onMounted(() => {
-  if (route.path === '/blog') currentActive.value = 'blog';
-  if (route.path.startsWith('/collab')) currentActive.value = 'collab';
-  fetchDocs();
-});
-
 const handleMyEdit = () => {
   currentActive.value = 'my-edit';
-  collabDocuments.value = collabDocuments.value.filter(doc =>
-      doc.collaborators.includes(currentUser.value)
+  collabDocuments.value = allDocs.value.filter(doc =>
+      doc.collaborators.some(collab => collab.name === currentUser.value)
   );
 };
 
 const handleFavorites = () => {
   currentActive.value = 'favorites';
-  collabDocuments.value = [];
+  // 筛选出已收藏的文档
+  collabDocuments.value = allDocs.value.filter(doc => isFavorite(doc.id));
 };
 
 const handleRouterLinkActive = (key: string) => {
@@ -300,10 +365,16 @@ const handleRouterLinkActive = (key: string) => {
   fetchDocs();
 };
 
+watch(() => queryParams.value.current, () => {fetchDocs()})
+watch(() => user.id, () => {fetchDocs()})
+onMounted(() => {
+  if (route.path === '/blog') currentActive.value = 'blog';
+  if (route.path.startsWith('/collab')) currentActive.value = 'collab';
+  fetchDocs();
+});
 </script>
 
 <style lang="scss" scoped>
-// 基础容器
 .collab-browsing-page {
   min-height: 100vh;
   display: flex;
@@ -312,7 +383,6 @@ const handleRouterLinkActive = (key: string) => {
   color: #333;
 }
 
-// 顶部导航（与现有博客风格保持一致）
 .main-header {
   display: flex;
   align-items: center;
@@ -399,7 +469,6 @@ const handleRouterLinkActive = (key: string) => {
   }
 }
 
-// 筛选区域（协作专属维度）
 .filter-bar {
   display: flex;
   flex-wrap: wrap;
@@ -442,8 +511,8 @@ const handleRouterLinkActive = (key: string) => {
 
     .tag-filter {
       display: grid;
-      grid-template-columns: repeat(8, 1fr);
-      gap: 0.8rem;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 20px;
       flex-wrap: wrap;
 
       .tag-btn {
@@ -464,7 +533,6 @@ const handleRouterLinkActive = (key: string) => {
   }
 }
 
-// 内容容器
 .content-container {
   flex: 1;
   padding: 0.5rem 2rem;
@@ -473,7 +541,6 @@ const handleRouterLinkActive = (key: string) => {
   width: 100%;
 }
 
-// 协作内容头部（统计+创建入口）
 .collab-header {
   display: flex;
   justify-content: space-between;
@@ -510,7 +577,6 @@ const handleRouterLinkActive = (key: string) => {
   }
 }
 
-// 内容网格（协作卡片布局）
 .content-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -518,29 +584,29 @@ const handleRouterLinkActive = (key: string) => {
   margin-bottom: 2rem;
 }
 
-// 协作卡片样式（强化协作特性）
 .content-card {
   background-color: #fff;
   border-radius: 15px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   transition: transform 0.3s, box-shadow 0.3s;
-  position: relative; // 用于状态标签定位
+  position: relative;
+  padding-top: 1.5rem;
 
   &:hover {
     transform: translateY(-5px);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
   }
 
-  // 文档状态标签（绝对定位在右上角）
   .doc-status {
     position: absolute;
     top: 1rem;
-    right: 1rem;
+    right: 3rem; // 给收藏按钮留出空间
     padding: 0.2rem 0.5rem;
     border-radius: 4px;
     font-size: 0.75rem;
     font-weight: 500;
+    z-index: 1;
   }
 
   .status-editing {
@@ -553,170 +619,202 @@ const handleRouterLinkActive = (key: string) => {
     color: #22c55e;
   }
 
-  .card-header {
-    padding: 1rem;
-    border-bottom: 1px solid #f1f5f9;
+  .favorite-btn {
+    position: absolute;
+    top: 22px;
+    right: 18px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    color: #9ca3af;
+    transition: color 0.2s;
+    z-index: 1;
+  }
 
-    .card-title {
-      font-size: 1.1rem;
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-      color: #333;
-      text-decoration: none;
-      transition: color 0.3s;
+  &:hover {
+    color: #f59e0b;
+  }
 
-      &:hover {
-        color: #4299e1;
-      }
-    }
+  .favorite-active {
+    color: #f59e0b;
+    animation: pulse 0.5s ease;
+  }
+}
 
-    .card-meta {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.85rem;
-      color: #666;
+.card-header {
+  padding: 0 1rem 1rem;
+  border-bottom: 1px solid #f1f5f9;
+
+  .card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #333;
+    text-decoration: none;
+    transition: color 0.3s;
+
+    &:hover {
+      color: #4299e1;
     }
   }
 
-  .card-content {
-    padding: 1rem;
+  .card-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: #666;
+  }
+}
 
-    .excerpt {
-      color: #666;
-      font-size: 0.9rem;
-      margin-bottom: 1rem;
-      display: -webkit-box;
-      -webkit-line-clamp: 3;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
+.card-content {
+  padding: 1rem;
 
-    .tag-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-bottom: 1rem;
+  .excerpt {
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
 
-      .tag {
-        font-size: 0.75rem;
-        padding: 0.2rem 0.5rem;
-        border-radius: 4px;
-        background-color: rgba(66, 153, 225, 0.1);
-        color: #4299e1;
-      }
-    }
+  .tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
 
-    // 协作者与版本信息（新增：强化协作属性）
-    .collab-info {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.85rem;
-      color: #666;
-
-      .collaborators {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-
-        .collab-label {
-          margin-right: 0.3rem;
-        }
-
-        .avatar-group {
-          display: flex;
-          align-items: center;
-
-          .avatar {
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            border: 2px solid white;
-            margin-left: -5px;
-
-            &:first-child {
-              margin-left: 0;
-            }
-          }
-
-          .more-avatars {
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            background-color: #e2e8f0;
-            color: #666;
-            font-size: 0.65rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-left: -5px;
-          }
-        }
-      }
-
-      .version-info {
-        display: flex;
-        align-items: center;
-        gap: 0.3rem;
-      }
+    .tag {
+      font-size: 0.75rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      background-color: rgba(66, 153, 225, 0.1);
+      color: #4299e1;
     }
   }
 
-  .card-footer {
+  .collab-info {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.8rem 1rem;
-    border-top: 1px solid #f1f5f9;
     font-size: 0.85rem;
+    color: #666;
 
-    .stats {
+    .collaborators {
       display: flex;
-      gap: 1rem;
-      color: #666;
+      align-items: center;
+      gap: 0.5rem;
 
-      .stat-item {
+      .collab-label {
+        margin-right: 0.3rem;
+      }
+
+      .avatar-group {
         display: flex;
         align-items: center;
-        gap: 0.2rem;
+
+        .avatar {
+          width: 22px;
+          height: 22px;
+          border-radius: 50%;
+          border: 2px solid white;
+          margin-left: -5px;
+
+          &:first-child {
+            margin-left: 0;
+          }
+        }
+
+        .more-avatars {
+          width: 22px;
+          height: 22px;
+          border-radius: 50%;
+          background-color: #e2e8f0;
+          color: #666;
+          font-size: 0.65rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-left: -5px;
+        }
       }
     }
 
-    .action-btns {
+    .version-info {
       display: flex;
-      gap: 0.5rem;
+      align-items: center;
+      gap: 0.3rem;
+    }
+  }
+}
 
-      .read-btn {
-        color: #4299e1;
-        text-decoration: none;
-        padding: 0.3rem 0.8rem;
-        border-radius: 4px;
-        border: 1px solid #4299e1;
-        transition: all 0.2s;
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.8rem 1rem;
+  border-top: 1px solid #f1f5f9;
+  font-size: 0.85rem;
 
-        &:hover {
-          background-color: #4299e1;
-          color: white;
-        }
-      }
+  .stats {
+    display: flex;
+    gap: 1rem;
+    color: #666;
 
-      .edit-btn {
-        color: white;
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 0.2rem;
+    }
+  }
+
+  .action-btns {
+    display: flex;
+    gap: 0.5rem;
+
+    .read-btn {
+      color: #4299e1;
+      text-decoration: none;
+      padding: 0.3rem 0.8rem;
+      border-radius: 4px;
+      border: 1px solid #4299e1;
+      transition: all 0.2s;
+
+      &:hover {
         background-color: #4299e1;
-        text-decoration: none;
-        padding: 0.3rem 0.8rem;
-        border-radius: 4px;
-        transition: background-color 0.2s;
+        color: white;
+      }
+    }
 
-        &:hover {
-          background-color: #3182ce;
-        }
+    .edit-btn {
+      color: white;
+      background-color: #4299e1;
+      text-decoration: none;
+      padding: 0.3rem 0.8rem;
+      border-radius: 4px;
+      transition: background-color 0.2s;
+
+      &:hover {
+        background-color: #3182ce;
       }
     }
   }
 }
 
-// 空状态样式（更友好的引导）
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
 .no-content {
   text-align: center;
   padding: 3rem;
@@ -729,7 +827,6 @@ const handleRouterLinkActive = (key: string) => {
     margin-bottom: 1rem;
     opacity: 0.5;
   }
-
 
   .empty-btn {
     background-color: #4299e1;
@@ -745,7 +842,6 @@ const handleRouterLinkActive = (key: string) => {
   }
 }
 
-// 页脚（增加返回博客入口）
 .main-footer {
   background-color: #fff;
   padding: 1.5rem 2rem;
@@ -804,6 +900,15 @@ const handleRouterLinkActive = (key: string) => {
   .filter-bar {
     padding: 1rem;
     gap: 0.5rem;
+
+    .filter-group {
+      .tag-filter {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 5px;
+        flex-wrap: wrap;
+      }
+    }
   }
 
   .content-container {
@@ -819,5 +924,18 @@ const handleRouterLinkActive = (key: string) => {
   .content-grid {
     grid-template-columns: 1fr;
   }
+
+  .content-card {
+    .doc-status {
+      right: 2.8rem;
+      font-size: 0.7rem;
+      padding: 0.15rem 0.4rem;
+    }
+
+    .favorite-btn {
+      font-size: 14px;
+    }
+  }
+
 }
 </style>
