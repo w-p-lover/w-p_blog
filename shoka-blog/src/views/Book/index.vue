@@ -266,7 +266,7 @@
 
 <script setup lang="ts">
 import {onMounted, reactive, ref, toRefs, watch} from 'vue';
-import {Plus} from '@element-plus/icons-vue';
+
 import {BookVO} from "@/api/book/type";
 import {
   addBook as apiAddBook,

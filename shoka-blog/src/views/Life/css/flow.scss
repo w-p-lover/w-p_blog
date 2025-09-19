@@ -4,7 +4,9 @@
   border: 1px solid #555 !important;
   color: #eee !important;
 }
-
+:deep(.vue-flow__node){
+  transition: none !important;
+}
 .dark-theme :deep(.my-flow) {
   margin: 16px 0;
   height: 650px;
@@ -103,9 +105,10 @@
 
 /* 节点 hover */
 :deep(.vue-flow__node):hover {
-  transform: scale(1.05);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
   z-index: 10;
+  transition: none !important;
+  transform: none;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
 }
 
 /* 边样式 */
