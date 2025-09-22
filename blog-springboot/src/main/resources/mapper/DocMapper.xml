@@ -8,7 +8,7 @@
     <select id="getDocList" resultType="com.ican.entity.Doc">
         SELECT id,
         title,
-        category_name,
+        category_id,
         description,
         content,
         lead_author,
@@ -41,7 +41,7 @@
     <select id="getAdminDocList" resultType="com.ican.entity.Doc">
         SELECT id,
         title,
-        category_name,
+        category_id,
         description,
         content,
         lead_author,
@@ -68,7 +68,7 @@
     <select id="searchDoc" resultType="com.ican.entity.Doc">
         SELECT id,
                title,
-               category_name,
+               category_id,
                description,
                content,
                lead_author,
