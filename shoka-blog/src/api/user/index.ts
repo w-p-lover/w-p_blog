@@ -57,7 +57,7 @@ export function updateUserInfo(data: UserInfo): AxiosPromise<Result<null>> {
  */
 export function getUserList(): AxiosPromise<Result<any>> {
     return request({
-        url: "/user/list",
+        url: "/collab/writerList",
         method: "get",
     });
 }
