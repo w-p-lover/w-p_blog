@@ -1,9 +1,12 @@
 package com.ican.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ican.entity.Category;
+import com.ican.mapper.CategoryMapper;
 import com.ican.mapper.UserFavoriteMapper;
 import com.ican.model.dto.ConditionDTO;
 import com.ican.model.dto.DocDTO;
@@ -12,6 +15,7 @@ import com.ican.mapper.DocMapper;
 import com.ican.model.vo.CollabTagVO;
 import com.ican.service.DocService;
 import com.ican.model.vo.DocVO;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.BeanUtils;
@@ -23,15 +27,16 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class DocServiceImpl extends ServiceImpl<DocMapper, Doc> implements DocService {
 
-    @Autowired
-    private DocMapper docMapper;
+    private final DocMapper docMapper;
 
-    @Autowired
-    private UserFavoriteMapper userFavoriteMapper;
+    private final UserFavoriteMapper userFavoriteMapper;
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
+
+    private final CategoryMapper categoryMapper;
 
     @Override
     public DocVO getDocById(Long id) {
@@ -49,10 +54,13 @@ public class DocServiceImpl extends ServiceImpl<DocMapper, Doc> implements DocSe
             if (entity.getCollaborators() != null) {
                 List<DocDTO.CollabDTO> collabList =
                         MAPPER.readValue(entity.getCollaborators(),
-                                new TypeReference<List<DocDTO.CollabDTO>>() {
-                                });
+                                new TypeReference<List<DocDTO.CollabDTO>>() {});
                 docVO.setCollaborators(collabList);
             }
+            Category category = categoryMapper.selectOne(new LambdaQueryWrapper<Category>()
+                    .select(Category::getCategoryName)
+                    .eq(Category::getId, entity.getCategoryId()));
+            docVO.setCategoryName(category.getCategoryName());
             BeanUtils.copyProperties(entity, docVO);
             docMapper.incrementViewCount(id);
             return docVO;
@@ -76,6 +84,11 @@ public class DocServiceImpl extends ServiceImpl<DocMapper, Doc> implements DocSe
         try {
             DocVO vo = new DocVO();
             BeanUtils.copyProperties(entity, vo);
+
+            Category category = categoryMapper.selectOne(new LambdaQueryWrapper<Category>()
+                    .select(Category::getCategoryName)
+                    .eq(Category::getId, entity.getCategoryId()));
+            vo.setCategoryName(category.getCategoryName());
 
             // 处理tags字段
             if (entity.getTags() != null) {
@@ -103,8 +116,8 @@ public class DocServiceImpl extends ServiceImpl<DocMapper, Doc> implements DocSe
         try {
             Doc entity = new Doc();
             BeanUtils.copyProperties(docDTO, entity);
-
-            // 取第一个协作者作为主作者（根据你的业务需求可调整）
+            Integer categoryId = saveDocCategory(docDTO);
+            // 取第一个协作者作为主作者（根据业务需求可调整）
             if (!docDTO.getCollaborators().isEmpty()) {
                 entity.setLeadAuthor(docDTO.getCollaborators().get(0).getName());
                 entity.setCollaborators(
@@ -115,6 +128,7 @@ public class DocServiceImpl extends ServiceImpl<DocMapper, Doc> implements DocSe
                 entity.setTags(String.join(",", docDTO.getTags()));
             }
             entity.setLastUpdateDate(LocalDateTime.now());
+            entity.setCategoryId(categoryId);
             docMapper.insert(entity);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
@@ -123,9 +137,9 @@ public class DocServiceImpl extends ServiceImpl<DocMapper, Doc> implements DocSe
 
     @Override
     public void updateDoc(DocDTO docDTO) {
-
         try {
             Doc entity = docMapper.selectById(docDTO.getId());
+            Integer categoryId = saveDocCategory(docDTO);
             if (entity != null) {
                 if (!docDTO.getCollaborators().isEmpty()) {
                     entity.setLeadAuthor(docDTO.getCollaborators().get(0).getName());
@@ -139,13 +153,36 @@ public class DocServiceImpl extends ServiceImpl<DocMapper, Doc> implements DocSe
                 BeanUtils.copyProperties(docDTO, entity);
                 entity.setEditCount(entity.getEditCount() + 1);
                 entity.setLastUpdateDate(LocalDateTime.now());
+                entity.setCategoryId(categoryId);
                 docMapper.updateById(entity);
             }
+
+
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
+    }
 
-
+    /**
+     * 保存文章分类
+     *
+     * @param docDTO 文章信息
+     * @return 文章分类
+     */
+    private Integer saveDocCategory(DocDTO docDTO) {
+        // 查询分类
+        Category category = categoryMapper.selectOne(new LambdaQueryWrapper<Category>()
+                .select(Category::getId)
+                .eq(Category::getCategoryName, docDTO.getCategoryName()));
+        // 分类不存在
+        if (Objects.isNull(category)) {
+            category = Category.builder()
+                    .categoryName(docDTO.getCategoryName())
+                    .build();
+            // 保存分类
+            categoryMapper.insert(category);
+        }
+        return category.getId();
     }
 
     @Override

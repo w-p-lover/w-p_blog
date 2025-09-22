@@ -17,7 +17,7 @@ public class Doc {
     @TableId(type = IdType.AUTO)
     private Long id;
     private String title;               // 文档标题
-    private String categoryName;        // 分类
+    private Integer categoryId;        // 分类
     private String description;                // 摘要
     private String content;             // 正文内容 (HTML)
     private String leadAuthor;          // 主作者
