@@ -50,17 +50,30 @@
 
           <div class="filter-group">
             <span class="filter-label">文档状态:</span>
-            <button class="filter-btn" :class="{ active: docStatus === 'all' }" @click="docStatus = 'all'">
-              全部状态
-            </button>
-            <button class="filter-btn" :class="{ active: docStatus === 'editing' }" @click="docStatus = 'editing'">
-              正在编辑
-            </button>
-            <button class="filter-btn" :class="{ active: docStatus === 'finished' }" @click="docStatus = 'finished'">
-              已完成
-            </button>
+            <div class="filter-btn-group">
+              <button
+                  class="filter-btn"
+                  :class="{ active: docStatus === 'all' }"
+                  @click="docStatus = 'all'"
+              >
+                全部状态
+              </button>
+              <button
+                  class="filter-btn status-editing-btn"
+                  :class="{ active: docStatus === 'editing' }"
+                  @click="docStatus = 'editing'"
+              >
+                <span class="status-dot editing-dot"></span> 正在编辑
+              </button>
+              <button
+                  class="filter-btn status-finished-btn"
+                  :class="{ active: docStatus === 'finished' }"
+                  @click="docStatus = 'finished'"
+              >
+                <span class="status-dot finished-dot"></span> 已完成
+              </button>
+            </div>
           </div>
-
           <div class="filter-group">
             <span class="filter-label">标签筛选:</span>
             <div class="tag-filter">
@@ -74,50 +87,97 @@
           </div>
         </div>
         <router-view></router-view>
+
+        <!-- 主内容区 - 增强卡片质感 -->
         <main class="content-container">
-          <!-- 协作内容统计与创建入口 -->
           <div class="collab-header">
             <h1 class="collab-title">
               协作文档
-              <span class="count-badge">{{ filteredCollabs.length }} 篇</span>
+              <span class="count-badge" :class="{ 'badge-pulse': filteredCollabs.length > 0 }">
+                {{ filteredCollabs.length }} 篇
+              </span>
             </h1>
-            <router-link to="/collab/create" class="create-btn">
-              <i class="fa fa-plus"></i>
+            <router-link
+                to="/collab/create"
+                class="create-btn"
+                @mouseenter="createBtnHover = true"
+                @mouseleave="createBtnHover = false"
+            >
+              <i class="fa fa-plus" :class="{ 'plus-rotate': createBtnHover }"></i>
               新建文档
             </router-link>
           </div>
 
-          <!-- 协作文档列表 -->
+          <!-- 文档列表 - 优化卡片交互 -->
           <div class="content-grid">
-            <article class="content-card collab-card" v-for="doc in filteredCollabs" :key="'collab-' + doc.id">
+            <article
+                class="content-card collab-card"
+                v-for="doc in filteredCollabs"
+                :key="'collab-' + doc.id"
+                @mouseenter="hoverDocId = doc.id"
+                @mouseleave="hoverDocId = 0"
+                :class="{ 'card-hover': hoverDocId === doc.id }"
+            >
+              <!-- 收藏按钮 - 增强动效 -->
               <button
                   class="favorite-btn"
                   @click="toggleFavorite(doc.id)"
-                  :title="isFavorite(doc.id) ? '取消收藏' : '收藏'">
-                <i class="fa"
-                   :class="isFavorite(doc.id) ? 'fa-star favorite-active' : 'fa-star-o'">
+                  :title="isFavorite(doc.id) ? '取消收藏' : '收藏'"
+                  :data-doc-id="doc.id"
+              >
+                <i
+                    class="fa"
+                    :class="[
+                    isFavorite(doc.id) ? 'fa-star favorite-active' : 'fa-star-o',
+                    hoverDocId === doc.id ? 'star-hover' : ''
+                  ]"
+                >
                 </i>
               </button>
 
-              <div class="doc-status" :class="doc.isEditing ? 'status-editing' : 'status-finished'">
+              <!-- 文档状态 - 优化样式 -->
+              <div
+                  class="doc-status"
+                  :class="doc.isEditing ? 'status-editing' : 'status-finished'"
+              >
                 {{ doc.isEditing ? '正在编辑' : '已完成' }}
               </div>
 
               <div class="card-header">
-                <router-link :to="`/collab/${doc.id}`" class="card-title">{{ doc.title }}</router-link>
+                <router-link
+                    :to="`/collab/${doc.id}`"
+                    class="card-title"
+                    :class="{ 'title-hover': hoverDocId === doc.id }"
+                >
+                  {{ doc.title }}
+                </router-link>
                 <div class="card-meta">
-                  <span class="lead-author">主导者: {{ doc.leadAuthor }}</span>
-                  <span class="date">{{ formatDate(doc.lastUpdateDate) }}</span>
+                  <span class="lead-author">
+                    <i class="fa fa-user-circle author-icon"></i> {{ doc.leadAuthor }}
+                  </span>
+                  <span class="date">
+                    <i class="fa fa-clock-o date-icon"></i> {{ formatDate(doc.lastUpdateDate) }}
+                  </span>
                 </div>
               </div>
 
               <div class="card-content">
-                <p class="excerpt">{{ doc.excerpt }}</p>
+                <p class="excerpt" :class="{ 'excerpt-hover': hoverDocId === doc.id }">
+                  {{ doc.excerpt }}
+                </p>
                 <div class="tag-list">
-                  <span class="tag" v-for="tag in doc.tags" :key="tag">{{ tag }}</span>
+                  <span
+                      class="tag"
+                      v-for="tag in doc.tags"
+                      :key="tag"
+                      @mouseenter="showTagTooltip(tag)"
+                      @mouseleave="hideTagTooltip()"
+                  >
+                    {{ tag }}
+                  </span>
                 </div>
 
-                <!-- 协作者头像与版本信息（强化协作特性） -->
+                <!-- 协作信息 - 优化布局 -->
                 <div class="collab-info">
                   <div class="collaborators">
                     <span class="collab-label">协作者:</span>
@@ -125,29 +185,51 @@
                       <template v-for="(collaborator, index) in doc.collaborators" :key="`collab-${doc.id}-${index}`">
                         <img
                             :src="collaborator?.avatar || 'src/assets/img/head_portrait2.jpg'"
-                            :alt="collaborator"
+                            :alt="collaborator.name"
                             class="avatar"
-                            v-if="index < 3">
+                            v-if="index < 3"
+                            :title="collaborator.name"
+                        >
                       </template>
-                      <span class="more-avatars" v-if="doc.collaborators.length > 3">+
-                          {{ doc.collaborators.length - 3 }}
-                        </span>
+                      <span
+                          class="more-avatars"
+                          v-if="doc.collaborators.length > 3"
+                          :title="`还有${doc.collaborators.length - 3}位协作者`"
+                      >
+                        +{{ doc.collaborators.length - 3 }}
+                      </span>
                     </div>
                   </div>
-                  <div class="version-info">
-                    <i class="fa fa-history"></i> v{{ doc.version }} ({{ doc.editCount }}次编辑)
+                  <div class="version-info" :title="`当前版本：v${doc.version}，共编辑${doc.editCount}次`">
+                    <i class="fa fa-history version-icon"></i>
+                    v{{ doc.version }} ({{ doc.editCount }}次编辑)
                   </div>
                 </div>
               </div>
 
               <div class="card-footer">
                 <div class="stats">
-                  <span class="stat-item"><i class="fa fa-eye"></i> {{ doc.views }} 浏览</span>
-                  <span class="stat-item"><i class="fa fa-comment"></i> {{ doc.comments }} 评论</span>
+                  <span class="stat-item" :title="`浏览次数：${doc.views}次`">
+                    <i class="fa fa-eye view-icon"></i> {{ doc.views }} 浏览
+                  </span>
+                  <span class="stat-item" :title="`评论数：${doc.comments}条`">
+                    <i class="fa fa-comment comment-icon"></i> {{ doc.comments }} 评论
+                  </span>
                 </div>
                 <div class="action-btns">
-                  <router-link :to="`/collab/${doc.id}`" class="read-btn">查看</router-link>
-                  <router-link :to="`/collab/edit/${doc.id}`" class="edit-btn" v-if="isCollaborator(doc)">
+                  <router-link
+                      :to="`/collab/${doc.id}`"
+                      class="read-btn"
+                      :class="{ 'btn-hover': hoverDocId === doc.id }"
+                  >
+                    查看
+                  </router-link>
+                  <router-link
+                      :to="`/collab/edit/${doc.id}`"
+                      class="edit-btn"
+                      v-if="isCollaborator(doc)"
+                      :class="{ 'btn-hover': hoverDocId === doc.id }"
+                  >
                     编辑
                   </router-link>
                 </div>
@@ -155,10 +237,18 @@
             </article>
           </div>
 
-          <!-- 空状态提示 -->
+          <!-- 空状态 - 优化视觉体验 -->
           <div class="no-content" v-if="filteredCollabs.length === 0">
-            <el-empty description="暂无符合条件的协作文档"/>
-            <router-link to="/collab/create" class="empty-btn">立即创建第一篇文档</router-link>
+            <div class="empty-container">
+              <div class="empty-icon">
+                <i class="fa fa-file-text-o"></i>
+              </div>
+              <h3 class="empty-title">暂无符合条件的协作文档</h3>
+              <p class="empty-desc">创建协作文档，与团队成员实时共享和编辑内容</p>
+              <router-link to="/collab/create" class="empty-btn">
+                <i class="fa fa-plus-circle"></i> 立即创建第一篇文档
+              </router-link>
+            </div>
           </div>
         </main>
         <!-- 分页 -->
@@ -375,6 +465,27 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
+$primary-color: #4299e1;
+$primary-light: #63b3ed;
+$primary-dark: #3182ce;
+$success-color: #22c55e;
+$warning-color: #f59e0b;
+$danger-color: #ef4444;
+$text-primary: #334155;
+$text-secondary: #64748b;
+$text-tertiary: #94a3b8;
+$bg-light: #f8fafc;
+$bg-white: #ffffff;
+$border-light: #e2e8f0;
+$shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+$shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+$shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
+$radius-sm: 4px;
+$radius-md: 8px;
+$radius-lg: 12px;
+$radius-full: 999px;
+$transition-base: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
 .collab-browsing-page {
   min-height: 100vh;
   display: flex;
@@ -469,43 +580,76 @@ onMounted(() => {
   }
 }
 
+// 筛选栏美化
 .filter-bar {
   display: flex;
   flex-wrap: wrap;
   gap: 1.5rem;
-  padding: 1rem 2rem;
-  background-color: #fff;
-  border-bottom: 1px solid #eee;
+  padding: 1.2rem 2rem;
+  background-color: $bg-white;
+  border-bottom: 1px solid $border-light;
+  align-items: center;
 
   .filter-group {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.8rem;
     flex: auto;
+    min-width: 280px;
 
     .filter-label {
-      width: 80px;
-      font-weight: 700;
-      color: #666;
+      width: 85px;
+      font-weight: 600;
+      color: $text-secondary;
+      font-size: 14px;
+    }
+
+    .filter-btn-group {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
     }
 
     .filter-btn {
-      padding: 0.3rem 0.8rem;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      background-color: transparent;
+      padding: 0.4rem 1rem;
+      border: 1px solid $border-light;
+      border-radius: $radius-full;
+      background-color: $bg-light;
       cursor: pointer;
-      transition: all 0.2s;
-
-      &.active {
-        background-color: #4299e1;
-        color: white;
-        border-color: #4299e1;
-      }
+      transition: $transition-base;
+      font-size: 13px;
+      color: $text-secondary;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
 
       &:hover:not(.active) {
-        border-color: #4299e1;
-        color: #4299e1;
+        border-color: $primary-light;
+        color: $primary-color;
+        background-color: rgba(66, 153, 225, 0.05);
+      }
+
+      &.active {
+        background-color: $primary-color;
+        color: white;
+        border-color: $primary-color;
+        box-shadow: 0 2px 4px rgba(66, 153, 225, 0.2);
+      }
+
+      .status-dot {
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+      }
+
+      .editing-dot {
+        background-color: $danger-color;
+        animation: blink 2s infinite;
+      }
+
+      .finished-dot {
+        background-color: $success-color;
       }
     }
 
@@ -536,308 +680,460 @@ onMounted(() => {
 .content-container {
   flex: 1;
   padding: 0.5rem 2rem;
-  max-width: 1400px;
+  max-width: 1440px;
   margin: 0 auto;
   width: 100%;
-}
 
-.collab-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-
-  .collab-title {
-    font-size: 1.8rem;
-    font-weight: 600;
-    color: #4299e1;
-
-    .count-badge {
-      font-size: 1rem;
-      font-weight: normal;
-      color: #666;
-      margin-left: 0.5rem;
-    }
-  }
-
-  .create-btn {
-    background-color: #4299e1;
-    color: white;
-    padding: 0.5rem 1.2rem;
-    border-radius: 4px;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    transition: background-color 0.3s;
-
-    &:hover {
-      background-color: #3182ce;
-    }
-  }
-}
-
-.content-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
-
-.content-card {
-  background-color: #fff;
-  border-radius: 15px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  transition: transform 0.3s, box-shadow 0.3s;
-  position: relative;
-  padding-top: 1.5rem;
-
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-  }
-
-  .doc-status {
-    position: absolute;
-    top: 1rem;
-    right: 3rem; // 给收藏按钮留出空间
-    padding: 0.2rem 0.5rem;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    z-index: 1;
-  }
-
-  .status-editing {
-    background-color: rgba(239, 68, 68, 0.1);
-    color: #ef4444;
-  }
-
-  .status-finished {
-    background-color: rgba(34, 197, 94, 0.1);
-    color: #22c55e;
-  }
-
-  .favorite-btn {
-    position: absolute;
-    top: 22px;
-    right: 18px;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    font-size: 16px;
-    color: #9ca3af;
-    transition: color 0.2s;
-    z-index: 1;
-  }
-
-  &:hover {
-    color: #f59e0b;
-  }
-
-  .favorite-active {
-    color: #f59e0b;
-    animation: pulse 0.5s ease;
-  }
-}
-
-.card-header {
-  padding: 0 1rem 1rem;
-  border-bottom: 1px solid #f1f5f9;
-
-  .card-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-    color: #333;
-    text-decoration: none;
-    transition: color 0.3s;
-
-    &:hover {
-      color: #4299e1;
-    }
-  }
-
-  .card-meta {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.85rem;
-    color: #666;
-  }
-}
-
-.card-content {
-  padding: 1rem;
-
-  .excerpt {
-    color: #666;
-    font-size: 0.9rem;
-    margin-bottom: 1rem;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  .tag-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-
-    .tag {
-      font-size: 0.75rem;
-      padding: 0.2rem 0.5rem;
-      border-radius: 4px;
-      background-color: rgba(66, 153, 225, 0.1);
-      color: #4299e1;
-    }
-  }
-
-  .collab-info {
+  .collab-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 0.85rem;
-    color: #666;
+    margin-bottom: 1.8rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid $border-light;
 
-    .collaborators {
+    .collab-title {
+      font-size: 1.9rem;
+      font-weight: 600;
+      color: $primary-dark;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
 
-      .collab-label {
-        margin-right: 0.3rem;
+      .count-badge {
+        font-size: 1rem;
+        font-weight: normal;
+        color: $text-secondary;
+        margin-left: 0.8rem;
+        background-color: $bg-light;
+        padding: 0.2rem 0.8rem;
+        border-radius: $radius-full;
+        border: 1px solid $border-light;
+        transition: $transition-base;
       }
 
-      .avatar-group {
+      .badge-pulse {
+        animation: pulse-light 2s infinite;
+      }
+    }
+
+    .create-btn {
+      background-color: $primary-color;
+      color: white;
+      padding: 0.65rem 1.5rem;
+      border-radius: $radius-full;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      transition: $transition-base;
+      font-weight: 500;
+      box-shadow: 0 2px 6px rgba(66, 153, 225, 0.2);
+
+      &:hover {
+        background-color: $primary-dark;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(66, 153, 225, 0.3);
+      }
+
+      .plus-rotate {
+        animation: rotate 0.5s ease;
+      }
+    }
+  }
+
+  // 文档网格布局
+  .content-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+    gap: 1.8rem;
+    margin-bottom: 2.5rem;
+  }
+
+  // 文档卡片美化
+  .content-card {
+    background-color: $bg-white;
+    border-radius: $radius-lg;
+    overflow: hidden;
+    box-shadow: $shadow-sm;
+    transition: $transition-base;
+    position: relative;
+    padding-top: 1.6rem;
+    border: 1px solid $border-light;
+
+    &:hover {
+      transform: translateY(-6px);
+      box-shadow: $shadow-md;
+      border-color: transparent;
+    }
+
+    &.card-hover {
+      transform: translateY(-3px);
+      box-shadow: $shadow-md;
+    }
+
+    .doc-status {
+      position: absolute;
+      top: 1.2rem;
+      right: 3.5rem;
+      padding: 0.25rem 0.7rem;
+      border-radius: $radius-full;
+      font-size: 0.78rem;
+      font-weight: 500;
+      z-index: 1;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+      &.status-editing {
+        background-color: rgba(239, 68, 68, 0.08);
+        color: $danger-color;
+        border: 1px solid rgba(239, 68, 68, 0.15);
+      }
+
+      &.status-finished {
+        background-color: rgba(34, 197, 94, 0.08);
+        color: $success-color;
+        border: 1px solid rgba(34, 197, 94, 0.15);
+      }
+    }
+
+    .favorite-btn {
+      position: absolute;
+      top: 1.2rem;
+      right: 1.2rem;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-size: 18px;
+      color: $text-tertiary;
+      transition: $transition-base;
+      z-index: 1;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      &:hover {
+        background-color: rgba(245, 158, 11, 0.1);
+        color: $warning-color;
+      }
+
+      .fa-star {
+        transition: $transition-base;
+      }
+
+      .favorite-active {
+        color: $warning-color;
+        animation: pulse 0.5s ease;
+      }
+
+      .star-hover {
+        transform: scale(1.1);
+      }
+    }
+
+    .card-header {
+      padding: 0 1.5rem 1.2rem;
+      border-bottom: 1px solid $border-light;
+
+      .card-title {
+        font-size: 1.15rem;
+        font-weight: 600;
+        margin-bottom: 0.7rem;
+        color: $text-primary;
+        text-decoration: none;
+        transition: $transition-base;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        line-height: 1.4;
+
+        &:hover {
+          color: $primary-color;
+        }
+
+        &.title-hover {
+          color: $primary-color;
+        }
+      }
+
+      .card-meta {
         display: flex;
+        justify-content: space-between;
+        font-size: 0.88rem;
+        color: $text-tertiary;
+
+        .lead-author, .date {
+          display: flex;
+          align-items: center;
+          gap: 0.3rem;
+        }
+
+        .author-icon, .date-icon {
+          font-size: 0.8rem;
+        }
+      }
+    }
+
+    .card-content {
+      padding: 1.5rem;
+
+      .excerpt {
+        color: $text-secondary;
+        font-size: 0.92rem;
+        margin-bottom: 1.2rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        line-height: 1.5;
+        transition: $transition-base;
+
+        &.excerpt-hover {
+          color: $text-primary;
+        }
+      }
+
+      .tag-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+        margin-bottom: 1.2rem;
+
+        .tag {
+          font-size: 0.78rem;
+          padding: 0.25rem 0.7rem;
+          border-radius: $radius-full;
+          background-color: rgba(66, 153, 225, 0.1);
+          color: $primary-color;
+          transition: $transition-base;
+          cursor: pointer;
+
+          &:hover {
+            background-color: $primary-color;
+            color: white;
+            transform: translateY(-2px);
+          }
+        }
+      }
+
+      .collab-info {
+        display: flex;
+        justify-content: space-between;
         align-items: center;
+        font-size: 0.88rem;
+        color: $text-tertiary;
+        padding-top: 1rem;
+        border-top: 1px dashed $border-light;
 
-        .avatar {
-          width: 22px;
-          height: 22px;
-          border-radius: 50%;
-          border: 2px solid white;
-          margin-left: -5px;
+        .collaborators {
+          display: flex;
+          align-items: center;
+          gap: 0.6rem;
 
-          &:first-child {
-            margin-left: 0;
+          .collab-label {
+            margin-right: 0.3rem;
+            font-weight: 500;
+          }
+
+          .avatar-group {
+            display: flex;
+            align-items: center;
+
+            .avatar {
+              width: 24px;
+              height: 24px;
+              border-radius: 50%;
+              border: 2px solid $bg-white;
+              margin-left: -6px;
+              transition: $transition-base;
+              box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+              &:first-child {
+                margin-left: 0;
+              }
+
+              &:hover {
+                transform: scale(1.1);
+                z-index: 2;
+              }
+            }
+
+            .more-avatars {
+              width: 24px;
+              height: 24px;
+              border-radius: 50%;
+              background-color: $bg-light;
+              color: $text-secondary;
+              font-size: 0.7rem;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              margin-left: -6px;
+              border: 2px solid $bg-white;
+              box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+              transition: $transition-base;
+
+              &:hover {
+                background-color: $primary-light;
+                color: white;
+              }
+            }
           }
         }
 
-        .more-avatars {
-          width: 22px;
-          height: 22px;
-          border-radius: 50%;
-          background-color: #e2e8f0;
-          color: #666;
-          font-size: 0.65rem;
+        .version-info {
           display: flex;
           align-items: center;
-          justify-content: center;
-          margin-left: -5px;
+          gap: 0.4rem;
+          transition: $transition-base;
+
+          &:hover {
+            color: $primary-color;
+          }
+
+          .version-icon {
+            font-size: 0.8rem;
+          }
         }
       }
     }
 
-    .version-info {
+    .card-footer {
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      gap: 0.3rem;
+      padding: 1rem 1.5rem;
+      border-top: 1px solid $border-light;
+      font-size: 0.88rem;
+
+      .stats {
+        display: flex;
+        gap: 1.2rem;
+        color: $text-tertiary;
+
+        .stat-item {
+          display: flex;
+          align-items: center;
+          gap: 0.3rem;
+          transition: $transition-base;
+
+          &:hover {
+            color: $primary-color;
+          }
+
+          .view-icon, .comment-icon {
+            font-size: 0.8rem;
+          }
+        }
+      }
+
+      .action-btns {
+        display: flex;
+        gap: 0.8rem;
+
+        .read-btn, .edit-btn {
+          padding: 0.4rem 1rem;
+          border-radius: $radius-full;
+          font-size: 0.88rem;
+          font-weight: 500;
+          transition: $transition-base;
+          text-decoration: none;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+
+          &.btn-hover {
+            transform: translateY(-2px);
+          }
+        }
+
+        .read-btn {
+          color: $primary-color;
+          border: 1px solid $primary-light;
+          background-color: transparent;
+
+          &:hover {
+            background-color: $primary-color;
+            color: white;
+            box-shadow: 0 2px 4px rgba(66, 153, 225, 0.2);
+          }
+        }
+
+        .edit-btn {
+          color: white;
+          background-color: $primary-color;
+          border: 1px solid $primary-color;
+          box-shadow: 0 2px 4px rgba(66, 153, 225, 0.15);
+
+          &:hover {
+            background-color: $primary-dark;
+            box-shadow: 0 4px 8px rgba(66, 153, 225, 0.25);
+          }
+        }
+      }
     }
   }
-}
 
-.card-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.8rem 1rem;
-  border-top: 1px solid #f1f5f9;
-  font-size: 0.85rem;
+  // 空状态美化
+  .no-content {
+    text-align: center;
+    padding: 4rem 2rem;
+    background-color: $bg-white;
+    border-radius: $radius-lg;
+    box-shadow: $shadow-sm;
+    margin-bottom: 2rem;
 
-  .stats {
-    display: flex;
-    gap: 1rem;
-    color: #666;
-
-    .stat-item {
-      display: flex;
-      align-items: center;
-      gap: 0.2rem;
+    .empty-container {
+      max-width: 400px;
+      margin: 0 auto;
     }
-  }
 
-  .action-btns {
-    display: flex;
-    gap: 0.5rem;
-
-    .read-btn {
-      color: #4299e1;
-      text-decoration: none;
-      padding: 0.3rem 0.8rem;
-      border-radius: 4px;
-      border: 1px solid #4299e1;
-      transition: all 0.2s;
+    .empty-icon {
+      font-size: 4rem;
+      color: $text-tertiary;
+      margin-bottom: 1.5rem;
+      transition: $transition-base;
 
       &:hover {
-        background-color: #4299e1;
-        color: white;
+        color: $primary-light;
+        transform: scale(1.05);
       }
     }
 
-    .edit-btn {
+    .empty-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: $text-primary;
+      margin-bottom: 0.8rem;
+    }
+
+    .empty-desc {
+      color: $text-tertiary;
+      font-size: 0.95rem;
+      margin-bottom: 2rem;
+      line-height: 1.6;
+    }
+
+    .empty-btn {
+      background-color: $primary-color;
       color: white;
-      background-color: #4299e1;
+      padding: 0.7rem 1.8rem;
+      border-radius: $radius-full;
       text-decoration: none;
-      padding: 0.3rem 0.8rem;
-      border-radius: 4px;
-      transition: background-color 0.2s;
+      transition: $transition-base;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      box-shadow: 0 2px 6px rgba(66, 153, 225, 0.2);
 
       &:hover {
-        background-color: #3182ce;
+        background-color: $primary-dark;
+        transform: translateY(-3px);
+        box-shadow: 0 4px 12px rgba(66, 153, 225, 0.3);
       }
-    }
-  }
-}
-
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.2);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-.no-content {
-  text-align: center;
-  padding: 3rem;
-  background-color: #fff;
-  border-radius: 8px;
-
-  .empty-img {
-    width: 120px;
-    height: 120px;
-    margin-bottom: 1rem;
-    opacity: 0.5;
-  }
-
-  .empty-btn {
-    background-color: #4299e1;
-    color: white;
-    padding: 0.6rem 1.5rem;
-    border-radius: 4px;
-    text-decoration: none;
-    transition: background-color 0.3s;
-
-    &:hover {
-      background-color: #3182ce;
     }
   }
 }
