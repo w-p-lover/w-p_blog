@@ -10,6 +10,7 @@ import com.ican.service.RedisService;
 import com.ican.service.SiteConfigService;
 import com.ican.strategy.context.UploadStrategyContext;
 import com.ican.utils.FileUtils;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,19 +29,16 @@ import static com.ican.enums.FilePathEnum.CONFIG;
  * @author xcs
  */
 @Service
+@RequiredArgsConstructor
 public class SiteConfigServiceImpl extends ServiceImpl<SiteConfigMapper, SiteConfig> implements SiteConfigService {
 
-    @Autowired
-    private SiteConfigMapper siteConfigMapper;
+    private final SiteConfigMapper siteConfigMapper;
 
-    @Autowired
-    private RedisService redisService;
+    private final RedisService redisService;
 
-    @Autowired
-    private UploadStrategyContext uploadStrategyContext;
+    private final UploadStrategyContext uploadStrategyContext;
 
-    @Autowired
-    private BlogFileMapper blogFileMapper;
+    private final BlogFileMapper blogFileMapper;
 
     @Override
     public SiteConfig getSiteConfig() {

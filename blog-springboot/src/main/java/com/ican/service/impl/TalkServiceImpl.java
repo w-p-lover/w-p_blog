@@ -17,6 +17,7 @@ import com.ican.service.RedisService;
 import com.ican.service.TalkService;
 import com.ican.strategy.context.UploadStrategyContext;
 import com.ican.utils.*;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -39,22 +40,18 @@ import static com.ican.enums.CommentTypeEnum.TALK;
  * @author xcs
  */
 @Service
+@RequiredArgsConstructor
 public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements TalkService {
 
-    @Autowired
-    private TalkMapper talkMapper;
+    private final TalkMapper talkMapper;
 
-    @Autowired
-    private RedisService redisService;
+    private final RedisService redisService;
 
-    @Autowired
-    private CommentMapper commentMapper;
+    private final CommentMapper commentMapper;
 
-    @Autowired
-    private UploadStrategyContext uploadStrategyContext;
+    private final UploadStrategyContext uploadStrategyContext;
 
-    @Autowired
-    private BlogFileMapper blogFileMapper;
+    private final BlogFileMapper blogFileMapper;
 
     @Override
     public PageResult<TalkBackVO> listTalkBackVO(ConditionDTO condition) {

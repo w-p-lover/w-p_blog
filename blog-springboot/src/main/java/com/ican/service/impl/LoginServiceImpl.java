@@ -17,6 +17,7 @@ import com.ican.service.LoginService;
 import com.ican.service.RedisService;
 import com.ican.strategy.context.SocialLoginStrategyContext;
 import com.ican.utils.SecurityUtils;
+import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -39,22 +40,18 @@ import static com.ican.utils.CommonUtils.checkEmail;
  * @date 2022/12/04 11:24
  **/
 @Service
+@RequiredArgsConstructor
 public class LoginServiceImpl implements LoginService {
 
-    @Autowired
-    private UserMapper userMapper;
+    private final UserMapper userMapper;
 
-    @Autowired
-    private UserRoleMapper userRoleMapper;
+    private final UserRoleMapper userRoleMapper;
 
-    @Autowired
-    private RabbitTemplate rabbitTemplate;
+    private final RabbitTemplate rabbitTemplate;
 
-    @Autowired
-    private RedisService redisService;
+    private final RedisService redisService;
 
-    @Autowired
-    private SocialLoginStrategyContext socialLoginStrategyContext;
+    private final SocialLoginStrategyContext socialLoginStrategyContext;
 
     @Override
     public String login(LoginDTO login) {

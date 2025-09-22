@@ -14,6 +14,7 @@ import com.ican.service.GameService;
 import com.ican.strategy.context.UploadStrategyContext;
 import com.ican.utils.BeanCopyUtils;
 import com.ican.utils.FileUtils;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,14 +25,12 @@ import java.util.*;
 import static com.ican.constant.CommonConstant.FALSE;
 
 @Service
+@RequiredArgsConstructor
 public class GameServiceImpl extends ServiceImpl<GameMapper, Game>  implements GameService {
 
-    @Autowired
-    private GameMapper gameMapper;
-    @Autowired
-    private BlogFileMapper blogFileMapper;
-    @Autowired
-    private UploadStrategyContext uploadStrategyContext;
+    private final GameMapper gameMapper;
+    private final BlogFileMapper blogFileMapper;
+    private final UploadStrategyContext uploadStrategyContext;
 
     /**
      * 获取游戏库列表

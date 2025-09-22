@@ -8,6 +8,7 @@ import com.ican.model.dto.FlowElementDTO;
 import com.ican.model.vo.FlowElementVO;
 import com.ican.service.FlowElementService;
 import com.ican.utils.BeanCopyUtils;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,10 +17,10 @@ import java.sql.Array;
 import java.util.*;
 
 @Service
+@RequiredArgsConstructor
 public class FlowElementServiceImpl extends ServiceImpl<FlowElementMapper, FlowElement> implements FlowElementService {
 
-    @Autowired
-    private FlowElementMapper flowElementMapper;
+    private final FlowElementMapper flowElementMapper;
 
     /**
      * 获取流程图元素列表（分页）

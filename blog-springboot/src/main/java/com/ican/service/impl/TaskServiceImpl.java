@@ -19,6 +19,7 @@ import com.ican.quartz.utils.ScheduleUtils;
 import com.ican.service.TaskService;
 import com.ican.utils.BeanCopyUtils;
 import com.ican.utils.PageUtils;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.quartz.JobDataMap;
 import org.quartz.JobKey;
@@ -37,13 +38,12 @@ import java.util.List;
  * @author xcs
  */
 @Service
+@RequiredArgsConstructor
 public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements TaskService {
 
-    @Autowired
-    private Scheduler scheduler;
+    private final Scheduler scheduler;
 
-    @Autowired
-    private TaskMapper taskMapper;
+    private final TaskMapper taskMapper;
 
     /**
      * 项目启动时，初始化定时器 主要是防止手动修改数据库导致未同步到定时任务处理

@@ -8,6 +8,7 @@ import com.ican.model.dto.ConditionDTO;
 import com.ican.model.vo.PageResult;
 import com.ican.service.VisitLogService;
 import com.ican.utils.PageUtils;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -20,10 +21,10 @@ import java.util.List;
  * @author xcs
  */
 @Service
+@RequiredArgsConstructor
 public class VisitLogServiceImpl extends ServiceImpl<VisitLogMapper, VisitLog> implements VisitLogService {
 
-    @Autowired
-    private VisitLogMapper visitLogMapper;
+    private final VisitLogMapper visitLogMapper;
 
     @Override
     public void saveVisitLog(VisitLog visitLog) {

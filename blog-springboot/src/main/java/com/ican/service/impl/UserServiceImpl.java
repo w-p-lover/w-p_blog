@@ -21,6 +21,7 @@ import com.ican.service.RedisService;
 import com.ican.service.UserService;
 import com.ican.strategy.context.UploadStrategyContext;
 import com.ican.utils.SecurityUtils;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,25 +44,20 @@ import static com.ican.utils.PageUtils.getSize;
  * @date 2022/12/05 15:32
  **/
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
 
-    @Autowired
-    private UserMapper userMapper;
+    private final UserMapper userMapper;
 
-    @Autowired
-    private MenuMapper menuMapper;
+    private final MenuMapper menuMapper;
 
-    @Autowired
-    private UserRoleMapper userRoleMapper;
+    private final UserRoleMapper userRoleMapper;
 
-    @Autowired
-    private RoleMapper roleMapper;
+    private final RoleMapper roleMapper;
 
-    @Autowired
-    private RedisService redisService;
+    private final RedisService redisService;
 
-    @Autowired
-    private UploadStrategyContext uploadStrategyContext;
+    private final UploadStrategyContext uploadStrategyContext;
 
     @Override
     public UserBackInfoVO getUserBackInfo() {

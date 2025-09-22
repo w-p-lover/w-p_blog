@@ -19,6 +19,7 @@ import com.ican.model.vo.FriendshipVO;
 import com.ican.service.ChatService;
 import com.ican.strategy.context.UploadStrategyContext;
 import com.ican.utils.FileUtils;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -40,18 +41,14 @@ import static com.ican.constant.CommonConstant.FALSE;
  */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class ChatServiceImpl implements ChatService {
 
-    @Autowired
-    private ChatMapper chatRecordMapper;
-    @Autowired
-    private UserMapper userMapper;
-    @Autowired
-    private FriendshipMapper friendshipsMapper;
-    @Autowired
-    private UploadStrategyContext uploadStrategyContext;
-    @Autowired
-    private BlogFileMapper blogFileMapper;
+    private final ChatMapper chatRecordMapper;
+    private final UserMapper userMapper;
+    private final FriendshipMapper friendshipsMapper;
+    private final UploadStrategyContext uploadStrategyContext;
+    private final BlogFileMapper blogFileMapper;
 
     @Override
     public List<ChatRecordVO> getChatRecordByCouple(String send, String receive) {

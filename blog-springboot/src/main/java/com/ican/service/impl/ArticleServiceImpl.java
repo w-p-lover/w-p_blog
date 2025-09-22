@@ -21,6 +21,7 @@ import com.ican.strategy.context.UploadStrategyContext;
 import com.ican.utils.BeanCopyUtils;
 import com.ican.utils.FileUtils;
 import com.ican.utils.PageUtils;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,37 +51,28 @@ import static com.ican.enums.FilePathEnum.ARTICLE;
  * @date 2022/12/04 22:31
  **/
 @Service
+@RequiredArgsConstructor
 public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> implements ArticleService {
 
-    @Autowired
-    private UserMapper userMapper;
+    private final UserMapper userMapper;
 
-    @Autowired
-    private CategoryMapper categoryMapper;
+    private final CategoryMapper categoryMapper;
 
-    @Autowired
-    private ArticleTagMapper articleTagMapper;
+    private final ArticleTagMapper articleTagMapper;
 
-    @Autowired
-    private TagMapper tagMapper;
+    private final TagMapper tagMapper;
 
-    @Autowired
-    private TagService tagService;
+    private final TagService tagService;
 
-    @Autowired
-    private ArticleMapper articleMapper;
+    private final ArticleMapper articleMapper;
 
-    @Autowired
-    private RedisService redisService;
+    private final RedisService redisService;
 
-    @Autowired
-    private SearchStrategyContext searchStrategyContext;
+    private final SearchStrategyContext searchStrategyContext;
 
-    @Autowired
-    private UploadStrategyContext uploadStrategyContext;
+    private final UploadStrategyContext uploadStrategyContext;
 
-    @Autowired
-    private BlogFileMapper blogFileMapper;
+    private final BlogFileMapper blogFileMapper;
 
     @Override
     public PageResult<ArticleBackVO> listArticleBackVO(ConditionDTO condition) {

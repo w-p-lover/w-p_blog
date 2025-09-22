@@ -14,6 +14,7 @@ import com.ican.service.BlogFileService;
 import com.ican.strategy.context.UploadStrategyContext;
 import com.ican.utils.FileUtils;
 import com.ican.utils.PageUtils;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -43,6 +44,7 @@ import static com.ican.constant.CommonConstant.TRUE;
  * @author xcs
  */
 @Service
+@RequiredArgsConstructor
 public class BlogFileServiceImpl extends ServiceImpl<BlogFileMapper, BlogFile> implements BlogFileService {
 
     /**
@@ -51,14 +53,11 @@ public class BlogFileServiceImpl extends ServiceImpl<BlogFileMapper, BlogFile> i
     @Value("${upload.local.path}")
     private String localPath;
 
-    @Autowired
-    private BlogFileMapper blogFileMapper;
+    private final BlogFileMapper blogFileMapper;
 
-    @Autowired
-    private HttpServletResponse response;
+    private final HttpServletResponse response;
 
-    @Autowired
-    private UploadStrategyContext uploadStrategyContext;
+    private final UploadStrategyContext uploadStrategyContext;
 
     @Override
     public PageResult<FileVO> listFileVOList(ConditionDTO condition) {

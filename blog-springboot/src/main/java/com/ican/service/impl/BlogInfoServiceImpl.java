@@ -13,6 +13,7 @@ import com.ican.service.RedisService;
 import com.ican.service.SiteConfigService;
 import com.ican.utils.IpUtils;
 import com.ican.utils.UserAgentUtils;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
@@ -31,34 +32,26 @@ import static com.ican.enums.ArticleStatusEnum.PUBLIC;
  * @author xcs
  **/
 @Service
+@RequiredArgsConstructor
 public class BlogInfoServiceImpl implements BlogInfoService {
 
-    @Autowired
-    private ArticleMapper articleMapper;
+    private final ArticleMapper articleMapper;
 
-    @Autowired
-    private CategoryMapper categoryMapper;
+    private final CategoryMapper categoryMapper;
 
-    @Autowired
-    private TagMapper tagMapper;
+    private final TagMapper tagMapper;
 
-    @Autowired
-    private RedisService redisService;
+    private final RedisService redisService;
 
-    @Autowired
-    private SiteConfigService siteConfigService;
+    private final SiteConfigService siteConfigService;
 
-    @Autowired
-    private MessageMapper messageMapper;
+    private final MessageMapper messageMapper;
 
-    @Autowired
-    private UserMapper userMapper;
+    private final UserMapper userMapper;
 
-    @Autowired
-    private VisitLogMapper visitLogMapper;
+    private final VisitLogMapper visitLogMapper;
 
-    @Autowired
-    private HttpServletRequest request;
+    private final HttpServletRequest request;
 
     @Override
     public void report() {

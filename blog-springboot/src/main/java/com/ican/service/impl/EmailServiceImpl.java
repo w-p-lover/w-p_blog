@@ -2,6 +2,7 @@ package com.ican.service.impl;
 
 import com.ican.model.dto.MailDTO;
 import com.ican.service.EmailService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
@@ -20,6 +21,7 @@ import javax.mail.internet.MimeMessage;
  * @author xcs
  **/
 @Service
+@RequiredArgsConstructor
 public class EmailServiceImpl implements EmailService {
 
     /**
@@ -28,11 +30,9 @@ public class EmailServiceImpl implements EmailService {
     @Value("${spring.mail.username}")
     private String email;
 
-    @Autowired
-    private JavaMailSender javaMailSender;
+    private final JavaMailSender javaMailSender;
 
-    @Autowired
-    private TemplateEngine templateEngine;
+    private final TemplateEngine templateEngine;
 
     @Override
     public void sendSimpleMail(MailDTO mailDTO) {

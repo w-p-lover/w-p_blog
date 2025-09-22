@@ -17,6 +17,7 @@ import com.ican.model.vo.*;
 import com.ican.service.CategoryService;
 import com.ican.utils.BeanCopyUtils;
 import com.ican.utils.PageUtils;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -37,16 +38,14 @@ import static com.ican.constant.PersonConstant.MY_RED_MAIL;
  * @date 2022/12/02 17:35
  **/
 @Service
+@RequiredArgsConstructor
 public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> implements CategoryService {
 
-    @Autowired
-    private CategoryMapper categoryMapper;
+    private final CategoryMapper categoryMapper;
 
-    @Autowired
-    private UserMapper userMapper;
+    private final UserMapper userMapper;
 
-    @Autowired
-    private ArticleMapper articleMapper;
+    private final ArticleMapper articleMapper;
 
     @Override
     public PageResult<CategoryBackVO> listCategoryBackVO(ConditionDTO condition) {

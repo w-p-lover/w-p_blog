@@ -32,8 +32,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class GiteeTrendingServiceImpl implements GiteeTrendingService {
 
-    @Autowired
-    private final GiteeTrendingMapper giteeTrendingMapper;
+    private final  GiteeTrendingMapper giteeTrendingMapper;
 
     /**
      * 查看Gitee趋势列表

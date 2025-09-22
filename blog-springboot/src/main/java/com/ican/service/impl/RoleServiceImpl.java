@@ -17,6 +17,7 @@ import com.ican.model.vo.PageResult;
 import com.ican.model.vo.RoleVO;
 import com.ican.service.RoleService;
 import com.ican.utils.PageUtils;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -34,16 +35,14 @@ import static com.ican.constant.CommonConstant.TRUE;
  * @date 2022/12/07 09:38
  **/
 @Service
+@RequiredArgsConstructor
 public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements RoleService {
 
-    @Autowired
-    private RoleMapper roleMapper;
+    private final RoleMapper roleMapper;
 
-    @Autowired
-    private UserRoleMapper userRoleMapper;
+    private final UserRoleMapper userRoleMapper;
 
-    @Autowired
-    private RoleMenuMapper roleMenuMapper;
+    private final RoleMenuMapper roleMenuMapper;
 
     @Override
     public PageResult<RoleVO> listRoleVO(ConditionDTO condition) {

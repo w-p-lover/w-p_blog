@@ -14,6 +14,7 @@ import com.ican.model.vo.PageResult;
 import com.ican.service.BookService;
 import com.ican.utils.BeanCopyUtils;
 import com.ican.utils.PageUtils;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -30,10 +31,10 @@ import java.util.Objects;
  * @date 2025/08/20
  **/
 @Service
+@RequiredArgsConstructor
 public class BookServiceImpl extends ServiceImpl<BookMapper, Book> implements BookService {
 
-    @Autowired
-    private BookMapper bookMapper;
+    private final BookMapper bookMapper;
 
     /**
      * 后台查询书籍列表
