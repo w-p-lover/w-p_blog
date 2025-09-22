@@ -102,7 +102,7 @@ public class UserInfoController {
      * @return {@link OnlineVO} 在线用户列表
      */
     @ApiOperation(value = "查看共享平台已存在用户")
-    @GetMapping("/user/list")
+    @GetMapping("/collab/writerList")
     public Result<PageResult<DocDTO.CollabDTO>> getUserLis(ConditionDTO condition) {
         return Result.success(userService.getUserLis(condition));
     }
