@@ -138,7 +138,9 @@
                     :disabled="docForm.collaborators.length === 1 || mode === '查看'"
                     style="margin-left: 15px"
                 >
-                  <el-icon><Delete /></el-icon>
+                  <el-icon>
+                    <Delete/>
+                  </el-icon>
                 </el-button>
 
               </div>
@@ -178,6 +180,7 @@ import useStore from '@/store';
 import {getUserList} from "@/api/user";
 import {Delete} from '@element-plus/icons-vue';
 import {getCategoryList, getCollabCategoryList} from "@/api/category";
+
 interface CollabUser {
   name: string;
   avatar: string;
@@ -318,8 +321,8 @@ function removeCategory() {
 function searchCategory(query: string, cb: any) {
   const q = query.toLowerCase();
   const result = categoryList
-      .filter(i =>i.categoryName.toLowerCase().includes(q))
-      .map(i => ({ value: i.categoryName, ...i })); // 关键：必须有 value
+      .filter(i => i.categoryName.toLowerCase().includes(q))
+      .map(i => ({value: i.categoryName, ...i})); // 关键：必须有 value
   cb(result);
 }
 
@@ -353,7 +356,7 @@ function searchTag(query: string, cb: any) {
   const q = query.toLowerCase();
   const result = tagList
       .filter(i => i.tagName.toLowerCase().includes(q))
-      .map(i => ({ value: i.tagName, ...i }));
+      .map(i => ({value: i.tagName, ...i}));
   cb(result);
 }
 

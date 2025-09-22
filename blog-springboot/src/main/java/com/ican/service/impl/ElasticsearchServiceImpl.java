@@ -3,6 +3,7 @@ package com.ican.service.impl;
 import com.alibaba.fastjson2.JSON;
 import com.ican.model.vo.ArticleSearchVO;
 import com.ican.service.ElasticsearchService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.index.IndexRequest;
@@ -25,10 +26,10 @@ import static com.ican.constant.ElasticConstant.ARTICLE_INDEX;
  **/
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class ElasticsearchServiceImpl implements ElasticsearchService {
 
-    @Autowired
-    private RestHighLevelClient elasticsearchClient;
+    private final RestHighLevelClient elasticsearchClient;
 
     @Override
     public void addArticle(ArticleSearchVO article) {

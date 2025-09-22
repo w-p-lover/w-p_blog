@@ -14,6 +14,7 @@ import com.ican.model.vo.MenuTree;
 import com.ican.model.vo.MenuVO;
 import com.ican.service.MenuService;
 import com.ican.utils.BeanCopyUtils;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -32,13 +33,12 @@ import static com.ican.constant.CommonConstant.PARENT_ID;
  * @date 2022/12/05 22:13
  **/
 @Service
+@RequiredArgsConstructor
 public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements MenuService {
 
-    @Autowired
-    private MenuMapper menuMapper;
+    private final MenuMapper menuMapper;
 
-    @Autowired
-    private RoleMenuMapper roleMenuMapper;
+    private final RoleMenuMapper roleMenuMapper;
 
     @Override
     public List<MenuVO> listMenuVO(ConditionDTO condition) {

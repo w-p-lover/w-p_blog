@@ -21,6 +21,7 @@ import com.ican.service.RedisService;
 import com.ican.service.SiteConfigService;
 import com.ican.utils.HTMLUtils;
 import com.ican.utils.PageUtils;
+import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,31 +43,25 @@ import static com.ican.enums.CommentTypeEnum.*;
  * @author xcs
  */
 @Service
+@RequiredArgsConstructor
 public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> implements CommentService {
 
     @Value("${blog.url}")
     private String websiteUrl;
 
-    @Autowired
-    private ArticleMapper articleMapper;
+    private final ArticleMapper articleMapper;
 
-    @Autowired
-    private TalkMapper talkMapper;
+    private final TalkMapper talkMapper;
 
-    @Autowired
-    private CommentMapper commentMapper;
+    private final CommentMapper commentMapper;
 
-    @Autowired
-    private UserMapper userMapper;
+    private final UserMapper userMapper;
 
-    @Autowired
-    private SiteConfigService siteConfigService;
+    private final SiteConfigService siteConfigService;
 
-    @Autowired
-    private RedisService redisService;
+    private final RedisService redisService;
 
-    @Autowired
-    private RabbitTemplate rabbitTemplate;
+    private final RabbitTemplate rabbitTemplate;
 
     @Override
     public PageResult<CommentBackVO> listCommentBackVO(ConditionDTO condition) {

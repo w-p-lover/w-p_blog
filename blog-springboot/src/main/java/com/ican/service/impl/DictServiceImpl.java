@@ -20,6 +20,7 @@ import com.ican.model.vo.excelvo.TalkExVo;
 import com.ican.model.vo.excelvo.UserExVo;
 import com.ican.model.vo.excelvo.VisitExVo;
 import com.ican.service.DictService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -41,18 +42,14 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @Filename：DictServiceImpl
  */
 @Service
+@RequiredArgsConstructor
 public class DictServiceImpl implements DictService {
 
-    @Autowired
-    private ArticleMapper articleMapper;
-    @Autowired
-    private UserMapper userMapper;
-    @Autowired
-    private TalkMapper talkMapper;
-    @Autowired
-    private MessageMapper messageMapper;
-    @Autowired
-    private VisitLogMapper visitLogMapper;
+    private final ArticleMapper articleMapper;
+    private final UserMapper userMapper;
+    private final TalkMapper talkMapper;
+    private final MessageMapper messageMapper;
+    private final VisitLogMapper visitLogMapper;
 
     @Override
     public void exportArticle(HttpServletResponse response, ExcelDTO excelDTO) {

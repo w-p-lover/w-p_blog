@@ -9,6 +9,7 @@ import com.ican.model.vo.OperationLogVO;
 import com.ican.model.vo.PageResult;
 import com.ican.service.OperationLogService;
 import com.ican.utils.PageUtils;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -21,10 +22,10 @@ import java.util.List;
  * @author xcs
  */
 @Service
+@RequiredArgsConstructor
 public class OperationLogServiceImpl extends ServiceImpl<OperationLogMapper, OperationLog> implements OperationLogService {
 
-    @Autowired
-    private OperationLogMapper operationLogMapper;
+    private final OperationLogMapper operationLogMapper;
 
     @Override
     public PageResult<OperationLogVO> listOperationLogVO(ConditionDTO condition) {

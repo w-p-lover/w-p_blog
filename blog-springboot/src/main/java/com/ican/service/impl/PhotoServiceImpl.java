@@ -21,6 +21,7 @@ import com.ican.strategy.context.UploadStrategyContext;
 import com.ican.utils.BeanCopyUtils;
 import com.ican.utils.FileUtils;
 import com.ican.utils.PageUtils;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -41,19 +42,16 @@ import static com.ican.enums.FilePathEnum.PHOTO;
  * @author xcs
  */
 @Service
+@RequiredArgsConstructor
 public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements PhotoService {
 
-    @Autowired
-    private PhotoMapper photoMapper;
+    private final PhotoMapper photoMapper;
 
-    @Autowired
-    private AlbumMapper albumMapper;
+    private final AlbumMapper albumMapper;
 
-    @Autowired
-    private UploadStrategyContext uploadStrategyContext;
+    private final UploadStrategyContext uploadStrategyContext;
 
-    @Autowired
-    private BlogFileMapper blogFileMapper;
+    private final BlogFileMapper blogFileMapper;
 
     @Override
     public PageResult<PhotoBackVO> listPhotoBackVO(ConditionDTO condition) {

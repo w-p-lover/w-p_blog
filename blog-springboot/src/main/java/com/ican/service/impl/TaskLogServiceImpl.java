@@ -8,6 +8,7 @@ import com.ican.model.vo.PageResult;
 import com.ican.model.vo.TaskLogVO;
 import com.ican.service.TaskLogService;
 import com.ican.utils.PageUtils;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,10 +20,10 @@ import java.util.List;
  * @author xcs
  */
 @Service
+@RequiredArgsConstructor
 public class TaskLogServiceImpl extends ServiceImpl<TaskLogMapper, TaskLog> implements TaskLogService {
 
-    @Autowired
-    private TaskLogMapper taskLogMapper;
+    private final TaskLogMapper taskLogMapper;
 
     @Override
     public PageResult<TaskLogVO> listTaskLog(ConditionDTO condition) {

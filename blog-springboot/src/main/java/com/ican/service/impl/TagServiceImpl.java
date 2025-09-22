@@ -17,6 +17,7 @@ import com.ican.model.dto.TagDTO;
 import com.ican.model.vo.*;
 import com.ican.service.TagService;
 import com.ican.utils.PageUtils;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -37,19 +38,16 @@ import static com.ican.constant.PersonConstant.MY_RED_MAIL;
  * @date 2022/12/02 22:06
  **/
 @Service
+@RequiredArgsConstructor
 public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements TagService {
 
-    @Autowired
-    private TagMapper tagMapper;
+    private final TagMapper tagMapper;
 
-    @Autowired
-    private UserMapper userMapper;
+    private final UserMapper userMapper;
 
-    @Autowired
-    private ArticleTagMapper articleTagMapper;
+    private final ArticleTagMapper articleTagMapper;
 
-    @Autowired
-    private ArticleMapper articleMapper;
+    private final ArticleMapper articleMapper;
 
     @Override
     public PageResult<TagBackVO> listTagBackVO(ConditionDTO condition) {

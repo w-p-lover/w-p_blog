@@ -17,6 +17,7 @@ import com.ican.utils.BeanCopyUtils;
 import com.ican.utils.HTMLUtils;
 import com.ican.utils.IpUtils;
 import com.ican.utils.PageUtils;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -35,16 +36,14 @@ import static com.ican.constant.CommonConstant.TRUE;
  * @author xcs
  */
 @Service
+@RequiredArgsConstructor
 public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> implements MessageService {
 
-    @Autowired
-    private MessageMapper messageMapper;
+    private final MessageMapper messageMapper;
 
-    @Autowired
-    private HttpServletRequest request;
+    private final HttpServletRequest request;
 
-    @Autowired
-    private SiteConfigService siteConfigService;
+    private final SiteConfigService siteConfigService;
 
     @Override
     public List<MessageVO> listMessageVO() {

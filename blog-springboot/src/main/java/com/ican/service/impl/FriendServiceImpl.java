@@ -12,6 +12,7 @@ import com.ican.model.vo.PageResult;
 import com.ican.service.FriendService;
 import com.ican.utils.BeanCopyUtils;
 import com.ican.utils.PageUtils;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -24,10 +25,10 @@ import java.util.List;
  * @author xcs
  */
 @Service
+@RequiredArgsConstructor
 public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> implements FriendService {
 
-    @Autowired
-    private FriendMapper friendMapper;
+    private final FriendMapper friendMapper;
 
     @Override
     public List<FriendVO> listFriendVO() {
