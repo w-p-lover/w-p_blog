@@ -146,6 +146,37 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
     }
 
     @Override
+    public List<CategoryVO> listCollabCategoryVO() {
+        // 1. 查询所有分类VO
+        List<CategoryVO> collabCategoryVos = categoryMapper.selectCategoryVO();
+        if (CollectionUtils.isEmpty(collabCategoryVos)) {
+            return Collections.emptyList(); // 避免后续空列表操作
+        }
+
+        String email = null;
+        if (StpUtil.isLogin()) {
+            int userId = StpUtil.getLoginIdAsInt();
+            User user = userMapper.selectOne(new LambdaQueryWrapper<User>()
+                    .select(User::getEmail)
+                    .eq(User::getId, userId));
+            if (user != null) {
+                email = user.getEmail();
+            }
+        }
+
+        // 3. 过滤分类：移除文章数为0的分类，且非管理员隐藏“宝宝~”分类
+        String finalEmail = email;
+        collabCategoryVos.removeIf(category -> {
+            boolean isPrivateCategory = "宝宝~".equals(category.getCategoryName());
+            boolean isPrivateCategory1 = "不开心".equals(category.getCategoryName());
+            boolean isAdmin = ObjectUtil.isNotNull(finalEmail)
+                    && (finalEmail.equals(MY_MAIL) || finalEmail.equals(MY_RED_MAIL));
+            return (isPrivateCategory|| isPrivateCategory1) && !isAdmin ;
+        });
+
+        return collabCategoryVos;
+    }
+    @Override
     public ArticleConditionList listArticleCategory(ConditionDTO condition) {
         List<ArticleConditionVO> articleConditionList = articleMapper.listArticleByCondition(PageUtils.getLimit(),
                 PageUtils.getSize(), condition);
