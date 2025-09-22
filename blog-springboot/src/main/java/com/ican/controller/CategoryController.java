@@ -111,6 +111,20 @@ public class CategoryController {
         return Result.success(categoryService.listCategoryVO());
     }
 
+
+    /**
+     * 查看分类列表
+     *
+     * @return {@link Result<CategoryDTO>} 分类列表
+     */
+    @VisitLogger(value = "共享文档分类")
+    @ApiOperation(value = "查看共享文档分类列表")
+    @GetMapping("/collab/categoryList")
+    public Result<List<CategoryVO>> listCollabCategoryVO() {
+        return Result.success(categoryService.listCollabCategoryVO());
+    }
+
+
     /**
      * 查看分类下的文章
      *

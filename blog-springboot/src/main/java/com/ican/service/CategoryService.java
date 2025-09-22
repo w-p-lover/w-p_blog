@@ -59,6 +59,14 @@ public interface CategoryService extends IService<Category> {
      */
     List<CategoryVO> listCategoryVO();
 
+
+    /**
+     * 查看分类列表
+     *
+     * @return 分类列表
+     */
+    List<CategoryVO> listCollabCategoryVO();
+
     /**
      * 查看分类下的文章
      *
