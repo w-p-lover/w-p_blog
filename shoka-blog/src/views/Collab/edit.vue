@@ -114,7 +114,7 @@
             <div class="collab-group">
               <div class="collab-row" v-for="(item, idx) in docForm.collaborators" :key="idx">
                 <el-select v-model="item.name" placeholder="选择协作者"
-                           :disabled="mode === '查看' || (item.name !== user.nickname && item.role == 'editor' && item.addMode !== true)"
+                           :disabled="mode === '查看' || (mode !== '新建' && item.name !== user.nickname && item.role == 'editor' && item.addMode !== true)"
                            style=" width:180px ; margin-right:16px"
                            @change="i => onCollabChange(item, i)">
                   <el-option
@@ -125,7 +125,7 @@
                   />
                 </el-select>
                 <el-select v-model="item.role" placeholder="选择角色"
-                           :disabled="mode === '查看' || (item.name !== user.nickname && item.role == 'editor' && item.addMode !== true)"
+                           :disabled="mode === '查看' || (mode !== '新建' && item.name !== user.nickname && item.role == 'editor' && item.addMode !== true)"
                            style="width:180px;margin-right:16px">
                   <el-option label="编辑者" value="editor"/>
                   <el-option label="查看者" value="viewer"/>
@@ -177,6 +177,7 @@ import RichTextEditor from '@/components/Edit/index.vue';
 import useStore from '@/store';
 import {getUserList} from "@/api/user";
 import {Delete} from '@element-plus/icons-vue';
+import {getCategoryList, getCollabCategoryList} from "@/api/category";
 interface CollabUser {
   name: string;
   avatar: string;
@@ -251,6 +252,7 @@ onMounted(async () => {
     const {data} = await getUserList();
     collabList.value = data.data.recordList;
     await fetchDocTag();
+    await fetchDoCategory()
   }
 });
 
@@ -271,6 +273,16 @@ async function fetchDocTag() {
   try {
     const {data} = await getDocTags();
     Object.assign(tagList, data.data);
+  } catch (error) {
+    ElMessage.error('加载文档标签失败');
+  }
+}
+
+// 获取文档
+async function fetchDoCategory() {
+  try {
+    const {data} = await getCollabCategoryList();
+    Object.assign(categoryList, data.data);
   } catch (error) {
     ElMessage.error('加载文档标签失败');
   }
@@ -304,8 +316,13 @@ function removeCategory() {
 }
 
 function searchCategory(query: string, cb: any) {
-  cb(categoryList.filter(i => i.categoryName.includes(query)));
+  const q = query.toLowerCase();
+  const result = categoryList
+      .filter(i =>i.categoryName.toLowerCase().includes(q))
+      .map(i => ({ value: i.categoryName, ...i })); // 关键：必须有 value
+  cb(result);
 }
+
 
 // 标签操作
 function tagClass(name: string) {
@@ -333,7 +350,11 @@ function removeTag(name: string) {
 }
 
 function searchTag(query: string, cb: any) {
-  cb(tagList.filter(i => i.tagName.includes(query)));
+  const q = query.toLowerCase();
+  const result = tagList
+      .filter(i => i.tagName.toLowerCase().includes(q))
+      .map(i => ({ value: i.tagName, ...i }));
+  cb(result);
 }
 
 // 协作者操作

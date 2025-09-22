@@ -28,3 +28,15 @@ export function getCategoryArticleList(
         params,
     });
 }
+
+
+/**
+ * 查看共享文档文章分类
+ * @returns 文章分类
+ */
+export function getCollabCategoryList(): AxiosPromise<Result<Category[]>> {
+    return request({
+        url: "/collab/categoryList",
+        method: "get",
+    });
+}
