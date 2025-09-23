@@ -115,7 +115,7 @@
               <div class="collab-row" v-for="(item, idx) in docForm.collaborators" :key="idx">
                 <el-select v-model="item.name" placeholder="选择协作者"
                            :disabled="mode === '查看' || (mode !== '新建' && item.name !== user.nickname && item.role == 'editor' && item.addMode !== true)"
-                           style=" width:180px ; margin-right:16px"
+                           style=" width: 250px; margin-right: 16px"
                            @change="i => onCollabChange(item, i)">
                   <el-option
                       v-for="user in collabList"
@@ -126,7 +126,7 @@
                 </el-select>
                 <el-select v-model="item.role" placeholder="选择角色"
                            :disabled="mode === '查看' || (mode !== '新建' && item.name !== user.nickname && item.role == 'editor' && item.addMode !== true)"
-                           style="width:180px;margin-right:16px">
+                           style=" width: 250px; margin-right: 16px">
                   <el-option label="编辑者" value="editor"/>
                   <el-option label="查看者" value="viewer"/>
                 </el-select>
@@ -142,29 +142,41 @@
                     <Delete/>
                   </el-icon>
                 </el-button>
-
               </div>
-              <el-button type="primary" @click="addCollab" v-if="mode!=='查看'" style="margin-top:8px">
+              <el-button
+                  type="primary"
+                  @click="addCollab"
+                  v-if="mode!=='查看'"
+                  class="add-collab-btn"
+              >
+                <el-icon style="margin-right: 4px;">
+                  <Plus/>
+                </el-icon>
                 添加协作者
               </el-button>
             </div>
           </el-form-item>
-          <!-- 按钮 -->
+
+          <!-- 按钮组：视觉层级优化 -->
           <el-form-item class="form-btn-group">
-            <el-button type="text" @click="handleCancel">取消</el-button>
-            <el-button type="primary" v-if="mode !== '查看'" @click="saveDraft()">
-              {{ '保存草稿' }}
+            <el-button type="text" @click="handleCancel" class="cancel-btn">取消</el-button>
+            <el-button
+                type="default"
+                v-if="mode !== '查看'"
+                @click="saveDraft()"
+                class="draft-btn"
+            >
+              保存草稿
             </el-button>
             <el-button
-                type="success"
+                type="primary"
                 v-if="mode !== '查看'"
                 @click="mode === '新建' ? submitDoc() : editDoc()"
+                class="submit-btn"
             >
               {{ mode === '新建' ? '创建完成' : '保存修改' }}
             </el-button>
-
           </el-form-item>
-
         </el-form>
       </el-card>
     </div>
@@ -178,7 +190,7 @@ import {createDoc, getDoc, getDocTags, updateDoc} from '@/api/collab';
 import RichTextEditor from '@/components/Edit/index.vue';
 import useStore from '@/store';
 import {getUserList} from "@/api/user";
-import {Delete} from '@element-plus/icons-vue';
+import {Delete, Plus} from '@element-plus/icons-vue';
 import {getCategoryList, getCollabCategoryList} from "@/api/category";
 
 interface CollabUser {
@@ -489,8 +501,8 @@ const editDoc = async () => {
 }
 
 .blog-title {
-  border-color: #8e8cd8;
-  color: #8e8cd8;
+  border-color: #293898;
+  color: #293898;
 }
 
 .tag-item {
@@ -509,4 +521,70 @@ const editDoc = async () => {
   cursor: not-allowed;
 }
 
+/* 添加协作者按钮 */
+.add-collab-btn {
+  margin-top: 8px;
+  background-color: #F0F7FF;
+  color: #165DFF;
+  border-color: #C9E2FF;
+}
+
+.add-collab-btn:hover {
+  background-color: #E8F3FF;
+  border-color: #91C9FF;
+}
+
+/* 添加按钮（分类/标签） */
+.add-btn {
+  background-color: #F0F7FF;
+  color: #165DFF;
+  border-color: #C9E2FF;
+}
+
+.add-btn:hover {
+  background-color: #E8F3FF;
+  border-color: #91C9FF;
+}
+
+/* 按钮组：右对齐+间距 */
+.form-btn-group {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+  margin-bottom: 8px;
+}
+
+/* 取消按钮 */
+.cancel-btn {
+  color: #175abc;
+}
+
+.cancel-btn:hover {
+  color: #1D2129;
+  background-color: #F2F3F5;
+}
+
+/* 草稿按钮 */
+.draft-btn {
+  background-color: #F7F8FA;
+  color: #1D2129;
+  border-color: #E5E6EB;
+}
+
+.draft-btn:hover {
+  background-color: #F2F3F5;
+  border-color: #C9CDD4;
+}
+
+/* 提交按钮：主色调 */
+.submit-btn {
+  background-color: #165DFF;
+  border-color: #165DFF;
+}
+
+.submit-btn:hover {
+  background-color: #0E42D2;
+  border-color: #0E42D2;
+}
 </style>
