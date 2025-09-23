@@ -129,6 +129,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     }
 
     @Override
+    @Transactional
     public void updateArticleDelete(DeleteDTO delete) {
         // 批量更新文章删除状态
         List<Article> articleList = delete.getIdList()
@@ -214,7 +215,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         ArticleVO article = articleMapper.selectArticleHomeById(articleId);
         if (article != null) {
             updateArticleStatsFromRedis(articleId,article);
-            redisService.setHash(cacheKey, articleId.toString(), JSONUtil.toJsonStr(article), 1, TimeUnit.HOURS);
+            redisService.setHash(cacheKey, articleId.toString(),
+                    JSONUtil.toJsonStr(article), 1, TimeUnit.HOURS);
         }
     }
     @Override
