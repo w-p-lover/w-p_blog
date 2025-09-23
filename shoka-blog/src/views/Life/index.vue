@@ -66,6 +66,7 @@
               <i class="el-icon-plus mr-2"></i>添加节点
             </el-button>
           </el-col>
+          <!-- 黑夜主题切换按钮 -->
           <el-col :md="2">
             <el-button
                 type="primary"
@@ -75,21 +76,33 @@
               <i class="el-icon-moon mr-2"></i>{{ isDarkTheme ? '切换白天' : '切换黑夜' }}
             </el-button>
           </el-col>
-
         </el-row>
 
+        <!-- VueFlow 画布：添加暗黑主题类名 -->
         <VueFlow
             fit-view-on-init
             class="my-flow"
+            :class="isDarkTheme ? 'dark-flow' : ''"
             v-model="elements"
             @node-click="handleNodeClick"
             ref="vueFlowRef"
         >
-          <Background type="dots" gap="60" size="2" color="#e5e7eb"/>
-          <Panel :position="PanelPosition.TopRight" class="custom-panel">
+          <!-- 背景：根据主题切换点的颜色 -->
+          <Background
+              type="dots"
+              gap="60"
+              size="2"
+              :color="isDarkTheme ? '#444' : '#e5e7eb'"
+          />
+          <!-- 面板：添加暗黑主题类名 -->
+          <Panel
+              :position="PanelPosition.TopRight"
+              class="custom-panel"
+              :class="isDarkTheme ? 'dark-panel' : ''"
+          >
             <div class="panel-control">
               <label for="ishidden" class="hidden-label">
-                <span class="label-text">隐藏所有节点</span>
+                <span class="label-text" :class="isDarkTheme ? 'text-white' : ''">隐藏所有节点</span>
                 <input
                     id="ishidden"
                     v-model="isHidden"
@@ -100,14 +113,22 @@
               </label>
             </div>
           </Panel>
-          <Controls position="bottom-center" class="custom-controls"/>
+          <!-- 控制栏：添加暗黑主题类名 -->
+          <Controls
+              position="bottom-center"
+              class="custom-controls"
+              :class="isDarkTheme ? 'dark-controls' : ''"
+          />
         </VueFlow>
+
+        <!-- 节点详情弹窗：添加暗黑主题类名 -->
         <el-dialog
             v-model="dialogVisible"
             :title="selectedNode?.label || '人生阶段详情'"
             width="30%"
             max-width="500px"
             class="custom-dialog"
+            :class="isDarkTheme ? 'dark-dialog' : ''"
             :before-enter="handleDialogEnter"
             :before-leave="handleDialogLeave"
             center
@@ -137,13 +158,15 @@
             </div>
           </div>
         </el-dialog>
-        <!-- 新增：添加节点表单弹窗 -->
+
+        <!-- 添加节点表单弹窗：添加暗黑主题类名 -->
         <el-dialog
             v-model="addNodeDialogVisible"
             title="添加学习阶段节点"
             width="30%"
             max-width="500px"
             class="custom-dialog"
+            :class="isDarkTheme ? 'dark-dialog' : ''"
             center
         >
           <el-form
@@ -189,7 +212,7 @@
                   :rows="2"
               />
             </el-form-item>
-            <!-- 新增：选择父节点（要连接的前置节点） -->
+            <!-- 选择父节点 -->
             <el-form-item label="连接到" prop="parentNodeId">
               <el-select
                   v-model="addNodeForm.parentNodeId"
@@ -225,16 +248,18 @@ import {Check, RefreshRight, Briefcase, Coffee} from "@element-plus/icons-vue"
 import type {FormInstance, FormRules} from 'element-plus';
 import {addFlowElement, getFlowList} from "@/api/life";
 
-const isDarkTheme = ref(false); // 默认白天主题
+// -------------------------- 原有状态 + 黑夜主题状态 --------------------------
+const isDarkTheme = ref(false); // 黑夜主题开关（核心）
 const elements = ref<any[]>([]);
 const isHidden = ref(false);
 const dialogVisible = ref(false);
 const selectedNode = ref<any>(null);
 const vueFlowRef = ref<any | null>(null);
 const {onPaneReady, setTransform, toObject, nodes, edges} = useVueFlow();
-const addNodeDialogVisible = ref(false); // 添加节点弹窗控制
+const addNodeDialogVisible = ref(false);
 const addNodeFormRef = ref<FormInstance | null>(null);
 
+// 添加节点表单（原有）
 const addNodeForm = ref({
   label: '',
   stageClass: 'stage-birth',
@@ -250,6 +275,7 @@ const addNodeRules = ref<FormRules>({
   keyPoints: [{required: true, message: '请输入关键事项', trigger: 'blur'}],
 });
 
+// -------------------------- 原有逻辑 + 黑夜主题切换逻辑 --------------------------
 watch(isHidden, () => {
   nodes.value.forEach((n) => (n.hidden = isHidden.value));
   edges.value.forEach((e) => (e.hidden = isHidden.value));
@@ -257,10 +283,7 @@ watch(isHidden, () => {
 
 onPaneReady(({fitView}) => {
   nextTick(() => {
-    // 放大整个画布
     setTransform({x: 210, y: 180, zoom: 1});
-
-    // 如果只放大节点，可以加 class 或修改 style
     nodes.value.forEach(node => {
       node.class = (node.class || '') + ' enlarged';
     });
@@ -274,8 +297,38 @@ const handleNodeClick = ({node}: { node: any }) => {
   dialogVisible.value = true;
 };
 
+// 黑夜主题切换核心方法
+const toggleTheme = () => {
+  isDarkTheme.value = !isDarkTheme.value;
+  ElMessage.info(`已切换至${isDarkTheme.value ? '暗黑' : '白天'}模式`);
+};
 
-// 8. 新增：弹窗渐入动画
+// 查看数据：适配暗黑主题（内容区域背景色/文字色）
+const logToObject = () => {
+  const flowData = toObject();
+  const fullContent = JSON.stringify(flowData, null, 2);
+
+  const msg = ElMessage({
+    dangerouslyUseHTMLString: true,
+    message: `
+      <div style="max-height:300px;overflow:auto;text-align:left;${isDarkTheme.value ? 'color:#fff;background:#333;' : ''}">
+        <p>节数：${flowData.nodes.length}</p>
+        <p>边数：${flowData.edges.length}</p>
+        <pre>${fullContent}</pre>
+      </div>
+    `,
+    duration: 0,
+    showClose: true
+  });
+
+  const handler = () => {
+    msg.close();
+    document.removeEventListener("click", handler);
+  };
+  setTimeout(() => document.addEventListener("click", handler));
+};
+
+// -------------------------- 其他原有方法（保持不变） --------------------------
 const handleDialogEnter = (el: HTMLElement) => {
   el.style.opacity = '0';
   el.style.transform = 'scale(0.9)';
@@ -295,7 +348,6 @@ const handleDialogLeave = (el: HTMLElement) => {
   });
 };
 
-
 const getStageIcon = (className: string) => {
   if (className.includes('birth')) return Check;
   if (className.includes('study')) return RefreshRight;
@@ -308,12 +360,11 @@ const resetTransform = () => {
   nodes.value.forEach((node) => {
     const original = elements.value.find(el => el.id === node.id);
     if (original) {
-      // 使用动画过渡位置
       const startX = node.position.x ?? 0;
       const startY = node.position.y ?? 0;
       const endX = original.originalPosition.x ?? startX;
       const endY = original.originalPosition.y ?? startY;
-      const duration = 500; // 动画时长 ms
+      const duration = 500;
       const frameRate = 60;
       const totalFrames = (duration / 1000) * frameRate;
       let frame = 0;
@@ -323,7 +374,7 @@ const resetTransform = () => {
         const progress = frame / totalFrames;
         const easing = progress < 0.5
             ? 2 * progress * progress
-            : -1 + (4 - 2 * progress) * progress; // 缓动函数
+            : -1 + (4 - 2 * progress) * progress;
 
         node.position.x = startX + (endX - startX) * easing;
         node.position.y = startY + (endY - startY) * easing;
@@ -339,12 +390,6 @@ const resetTransform = () => {
 
   setTransform({x: 210, y: 180, zoom: 1});
   ElMessage.success({message: '视图已重置', duration: 1500});
-};
-
-
-const toggleTheme = () => {
-  isDarkTheme.value = !isDarkTheme.value;
-  console.log('切换主题：', isDarkTheme.value ? '深色' : '浅色');
 };
 
 const updatePos = () => {
@@ -370,43 +415,11 @@ const toggleStageStyle = () => {
   });
 };
 
-const logToObject = () => {
-  const flowData = toObject();
-  const fullContent = JSON.stringify(flowData, null, 2);
-
-  const msg = ElMessage({
-    dangerouslyUseHTMLString: true,
-    message: `
-      <div style="max-height:300px;overflow:auto;text-align:left">
-        <p>节数：${flowData.nodes.length}</p>
-        <p>边数：${flowData.edges.length}</p>
-        <pre>${fullContent}</pre>
-      </div>
-    `,
-    duration: 0, // 不自动关闭
-    showClose: true
-  });
-
-  // 点击空白区域时关闭
-  const handler = () => {
-    msg.close();
-    document.removeEventListener("click", handler);
-  };
-
-  // 延迟绑定（避免一点击按钮立刻关闭）
-  setTimeout(() => {
-    document.addEventListener("click", handler);
-  });
-};
-
-
-// 新增：添加节点相关方法
 const showAddNodeDialog = () => {
   addNodeDialogVisible.value = true;
-  resetAddNodeForm(); // 打开时重置表单
+  resetAddNodeForm();
 };
 
-// 2. 重置添加节点表单
 const resetAddNodeForm = () => {
   addNodeForm.value = {
     label: '',
@@ -416,11 +429,18 @@ const resetAddNodeForm = () => {
     keyPoints: '',
   };
   if (addNodeFormRef.value) {
-    addNodeFormRef.value.clearValidate(); // 清除验证状态
+    addNodeFormRef.value.clearValidate();
   }
 };
 
-// 3. 提交添加节点（核心逻辑）
+const getEdgeColorByStage = (stageClass: string) => {
+  if (stageClass.includes('birth')) return '#409EFF';
+  if (stageClass.includes('study')) return '#67C23A';
+  if (stageClass.includes('work')) return '#FAAD14';
+  if (stageClass.includes('retire')) return '#9254DE';
+  return '#409EFF';
+};
+
 const submitAddNode = async () => {
   if (!addNodeFormRef.value) return;
   const valid = await addNodeFormRef.value.validate();
@@ -472,15 +492,6 @@ const submitAddNode = async () => {
   addNodeDialogVisible.value = false;
 };
 
-// 4. 辅助：根据阶段类型获取边颜色
-const getEdgeColorByStage = (stageClass: string) => {
-  if (stageClass.includes('birth')) return '#409EFF';
-  if (stageClass.includes('study')) return '#67C23A';
-  if (stageClass.includes('work')) return '#FAAD14';
-  if (stageClass.includes('retire')) return '#9254DE';
-  return '#409EFF';
-};
-
 onMounted(async () => {
   const {data} = await getFlowList();
   elements.value = data.map((item: any) => {
@@ -513,4 +524,65 @@ onMounted(async () => {
 <style scoped>
 @import "@/views/Life/css/flow.scss";
 @import "@/views/Life/css/base.scss";
+
+/* -------------------------- 黑夜主题核心样式 -------------------------- */
+/* 整体页面暗黑背景 */
+.dark-theme {
+  background-color: #1e1e1e;
+  color: #fff;
+}
+
+/* VueFlow 画布暗黑样式（覆盖默认变量） */
+.dark-flow {
+  --vf-background-color: #1e1e1e; /* 画布背景 */
+  --vf-node-background: #333;     /* 节点背景 */
+  --vf-node-border-color: #444;   /* 节点边框 */
+  --vf-node-text-color: #fff;     /* 节点文字 */
+  --vf-edge-color: #666;          /* 边的颜色 */
+}
+
+/* 右上角面板暗黑样式 */
+.dark-panel {
+  background-color: #333;
+  border-color: #444;
+}
+
+/* 底部控制栏暗黑样式 */
+.dark-controls {
+  background-color: #333;
+  border-color: #444;
+}
+
+/* 弹窗暗黑样式 */
+.dark-dialog {
+  background-color: #333;
+  color: #fff;
+  /* 弹窗头部边框 */
+  .el-dialog__header {
+    border-bottom: 1px solid #444;
+  }
+  /* 表单标签颜色 */
+  .el-form-item__label {
+    color: #eee;
+  }
+  /* 输入框/下拉框暗黑样式 */
+  .el-input__inner, .el-select__inner {
+    background-color: #444;
+    border-color: #555;
+    color: #fff;
+  }
+}
+
+/* 暗黑模式下节点内部元素适配 */
+.dark-theme .stage-icon {
+  color: #fff; /* 图标颜色 */
+}
+.dark-theme .info-label {
+  color: #ccc; /* 标签文字颜色 */
+}
+.dark-theme .keyPoint-badge {
+  background-color: #444; /* 徽章背景 */
+  color: #fff;            /* 徽章文字 */
+  border-color: #555;     /* 徽章边框 */
+}
 </style>
