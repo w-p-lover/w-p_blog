@@ -8,7 +8,7 @@
         </el-icon>
         新增文档
       </el-button>
-      <el-button type="default" @click="refreshDocList">
+      <el-button type="info" @click="refreshDocList">
         <el-icon>
           <Refresh/>
         </el-icon>
@@ -25,7 +25,7 @@
         批量删除
       </el-button>
       <!-- 回收站入口 -->
-      <el-button type="text" @click="showRecycleBin = !showRecycleBin" class="recycle-btn">
+      <el-button type="primary" @click="showRecycleBin = !showRecycleBin" class="recycle-btn">
         <el-icon>
           <Edit/>
         </el-icon>
@@ -86,22 +86,22 @@
           <el-table-column prop="status" label="状态" align="center" width="90">
             <template #default="scope">
               <el-tag
-                  :type="statusTagType[scope.row.status]"
+                  :type="statusTagType[scope.row.isEditing]"
                   :disable-transitions="false"
               >
-                {{ statusMap[scope.row.status] }}
+                {{ statusMap[scope.row.isEditing] }}
               </el-tag>
             </template>
           </el-table-column>
           <el-table-column prop="version" align="center" label="当前版本" width="90"></el-table-column>
-          <el-table-column prop="creator" align="center" label="创建人" width="80"></el-table-column>
+          <el-table-column prop="leadAuthor" align="center" label="创建人" width="80"></el-table-column>
           <el-table-column label="操作" align="center" width="200">
             <template #default="scope">
               <el-button
                   type="primary"
                   size="small"
                   @click="handleDocEdit(scope.row)"
-                  :disabled="showRecycleBin || (scope.row.status === 'completed' && currentUser.role !== 'admin' && scope.row.creator !== currentUser.name)"
+                  :disabled="showRecycleBin || (scope.row.status === 'completed' && currentUser.role !== 'admin' && scope.row.leadAuthor !== currentUser.name)"
               >
                 编辑
               </el-button>
@@ -132,7 +132,7 @@
         <div class="panel-header">
           <h3>{{ selectedDoc ? (selectedDoc.title + ' - 详情') : '请选择文档' }}</h3>
           <el-button
-              type="text"
+              type="primary"
               size="small"
               @click="selectedDoc = null"
               :disabled="!selectedDoc"
@@ -154,14 +154,14 @@
               <el-form-item label="文档标题">
                 <el-input
                     v-model="selectedDoc.title"
-                    :disabled="selectedDoc.status === 'completed' && currentUser.role !== 'admin' && selectedDoc.creator !== currentUser.name"
+                    :disabled="selectedDoc.status === 'completed' && currentUser.role !== 'admin' && selectedDoc.leadAuthor !== currentUser.name"
                 />
               </el-form-item>
               <el-form-item label="文章分类">
                 <el-select
-                    v-model="selectedDoc.category"
+                    v-model="selectedDoc.categoryName"
                     placeholder="选择分类"
-                    :disabled="selectedDoc.status === 'completed' && currentUser.role !== 'admin' && selectedDoc.creator !== currentUser.name"
+                    :disabled="selectedDoc.isEditing && currentUser.role !== 'admin' && selectedDoc.leadAuthor !== currentUser.name"
                 >
                   <el-option label="前端开发" value="frontend"></el-option>
                   <el-option label="后端架构" value="backend"></el-option>
@@ -175,16 +175,16 @@
                     :key="idx"
                     closable
                     @close="handleTagRemove(idx)"
-                    :disabled="selectedDoc.status === 'completed' && currentUser.role !== 'admin' && selectedDoc.creator !== currentUser.name"
+                    :disabled="selectedDoc.isEditing && currentUser.role !== 'admin' && selectedDoc.leadAuthor !== currentUser.name"
                     style="margin-right: 8px;"
                 >
                   {{ tag }}
                 </el-tag>
                 <el-button
-                    type="text"
+                    type="primary"
                     size="small"
                     @click="handleTagAdd"
-                    :disabled="selectedDoc.status === 'completed' && currentUser.role !== 'admin' && selectedDoc.creator !== currentUser.name"
+                    :disabled="selectedDoc.isEditing && currentUser.role !== 'admin' && selectedDoc.leadAuthor !== currentUser.name"
                 >
                   <el-icon>
                     <Plus/>
@@ -193,11 +193,11 @@
                 </el-button>
               </el-form-item>
               <el-form-item label="创建人">
-                <el-input v-model="selectedDoc.creator" disabled/>
+                <el-input v-model="selectedDoc.leadAuthor" disabled/>
               </el-form-item>
               <el-form-item label="当前状态">
-                <el-tag :type="statusTagType[selectedDoc.status]">
-                  {{ statusMap[selectedDoc.status] }}
+                <el-tag :type="statusTagType[selectedDoc.isEditing]">
+                  {{ statusMap[selectedDoc.isEditing] }}
                 </el-tag>
               </el-form-item>
               <el-form-item label="当前版本">
@@ -213,11 +213,11 @@
             </template>
             <div class="status-actions">
               <!-- 普通用户操作 -->
-              <template v-if="currentUser.role === 'user'">
+              <template v-if="currentUser.role !== 'user'">
                 <el-button
                     type="primary"
                     @click="handleContinueEdit"
-                    v-if="selectedDoc.status === 'editing'"
+                    v-if="!selectedDoc.isEditing"
                 >
                   <el-icon>
                     <Edit/>
@@ -227,7 +227,7 @@
                 <el-button
                     type="success"
                     @click="handleApplyEdit"
-                    v-if="selectedDoc.status === 'completed' && selectedDoc.creator === currentUser.name"
+                    v-if="selectedDoc.isEditing && selectedDoc.leadAuthor === currentUser.name"
                 >
                   <el-icon>
                     <Edit/>
@@ -235,9 +235,9 @@
                   申请重新编辑
                 </el-button>
                 <el-button
-                    type="default"
+                    type="primary"
                     @click="handleSaveDraft"
-                    v-if="selectedDoc.status === 'editing'"
+                    v-if="selectedDoc.isEditing"
                 >
                   <el-icon>
                     <Save/>
@@ -251,7 +251,7 @@
                 <el-button
                     type="success"
                     @click="handlePublishDoc"
-                    v-if="selectedDoc.status === 'editing'"
+                    v-if="selectedDoc.isEditing"
                 >
                   <el-icon>
                     <Check/>
@@ -261,7 +261,7 @@
                 <el-button
                     type="danger"
                     @click="handleRejectDoc"
-                    v-if="selectedDoc.status === 'editing'"
+                    v-if="selectedDoc.isEditing"
                 >
                   <el-icon>
                     <Close/>
@@ -271,7 +271,7 @@
                 <el-button
                     type="warning"
                     @click="handleForceEdit"
-                    v-if="selectedDoc.status === 'completed'"
+                    v-if="selectedDoc.isEditing"
                 >
                   <el-icon>
                     <Edit/>
@@ -325,7 +325,7 @@
               <el-table-column label="操作" width="160">
                 <template #default="scope">
                   <el-button
-                      type="text"
+                      type="primary"
                       size="small"
                       @click="handleVersionCompare(scope.row)"
                       :disabled="selectedDoc.versions.length < 2"
@@ -333,11 +333,10 @@
                     对比
                   </el-button>
                   <el-button
-                      type="text"
+                      type="primary"
                       size="small"
                       @click="handleVersionRollback(scope.row)"
-                      :disabled="scope.row.version === selectedDoc.version || currentUser.role !== 'admin'"
-                  >
+                      :disabled="scope.row.version === selectedDoc.version || currentUser.role !== 'admin'">
                     回滚
                   </el-button>
                 </template>
@@ -350,7 +349,7 @@
             <template #header>
               <h4 class="card-title">
                 {{
-                  (selectedDoc.status === 'completed' && currentUser.role !== 'admin' && selectedDoc.creator !== currentUser.name)
+                  (selectedDoc.isEditing && currentUser.role !== 'admin' && selectedDoc.leadAuthor !== currentUser.name)
                       ? '文档预览'
                       : '文档编辑'
                 }}
@@ -358,8 +357,8 @@
             </template>
             <!-- 模拟富文本编辑器 -->
             <RichTextEditor
-                v-model="selectedDoc.content"
-                :readonly="selectedDoc.status === 'completed' && currentUser.role !== 'admin' && selectedDoc.creator !== currentUser.name"
+                v-model:value="selectedDoc.content"
+                :readonly="selectedDoc.isEditing && currentUser.role !== 'admin' && selectedDoc.leadAuthor !== currentUser.name"
             />
           </el-card>
         </div>
@@ -435,15 +434,23 @@
     <el-dialog title="版本对比" v-model="versionCompareDialogVisible" width="800px">
       <div class="version-compare-container">
         <div class="version-item">
-          <h5>版本 {{ compareVersions.old.version }}（{{ statusMap[compareVersions.old.status] }}）</h5>
-          <div class="version-content" v-html="formatCompareContent(compareVersions.old.content)"></div>
+          <h5>版本 {{ compareVersions.old.version }}
+            （{{ statusMap[compareVersions.old.status] }}）
+          </h5>
+          <div class="version-content"
+               v-html="formatCompareContent(compareVersions.old.content)">
+          </div>
         </div>
         <div class="version-divider">
           <el-divider direction="vertical">vs</el-divider>
         </div>
         <div class="version-item">
-          <h5>版本 {{ compareVersions.new.version }}（{{ statusMap[compareVersions.new.status] }}）</h5>
-          <div class="version-content" v-html="formatCompareContent(compareVersions.new.content)"></div>
+          <h5>版本 {{ compareVersions.new.version }}
+            （{{ statusMap[compareVersions.new.status] }}）
+          </h5>
+          <div class="version-content"
+               v-html="formatCompareContent(compareVersions.new.content)">
+          </div>
         </div>
       </div>
       <template #footer>
@@ -471,16 +478,18 @@
 </template>
 
 <script setup lang="ts">
-import {ref, reactive, computed} from 'vue';
+import {ref, reactive, computed, onMounted} from 'vue';
 import {ElMessage, ElEmpty, ElDivider} from 'element-plus';
+import RichTextEditor from '@/components/Edit/index.vue';
 import {
   Plus, Refresh, Delete, Close, Edit, Check
 } from '@element-plus/icons-vue';
+import {listDocs} from "@/api/collab";
 
 // 1. 类型定义
 interface Version {
   version: string;
-  status: 'editing' | 'completed' | 'rejected';
+  status: string;
   updater: string;
   updateTime: string;
   description: string;
@@ -490,16 +499,14 @@ interface Version {
 interface Document {
   id: number;
   title: string;
-  status: 'editing' | 'completed' | 'rejected';
-  version: string;
-  creator: string;
+  status: string;
+  leadAuthor: string;
   createTime: string;
   updateTime: string;
-  category: 'frontend' | 'backend' | 'algorithm' | 'product';
+  categoryName: string;
   tags: string[];
   content: string;
-  rejectReason?: string;
-  versions: Version[];
+  version: number;
 }
 
 interface User {
@@ -516,129 +523,7 @@ const currentUser = ref<User>({
 });
 
 // 初始文档列表
-const documents = ref<Document[]>([
-  {
-    id: 1,
-    title: 'Vue3 组合式API实战指南',
-    status: 'completed',
-    version: '1.2',
-    creator: '张三',
-    createTime: '2024-09-01 10:30:00',
-    updateTime: '2024-09-15 16:45:00',
-    category: 'frontend',
-    tags: ['Vue3', '组合式API', '实战'],
-    content: `<h2>Vue3 组合式API实战指南</h2>
-              <p>1. 组合式API的核心优势：逻辑复用、类型安全</p>
-              <p>2. setup函数的使用场景与注意事项</p>
-              <p>3. 响应式API：ref、reactive、toRefs详解</p>
-              <p>4. 实战案例：基于组合式API的表单组件封装</p>`,
-    versions: [
-      {
-        version: '1.0',
-        status: 'completed',
-        updater: '张三',
-        updateTime: '2024-09-01 11:30:00',
-        description: '初始版本发布，包含组合式API基础内容',
-        content: `<h2>Vue3 组合式API实战指南</h2>
-                  <p>1. 组合式API的核心优势：逻辑复用、类型安全</p>
-                  <p>2. setup函数的使用场景与注意事项</p>`
-      },
-      {
-        version: '1.1',
-        status: 'completed',
-        updater: '张三',
-        updateTime: '2024-09-08 14:20:00',
-        description: '新增响应式API详解章节',
-        content: `<h2>Vue3 组合式API实战指南</h2>
-                  <p>1. 组合式API的核心优势：逻辑复用、类型安全</p>
-                  <p>2. setup函数的使用场景与注意事项</p>
-                  <p>3. 响应式API：ref、reactive、toRefs详解</p>`
-      },
-      {
-        version: '1.2',
-        status: 'completed',
-        updater: '管理员',
-        updateTime: '2024-09-15 16:45:00',
-        description: '新增实战案例章节，优化排版',
-        content: `<h2>Vue3 组合式API实战指南</h2>
-                  <p>1. 组合式API的核心优势：逻辑复用、类型安全</p>
-                  <p>2. setup函数的使用场景与注意事项</p>
-                  <p>3. 响应式API：ref、reactive、toRefs详解</p>
-                  <p>4. 实战案例：基于组合式API的表单组件封装</p>`
-      }
-    ]
-  },
-  {
-    id: 2,
-    title: 'SpringBoot 分布式事务解决方案',
-    status: 'editing',
-    version: '1.0',
-    creator: '李四',
-    createTime: '2024-09-10 09:15:00',
-    updateTime: '2024-09-22 11:20:00',
-    category: 'backend',
-    tags: ['SpringBoot', '分布式事务', 'Seata'],
-    content: `<h2>SpringBoot 分布式事务解决方案</h2>
-              <p>1. 分布式事务的产生原因：跨服务数据一致性问题</p>
-              <p>2. 常见解决方案对比：2PC、TCC、SAGA、本地消息表</p>
-              <p>3. Seata 框架集成步骤（AT模式）：</p>
-              <ul>
-                <li>3.1 配置Seata Server</li>
-                <li>3.2 微服务集成Seata依赖</li>
-                <li>3.3 配置全局事务注解</li>
-              </ul>`,
-    rejectReason: '',
-    versions: [
-      {
-        version: '1.0',
-        status: 'editing',
-        updater: '李四',
-        updateTime: '2024-09-22 11:20:00',
-        description: '初稿完成，待审核',
-        content: `<h2>SpringBoot 分布式事务解决方案</h2>
-                  <p>1. 分布式事务的产生原因：跨服务数据一致性问题</p>
-                  <p>2. 常见解决方案对比：2PC、TCC、SAGA、本地消息表</p>
-                  <p>3. Seata 框架集成步骤（AT模式）：</p>
-                  <ul>
-                    <li>3.1 配置Seata Server</li>
-                    <li>3.2 微服务集成Seata依赖</li>
-                    <li>3.3 配置全局事务注解</li>
-                  </ul>`
-      }
-    ]
-  },
-  {
-    id: 3,
-    title: 'Redis 缓存穿透与雪崩解决方案',
-    status: 'rejected',
-    version: '1.0',
-    creator: '王五',
-    createTime: '2024-09-18 14:00:00',
-    updateTime: '2024-09-20 09:30:00',
-    category: 'backend',
-    tags: ['Redis', '缓存', '性能优化'],
-    content: `<h2>Redis 缓存穿透与雪崩解决方案</h2>
-              <p>1. 缓存穿透定义：查询不存在的数据，导致请求直达数据库</p>
-              <p>2. 解决方案：布隆过滤器、空值缓存</p>
-              <p>3. 缓存雪崩定义：大量缓存同时过期，导致数据库压力骤增</p>
-              <p>4. 解决方案：过期时间随机化、集群部署</p>`,
-    rejectReason: '1. 布隆过滤器的实现原理未说明；2. 缺少缓存击穿的解决方案；3. 建议补充实战配置示例',
-    versions: [
-      {
-        version: '1.0',
-        status: 'rejected',
-        updater: '王五',
-        updateTime: '2024-09-20 09:30:00',
-        description: '初稿完成，待审核',
-        content: `<h2>Redis 缓存穿透与雪崩解决方案</h2>
-                  <p>1. 缓存穿透定义：查询不存在的数据，导致请求直达数据库</p>
-                  <p>2. 解决方案：布隆过滤器、空值缓存</p>
-                  <p>3. 缓存雪崩定义：大量缓存同时过期，导致数据库压力骤增</p>
-                  <p>4. 解决方案：过期时间随机化、集群部署</p>`
-      }
-    ]
-  }
-]);
+const documents = ref<Document[]>([]);
 
 // 回收站
 const recycleBin = ref<Document[]>([]);
@@ -696,15 +581,14 @@ const filteredDocs = computed(() => {
 
 // 状态映射
 const statusMap = ref({
-  editing: '编辑中',
-  completed: '已完成',
-  rejected: '已驳回'
+  false: '编辑中',
+  true: '已完成',
 });
 
 // 状态标签类型
 const statusTagType = ref({
-  editing: 'info',
-  completed: 'success',
+  false: 'info',
+  true: 'success',
   rejected: 'danger'
 });
 
@@ -712,6 +596,7 @@ const statusTagType = ref({
 // 选择文档
 const handleDocSelect = (doc: Document) => {
   selectedDoc.value = JSON.parse(JSON.stringify(doc)); // 深拷贝，避免直接修改原数据
+  console.log('选择文档：', selectedDoc.value);
 };
 
 // 表格选择事件
@@ -739,8 +624,8 @@ const handleAddDoc = () => {
     id: documents.value.length + 1,
     title: '新建文档',
     status: 'editing',
-    version: '1.0',
-    creator: currentUser.value.name,
+    version: 1,
+    leadAuthor: currentUser.value.name,
     createTime: new Date().toLocaleString('zh-CN', {
       year: 'numeric',
       month: '2-digit',
@@ -757,26 +642,10 @@ const handleAddDoc = () => {
       minute: '2-digit',
       second: '2-digit'
     }).replace(/\//g, '-'),
-    category: 'frontend',
+    categoryName: 'frontend',
     tags: [],
     content: '<h2>请输入文档内容</h2><p>可使用富文本编辑器编辑格式</p>',
-    versions: [
-      {
-        version: '1.0',
-        status: 'editing',
-        updater: currentUser.value.name,
-        updateTime: new Date().toLocaleString('zh-CN', {
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit'
-        }).replace(/\//g, '-'),
-        description: '初始草稿',
-        content: '<h2>请输入文档内容</h2><p>可使用富文本编辑器编辑格式</p>'
-      }
-    ]
+    versions: 12
   };
   documents.value.unshift(newDoc);
   handleDocSelect(newDoc);
@@ -844,10 +713,10 @@ const handleSaveDraft = () => {
     second: '2-digit'
   }).replace(/\//g, '-');
   // 更新最新版本的内容
-  const latestVersion = selectedDoc.value.versions[selectedDoc.value.versions.length - 1];
-  latestVersion.content = selectedDoc.value.content;
-  latestVersion.updateTime = selectedDoc.value.updateTime;
-  latestVersion.description = '草稿保存';
+  /*  const latestVersion = selectedDoc.value.versions[selectedDoc.value.versions.length - 1];
+    latestVersion.content = selectedDoc.value.content;
+    latestVersion.updateTime = selectedDoc.value.updateTime;
+    latestVersion.description = '草稿保存';*/
   // 同步到原文档列表
   const idx = documents.value.findIndex(doc => doc.id === selectedDoc.value?.id);
   if (idx > -1) {
@@ -938,13 +807,10 @@ const handlePublishConfirm = () => {
     description: publishForm.description,
     content: selectedDoc.value.content
   };
-  selectedDoc.value.versions.push(newVersionItem);
 
   // 3. 更新文档状态和版本
   selectedDoc.value.status = 'completed';
-  selectedDoc.value.version = newVersion;
   selectedDoc.value.updateTime = newVersionItem.updateTime;
-  selectedDoc.value.rejectReason = '';
 
   // 4. 同步到原文档列表
   const idx = documents.value.findIndex(doc => doc.id === selectedDoc.value?.id);
@@ -973,7 +839,6 @@ const handleRejectConfirm = () => {
 
   // 1. 更新文档状态和驳回原因
   selectedDoc.value.status = 'rejected';
-  selectedDoc.value.rejectReason = rejectForm.reason;
   selectedDoc.value.updateTime = new Date().toLocaleString('zh-CN', {
     year: 'numeric',
     month: '2-digit',
@@ -1044,8 +909,6 @@ const handleVersionRollback = (version: Version) => {
     description: `回滚到版本 ${version.version}`,
     content: version.content
   };
-  selectedDoc.value.versions.push(newVersionItem);
-  selectedDoc.value.version = newVersion;
   selectedDoc.value.status = 'editing';
 
   // 3. 同步到原文档列表
@@ -1097,9 +960,17 @@ const handleTagRemove = (idx: number) => {
   ElMessage.success('标签已删除');
 };
 
-// 6. 模拟富文本编辑器组件（实际项目可替换为真实组件如Tinymce/Vditor）
-const RichTextEditor = (props: { modelValue: string; readonly: boolean }) => {
+const loadDocList = () => {
+  listDocs().then(({data}) => {
+    documents.value = data.data;
+    console.log(documents.value);
+  })
 };
+
+onMounted(() => {
+  loadDocList();
+
+});
 </script>
 
 <style scoped>
