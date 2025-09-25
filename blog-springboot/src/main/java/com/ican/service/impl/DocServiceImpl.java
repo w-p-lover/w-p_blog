@@ -76,6 +76,12 @@ public class DocServiceImpl extends ServiceImpl<DocMapper, Doc> implements DocSe
                 condition.getSize(),
                 condition
         );
+        return entities.stream().map(this::convertToDocVO).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<DocVO> getAllDocs() {
+        List<Doc> entities = docMapper.selectList(new LambdaQueryWrapper<Doc>());
         List<DocVO> collect = entities.stream().map(this::convertToDocVO).collect(Collectors.toList());
         return collect;
     }
@@ -233,6 +239,8 @@ public class DocServiceImpl extends ServiceImpl<DocMapper, Doc> implements DocSe
     public void cancelFavorite(Integer userId, Integer docId) {
         docMapper.cancelFavorite(userId, docId);
     }
+
+
 
 
     @Override

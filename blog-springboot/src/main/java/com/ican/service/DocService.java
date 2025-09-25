@@ -83,4 +83,11 @@ public interface DocService {
      * @param docId 文档id
      */
     void cancelFavorite(Integer userId, Integer docId);
+
+    /**
+     * 获取所有文档
+     *
+     * @return 文档列表
+     */
+    List<DocVO> getAllDocs();
 }

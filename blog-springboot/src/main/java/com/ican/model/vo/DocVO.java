@@ -22,4 +22,9 @@ public class DocVO {
     private List<String> tags;
     private List<DocDTO.CollabDTO> collaborators;
     private Integer comments;
+
+
+    private Integer currentVersion;     // 已发布版本号
+    private Integer draftVersion;       // 正在编辑的草稿最新号
+
 }
