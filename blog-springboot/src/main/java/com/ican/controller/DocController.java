@@ -35,6 +35,16 @@ public class DocController {
     }
 
     /**
+     * 查看文档列表
+     *
+     * @return {@link List<DocVO>} 文档列表
+     */
+    @GetMapping("admin/docs/allList")
+    public Result<List<DocVO>> listAllDocs() {
+        return Result.success(docService.getAllDocs());
+    }
+
+    /**
      * 查看收藏文档列表
      */
     @GetMapping("/docs/collab/favorites")
