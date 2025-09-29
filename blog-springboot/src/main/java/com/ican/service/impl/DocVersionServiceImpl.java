@@ -3,10 +3,10 @@ package com.ican.service.impl;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ican.entity.Doc;
 import com.ican.entity.DocVersion;
-import com.ican.mapper.DocMapper;
 import com.ican.mapper.DocVersionMapper;
 import com.ican.model.dto.DocVersionDTO;
 import com.ican.model.vo.DocVersionVO;
+import com.ican.model.vo.Result;
 import com.ican.service.DocVersionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,8 +28,8 @@ public class DocVersionServiceImpl extends ServiceImpl<DocVersionMapper, DocVers
         v.setDocId(dto.getDocId());
         v.setContent(dto.getContent());
         v.setAuthor(dto.getAuthor());
-        v.setBaseMajor(dto.getBaseMajor());
-        v.setBaseMinor(dto.getBaseMinor());
+        v.setBaseMajor(1);
+        v.setBaseMinor(1);
         // 小版本递增逻辑在这里查询后计算
         v.setStatus("DRAFT");
         mapper.insert(v);
@@ -38,8 +38,19 @@ public class DocVersionServiceImpl extends ServiceImpl<DocVersionMapper, DocVers
     @Override
     @Transactional
     public void submitForPublish(DocVersionDTO dto) {
-        // 1. 校验基线版本
-        // 2. minor +1 保存 PENDING
+        String[] version = dto.getVersion().split("\\.");
+        DocVersion docVersion = DocVersion.builder()
+                .docId(dto.getDocId())
+                .content(dto.getContent())
+                .author(dto.getAuthor())
+                .baseMajor(1)
+                .baseMinor(1)
+                .status(dto.getStatus())
+                .majorVersion(Integer.valueOf(version[0]))
+                .minorVersion(Integer.valueOf(version[1]))
+                .build();
+
+        mapper.insert(docVersion);
     }
 
     @Override
@@ -50,8 +61,9 @@ public class DocVersionServiceImpl extends ServiceImpl<DocVersionMapper, DocVers
     }
 
     @Override
-    public List<DocVersionVO> listHistory(Long docId) {
-        return mapper.findByDocId(docId).stream().map(e -> {
+    public Result<List<DocVersionVO>> listHistory(Long docId) {
+        List<DocVersion> byDocId = mapper.findByDocId(docId);
+        List<DocVersionVO> docVersionVOList = byDocId.stream().map(e -> {
             DocVersionVO vo = new DocVersionVO();
             vo.setId(e.getId());
             vo.setDocId(e.getDocId());
@@ -59,7 +71,10 @@ public class DocVersionServiceImpl extends ServiceImpl<DocVersionMapper, DocVers
             vo.setAuthor(e.getAuthor());
             vo.setStatus(e.getStatus());
             vo.setCreatedAt(e.getCreatedAt());
+            vo.setContent(e.getContent());
             return vo;
         }).collect(Collectors.toList());
+
+        return Result.success(docVersionVOList);
     }
 }
