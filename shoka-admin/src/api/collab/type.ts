@@ -18,29 +18,18 @@ export interface Doc {
     title: string;
     /** 分类名称 */
     categoryName: string;
-    /** 摘要 */
-    desc: string;
     /** 正文内容 */
     content: string;
     /** 主作者 */
     leadAuthor: string;
     /** 版本号 */
-    version: number;
-    /** 浏览量 */
-    views: number;
-    /** 编辑次数 */
-    editCount: number;
+    version: string;
     /** 是否正在编辑 */
-    isEditing: boolean;
-    /** 最后更新时间 */
-    lastUpdateDate: string;
+    status: string;
+
+    rejectReason?: string;
     /** 标签列表 */
     tags: string[];
-    /** 协作者列表（包含名字和可选头像） */
-    collaborators: Array<{
-        name: string;
-        avatar?: string;
-    }>;
     /** 评论数 */
     comments: number;
     /** 简介 */
@@ -64,12 +53,10 @@ export interface DocDTO {
     content: string;
     /** 标签名列表 */
     tags: string[];
-    /** 协作者列表（带角色） */
-    collaborators: Collab[];
     /** 版本号 */
-    version?: number;
+    version?: string;
+    /** 文档状态 */
     status?: string;
-
 }
 // 类型定义
 export interface CollabTag {

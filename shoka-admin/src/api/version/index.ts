@@ -8,7 +8,7 @@ import { DocVersionDTO, DocVersion } from "./types";
  * @param docId 文档ID
  * @param data 文档版本数据
  */
-export function submitForPublish(docId: number, data: DocVersionDTO): AxiosPromise<Result<null>> {
+export function submitForPublish(docId: number, data: DocVersion): AxiosPromise<Result<null>> {
     return request({
         url: `/docs/${docId}/versions/submit`,
         method: "post",

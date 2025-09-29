@@ -40,11 +40,6 @@ export interface DocVersionDTO {
 
 
 export interface DocVersion {
-    /**
-     * 版本唯一ID（必选）
-     * 对应后端id字段，用于前端定位版本（如版本回滚、查看详情）
-     */
-    id: number;
 
     /**
      * 所属文档ID（必选）
