@@ -28,6 +28,7 @@
     "prismjs": "^1.29.0",
     "screenfull": "^6.0.2",
     "tippy.js": "^6.3.7",
+    "v-code-diff": "^1.13.1",
     "v-viewer": "^3.0.11",
     "viewerjs": "^1.11.6",
     "vue": "^3.2.47",
