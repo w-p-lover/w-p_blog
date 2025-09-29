@@ -58,7 +58,7 @@
               <el-option label="编辑中" value="editing"></el-option>
               <el-option label="已完成" value="completed"></el-option>
               <el-option label="已驳回" value="rejected"></el-option>
-              <el-option label="已发版" value="published"></el-option>
+              <el-option label="已发行" value="published"></el-option>
             </el-select>
             <el-input
                 v-model="searchKeyword"
@@ -114,7 +114,7 @@
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="version" align="center" label="当前版本" width="95"></el-table-column>
+          <el-table-column prop="version" align="center" label="当前版本" width="90"></el-table-column>
           <el-table-column prop="leadAuthor" align="center" label="创建人" width="90"></el-table-column>
           <el-table-column label="操作" align="center" width="160">
             <template #default="scope">
@@ -356,12 +356,7 @@
                 style="width: 100%;"
                 class="version-table"
                 :cell-style="{ padding: '10px 0' }"
-                :header-cell-style="{
-                background: '#f8fafc',
-                fontWeight: 500,
-                color: '#334155',
-                borderBottom: '1px solid #e2e8f0'
-              }"
+                :header-cell-style="{ background: '#f8fafc', fontWeight: 500, color: '#334155', borderBottom: '1px solid #e2e8f0'}"
             >
               <el-table-column prop="version" label="版本号" width="100"></el-table-column>
               <el-table-column label="状态" width="120">
@@ -386,16 +381,14 @@
                       size="small"
                       @click="handleVersionCompare(scope.row)"
                       :disabled="docVersions.length < 2"
-                      class="table-btn compare-btn"
-                  >
+                      class="table-btn compare-btn">
                     对比
                   </el-button>
                   <el-button
                       size="small"
                       @click="handleVersionRollback(scope.row)"
                       :disabled="scope.row.version === selectedDoc.version || currentUser.role !== 'admin'"
-                      class="table-btn rollback-btn"
-                  >
+                      class="table-btn rollback-btn">
                     回滚
                   </el-button>
                 </template>
@@ -550,8 +543,7 @@
       <template #footer>
         <el-button
             @click="versionCompareDialogVisible = false"
-            class="dialog-btn btn-confirm"
-        >
+            class="dialog-btn btn-confirm">
           关闭
         </el-button>
       </template>
@@ -585,16 +577,15 @@
 <script setup lang="ts">
 import {ref, reactive, computed, onMounted} from 'vue';
 import {ElMessage, ElEmpty} from 'element-plus';
-import RichTextEditor from '@/components/Edit/index.vue';
-import {
-  Plus, Refresh, Delete, Close, Edit, Check, Finished
-} from '@element-plus/icons-vue';
-import {getDocTags, listDocs, updateDoc} from "@/api/collab";
-import {DocVersion} from "@/api/version/types";
-import {Doc} from "@/api/collab/type";
-import {listHistory, submitForPublish} from "@/api/version";
 import {CodeDiff} from 'v-code-diff'
 import useUserStore from "@/store/modules/user";
+import {DocVersion} from "@/api/version/types";
+import {Doc} from "@/api/collab/type";
+import RichTextEditor from '@/components/Edit/index.vue';
+import { Plus, Refresh, Delete, Close, Edit, Check, Finished} from '@element-plus/icons-vue';
+import {getDocTags, listDocs, updateDoc} from "@/api/collab";
+import {listHistory, submitForPublish} from "@/api/version";
+
 
 interface User {
   name: string;
@@ -602,9 +593,8 @@ interface User {
   avatar: string;
 }
 
-// 2. 模拟数据
 const currentUser = ref<User>({
-  name: useUserStore.name ||  '管理员', // 切换角色：'管理员'（admin） / '张三'（user）
+  name: useUserStore.name || '管理员', // 切换角色：'管理员'（admin） / '张三'（user）
   role: 'admin', // 切换角色：'admin' / 'user'
   avatar: 'https://picsum.photos/id/1/40/40'
 });
@@ -612,8 +602,6 @@ const currentUser = ref<User>({
 // 初始文档列表
 const documents = ref<Doc[]>([]);
 const docVersions = ref<DocVersion[]>([]);
-
-// 回收站
 const recycleBin = ref<Doc[]>([]);
 
 // 3. 响应式状态
@@ -640,36 +628,6 @@ const tagList = reactive([
 const publishForm = reactive({
   description: '',
   versionType: 'minor' // minor: 次版本, major: 主版本
-});
-
-const rejectForm = reactive({
-  reason: ''
-});
-
-const applyEditForm = reactive({
-  reason: ''
-});
-
-const addTagForm = reactive({
-  tag: ''
-});
-
-// 版本对比临时数据
-const compareVersions = ref({
-  old: {} as DocVersion,
-  new: {} as DocVersion
-});
-
-// 4. 计算属性
-// 筛选后的文档列表
-const filteredDocs = computed(() => {
-  const list = showRecycleBin.value ? recycleBin.value : documents.value;
-  return list.filter(doc => {
-    // 状态筛选
-    if (filterStatus.value && doc.status !== filterStatus.value) return false;
-    // 关键词筛选（标题）
-    return !(searchKeyword.value && !doc.title.toLowerCase().includes(searchKeyword.value.toLowerCase()));
-  });
 });
 
 // 状态映射
@@ -701,6 +659,32 @@ const statusVersionTagType = ref({
   PENDING: 'success',
   ROLLBACK: 'warning',
   PUBLISHED: 'danger'
+});
+const rejectForm = reactive({
+  reason: ''
+});
+
+const applyEditForm = reactive({
+  reason: ''
+});
+
+const addTagForm = reactive({
+  tag: ''
+});
+
+// 版本对比临时数据
+const compareVersions = ref({
+  old: {} as DocVersion,
+  new: {} as DocVersion
+});
+
+// 筛选后的文档列表
+const filteredDocs = computed(() => {
+  const list = showRecycleBin.value ? recycleBin.value : documents.value;
+  return list.filter(doc => {
+    if (filterStatus.value && doc.status !== filterStatus.value) return false;
+    return !(searchKeyword.value && !doc.title.toLowerCase().includes(searchKeyword.value.toLowerCase()));
+  });
 });
 
 function tagClass(name: string) {
@@ -872,9 +856,7 @@ const handleApplyEditConfirm = () => {
     return;
   }
   if (!selectedDoc.value) return;
-  // 状态改为编辑中
   selectedDoc.value.status = 'editing';
-  // 同步到原文档列表
   const idx = documents.value.findIndex(doc => doc.id === selectedDoc.value?.id);
   if (idx > -1) {
     documents.value[idx].status = 'editing';
@@ -888,7 +870,6 @@ const handleApplyEditConfirm = () => {
 const handleForceEdit = () => {
   if (!selectedDoc.value) return;
   selectedDoc.value.status = 'editing';
-  // 同步到原文档列表
   const idx = documents.value.findIndex(doc => doc.id === selectedDoc.value?.id);
   if (idx > -1) {
     documents.value[idx].status = 'editing';
@@ -921,7 +902,6 @@ const handlePublishConfirm = () => {
     newVersion = `${major}.${minor + 1}`;
   }
   console.log('新版本号：', newVersion)
-  // 2. 添加新版本记录
   const newVersionItem: DocVersion = {
     docId: selectedDoc.value.id,
     version: newVersion,
@@ -941,9 +921,9 @@ const handlePublishConfirm = () => {
 
   // 3. 更新文档状态和版本
   selectedDoc.value.status = 'published';
+  selectedDoc.value.version = newVersion;
   docVersions.value.push(newVersionItem)
   submitForPublish(selectedDoc.value.id, newVersionItem)
-  // 4. 同步到原文档列表
   const idx = documents.value.findIndex(doc => doc.id === selectedDoc.value?.id);
   if (idx > -1) {
     documents.value[idx] = JSON.parse(JSON.stringify(selectedDoc.value));
@@ -968,17 +948,14 @@ const handleRejectConfirm = () => {
     return;
   }
   if (!selectedDoc.value) return;
-
-  // 1. 更新文档状态和驳回原因
   selectedDoc.value.status = 'rejected';
   selectedDoc.value.rejectReason = rejectForm.reason;
-  // 2. 同步到原文档列表
+
   const idx = documents.value.findIndex(doc => doc.id === selectedDoc.value?.id);
   if (idx > -1) {
     documents.value[idx] = JSON.parse(JSON.stringify(selectedDoc.value));
     updateDoc(documents.value[idx])
   }
-
   rejectDialogVisible.value = false;
   rejectForm.reason = '';
   ElMessage.success('文档已驳回，已通知用户');
@@ -1009,8 +986,8 @@ const formatCompareContent = (content: string) => {
 
 const handleDialogClose = () => {
   versionCompareDialogVisible.value = false;
-
 };
+
 // 版本回滚
 const handleVersionRollback = (version: DocVersion) => {
   if (!selectedDoc.value || !confirm(`确定要回滚到版本 ${version.version} 吗？回滚后当前内容将被覆盖`)) {
@@ -1042,6 +1019,7 @@ const handleVersionRollback = (version: DocVersion) => {
     content: version.content
   };
   selectedDoc.value.status = 'editing';
+  selectedDoc.value.version = newVersion;
   docVersions.value.push(newVersionItem)
   submitForPublish(selectedDoc.value.id, newVersionItem)
   // 3. 同步到原文档列表
@@ -1049,7 +1027,6 @@ const handleVersionRollback = (version: DocVersion) => {
   if (idx > -1) {
     documents.value[idx] = JSON.parse(JSON.stringify(selectedDoc.value));
   }
-
   ElMessage.success(`已回滚到版本 ${version.version}，新版本号：${newVersion}`);
 };
 
