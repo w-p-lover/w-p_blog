@@ -14,7 +14,7 @@ public class DocVO {
     private String description;
     private String content;
     private String leadAuthor;
-    private Integer version;
+    private String version;
     private Integer views;
     private Integer editCount;
     private Boolean isEditing;
@@ -22,6 +22,7 @@ public class DocVO {
     private List<String> tags;
     private List<DocDTO.CollabDTO> collaborators;
     private Integer comments;
+    private String status;
 
 
     private Integer currentVersion;     // 已发布版本号
