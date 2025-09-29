@@ -2,6 +2,7 @@ package com.ican.controller;
 
 import com.ican.model.dto.DocVersionDTO;
 import com.ican.model.vo.DocVersionVO;
+import com.ican.model.vo.Result;
 import com.ican.service.DocVersionService;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,7 +29,7 @@ public class DocVersionController {
     }
 
     @GetMapping("/history")
-    public List<DocVersionVO> listHistory(@PathVariable Long docId) {
+    public Result<List<DocVersionVO>> listHistory(@PathVariable Long docId) {
         return docVersionService.listHistory(docId);
     }
 }
