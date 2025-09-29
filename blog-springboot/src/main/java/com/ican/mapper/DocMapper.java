@@ -23,6 +23,7 @@ public interface DocMapper extends BaseMapper<Doc> {
             @Param("condition") ConditionDTO condition
     );
 
+    List<Doc> getAdminDocList();
     /**
      * 按标题或摘要搜索
      */

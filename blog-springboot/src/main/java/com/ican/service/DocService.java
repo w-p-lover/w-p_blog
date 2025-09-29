@@ -3,7 +3,9 @@ package com.ican.service;
 import com.ican.model.dto.ConditionDTO;
 import com.ican.model.dto.DocDTO;
 import com.ican.model.vo.CollabTagVO;
+import com.ican.model.vo.DocManagerVO;
 import com.ican.model.vo.DocVO;
+import com.ican.model.vo.DocVersionVO;
 
 import java.util.List;
 
@@ -89,5 +91,5 @@ public interface DocService {
      *
      * @return 文档列表
      */
-    List<DocVO> getAllDocs();
+    List<DocManagerVO> getAllDocs();
 }

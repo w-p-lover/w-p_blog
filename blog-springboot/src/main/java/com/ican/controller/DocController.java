@@ -37,10 +37,10 @@ public class DocController {
     /**
      * 查看文档列表
      *
-     * @return {@link List<DocVO>} 文档列表
+     * @return {@link List<DocVersionVO>} 文档列表
      */
     @GetMapping("admin/docs/allList")
-    public Result<List<DocVO>> listAllDocs() {
+    public Result<List<DocManagerVO>> listAllDocs() {
         return Result.success(docService.getAllDocs());
     }
 
