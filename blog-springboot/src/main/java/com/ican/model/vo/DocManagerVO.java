@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
-public class DocVO {
+public class DocManagerVO {
     private Long id;
     private String title;
     private String categoryName;
@@ -17,13 +17,11 @@ public class DocVO {
     private String version;
     private Integer views;
     private Integer editCount;
-    private Boolean isEditing;
     private LocalDateTime lastUpdateDate;
     private List<String> tags;
-    private List<DocDTO.CollabDTO> collaborators;
     private Integer comments;
     private String status;
-
+    private String rejectReason;
 
     private Integer currentVersion;     // 已发布版本号
     private Integer draftVersion;       // 正在编辑的草稿最新号

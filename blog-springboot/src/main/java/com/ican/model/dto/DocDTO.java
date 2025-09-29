@@ -13,7 +13,8 @@ public class DocDTO {
     private String content;
     private List<String> tags = new ArrayList<>();
     private List<CollabDTO> collaborators = new ArrayList<>();
-    private Integer version;
+    private String version;
+    private String status;
 
     @Data
     public static class CollabDTO {

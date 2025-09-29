@@ -21,10 +21,12 @@ public class Doc {
     private String description;                // 摘要
     private String content;             // 正文内容 (HTML)
     private String leadAuthor;          // 主作者
-    private Integer version;            // 版本
+    private String version;            // 版本
     private Integer views;              // 浏览量
     private Integer editCount;          // 编辑次数
     private Boolean isEditing;          // 是否正在编辑
+    private String status;
+    private String rejectReason;
     private LocalDateTime lastUpdateDate;
     private String tags;          // 标签
     private Integer comments;           // 评论数
