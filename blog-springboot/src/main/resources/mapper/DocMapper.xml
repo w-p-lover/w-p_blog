@@ -40,28 +40,20 @@
     <!-- 后台管理文档列表：分页 + 条件 -->
     <select id="getAdminDocList" resultType="com.ican.entity.Doc">
         SELECT id,
-        title,
-        category_id,
-        description,
-        content,
-        lead_author,
-        version,
-        views,
-        edit_count,
-        is_editing,
-        last_update_date,
-        tags,
-        collaborators,
-        comments
+               title,
+               category_id,
+               description,
+               content,
+               lead_author,
+               version,
+               edit_count,
+               status,
+               reject_reason,
+               last_update_date,
+               tags,
+               collaborators,
+               comments
         FROM t_doc
-        <where>
-            <if test="condition.keyword != null and condition.keyword != ''">
-                AND title LIKE CONCAT('%', #{condition.keyword}, '%')
-            </if>
-            <!-- 可添加管理员筛选条件 -->
-        </where>
-        ORDER BY last_update_date DESC
-        LIMIT #{limit}, #{size}
     </select>
 
     <!-- 根据标题或摘要搜索 -->
@@ -76,13 +68,14 @@
                views,
                edit_count,
                is_editing,
+               status,
                last_update_date,
                tags,
                collaborators,
                comments
         FROM t_doc
         WHERE title LIKE CONCAT('%', #{keyword}, '%')
-           OR `desc` LIKE CONCAT('%', #{keyword}, '%')
+           OR description LIKE CONCAT('%', #{keyword}, '%')
     </select>
 
 </mapper>

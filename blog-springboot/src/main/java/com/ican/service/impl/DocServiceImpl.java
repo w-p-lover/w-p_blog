@@ -13,6 +13,8 @@ import com.ican.model.dto.DocDTO;
 import com.ican.entity.Doc;
 import com.ican.mapper.DocMapper;
 import com.ican.model.vo.CollabTagVO;
+import com.ican.model.vo.DocManagerVO;
+import com.ican.model.vo.DocVersionVO;
 import com.ican.service.DocService;
 import com.ican.model.vo.DocVO;
 import lombok.RequiredArgsConstructor;
@@ -54,7 +56,8 @@ public class DocServiceImpl extends ServiceImpl<DocMapper, Doc> implements DocSe
             if (entity.getCollaborators() != null) {
                 List<DocDTO.CollabDTO> collabList =
                         MAPPER.readValue(entity.getCollaborators(),
-                                new TypeReference<List<DocDTO.CollabDTO>>() {});
+                                new TypeReference<List<DocDTO.CollabDTO>>() {
+                                });
                 docVO.setCollaborators(collabList);
             }
             Category category = categoryMapper.selectOne(new LambdaQueryWrapper<Category>()
@@ -80,9 +83,9 @@ public class DocServiceImpl extends ServiceImpl<DocMapper, Doc> implements DocSe
     }
 
     @Override
-    public List<DocVO> getAllDocs() {
-        List<Doc> entities = docMapper.selectList(new LambdaQueryWrapper<Doc>());
-        List<DocVO> collect = entities.stream().map(this::convertToDocVO).collect(Collectors.toList());
+    public List<DocManagerVO> getAllDocs() {
+        List<Doc> entities = docMapper.getAdminDocList();
+        List<DocManagerVO> collect = entities.stream().map(this::convertToDocManagerVO).collect(Collectors.toList());
         return collect;
     }
 
@@ -116,6 +119,22 @@ public class DocServiceImpl extends ServiceImpl<DocMapper, Doc> implements DocSe
         }
     }
 
+    private DocManagerVO convertToDocManagerVO(Doc entity) {
+        DocManagerVO docManagerVO = new DocManagerVO();
+        BeanUtils.copyProperties(entity, docManagerVO);
+
+        Category category = categoryMapper.selectOne(new LambdaQueryWrapper<Category>()
+                .select(Category::getCategoryName)
+                .eq(Category::getId, entity.getCategoryId()));
+        docManagerVO.setCategoryName(category.getCategoryName());
+
+        // 处理tags字段
+        if (entity.getTags() != null) {
+            List<String> tagList = Arrays.asList(entity.getTags().split(","));
+            docManagerVO.setTags(tagList);
+        }
+        return docManagerVO;
+    }
 
     @Override
     public void createDoc(DocDTO docDTO) {
@@ -239,8 +258,6 @@ public class DocServiceImpl extends ServiceImpl<DocMapper, Doc> implements DocSe
     public void cancelFavorite(Integer userId, Integer docId) {
         docMapper.cancelFavorite(userId, docId);
     }
-
-
 
 
     @Override
