@@ -10,8 +10,10 @@ import com.ican.model.vo.PageResult;
 import com.ican.model.vo.PhotoBackVO;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * 照片业务接口
@@ -79,4 +81,9 @@ public interface PhotoService extends IService<Photo> {
      * @return 照片地址
      */
     String uploadPhoto(MultipartFile file);
+
+    /**
+     * 运行图片爬虫
+     */
+    void runPythonSpider(AtomicReference<String> status) throws IOException;
 }
