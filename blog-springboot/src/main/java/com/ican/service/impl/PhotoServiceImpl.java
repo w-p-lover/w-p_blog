@@ -22,15 +22,21 @@ import com.ican.utils.BeanCopyUtils;
 import com.ican.utils.FileUtils;
 import com.ican.utils.PageUtils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static com.ican.constant.CommonConstant.FALSE;
@@ -43,6 +49,7 @@ import static com.ican.enums.FilePathEnum.PHOTO;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements PhotoService {
 
     private final PhotoMapper photoMapper;
@@ -52,6 +59,8 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
     private final UploadStrategyContext uploadStrategyContext;
 
     private final BlogFileMapper blogFileMapper;
+
+    private static final String WALLHAVEN_DIR = System.getProperty("user.dir") + "/blog-springboot/src/main/resources/static/Wallhaven";
 
     @Override
     public PageResult<PhotoBackVO> listPhotoBackVO(ConditionDTO condition) {
@@ -80,6 +89,7 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
     }
 
     @Override
+    @Transactional
     public void addPhoto(PhotoDTO photo) {
         // 批量保存照片
         List<Photo> pictureList = photo.getPhotoUrlList().stream()
@@ -104,6 +114,7 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
     }
 
     @Override
+    @Transactional
     public void movePhoto(PhotoDTO photo) {
         List<Photo> photoList = photo.getPhotoIdList().stream()
                 .map(photoId -> Photo.builder()
@@ -156,4 +167,107 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         }
         return url;
     }
+
+    @Override
+    @Transactional
+    public void runPythonSpider(AtomicReference<String> status) {
+        // 删除之前爬虫数据
+        clearBeforeSpider();
+        // 运行爬虫
+        try {
+            ClassPathResource resource = new ClassPathResource("static/wall.py");
+            File tempFile = File.createTempFile("photo", ".py");
+            Files.copy(resource.getInputStream(), tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+            String pythonCmd = "python"; // 最好改成配置项
+            ProcessBuilder pb = new ProcessBuilder(
+                    pythonCmd,
+                    tempFile.getAbsolutePath()
+/*                "--language", language != null ? language : "",
+                "--category", category != null ? category : "");*/
+            );
+            pb.redirectErrorStream(true);
+            Process process = pb.start();
+
+            System.out.println("--------------------------爬虫执行--------------------------");
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    System.out.println("[爬虫日志] " + line);
+                }
+            }
+            int exitCode = process.waitFor();
+            System.out.println("-------------------爬虫执行完成，退出码：" + exitCode + "-------------------");
+            insertImages(status);
+
+        } catch (Exception e) {
+            log.error("爬虫任务发生异常：{}", e.getMessage());
+        }
+    }
+
+    @Transactional
+    public void insertImages(AtomicReference<String> status) {
+        // 获取爬虫图片
+        File dir = new File(WALLHAVEN_DIR);
+        if (!dir.exists() || !dir.isDirectory()) {
+            System.out.println("目录不存在：" + dir.getAbsolutePath());
+            return;
+        }
+        File[] files = dir.listFiles((d, name) -> {
+            String lower = name.toLowerCase();
+            return lower.endsWith(".jpg") || lower.endsWith(".png") || lower.endsWith(".jpeg");
+        });
+        if (files == null || files.length == 0) {
+            System.out.println("目录下没有图片文件");
+            return;
+        }
+        List<Photo> photos = Arrays.stream(files)
+                .map(file -> {
+                    String fileName = file.getName();
+                    String url = "http://localhost:8080/Wallhaven/" + fileName;
+                    return Photo.builder()
+                            .albumId(1)
+                            .photoName(fileName)
+                            .photoUrl(url)
+                            .build();
+                })
+                .collect(Collectors.toList());
+        this.saveBatch(photos);
+        System.out.println("成功插入 " + photos.size() + " 张图片");
+
+        status.set("COMPLETED");
+    }
+
+    @Transactional
+    public void clearBeforeSpider() {
+        String wallhavenPath;
+        File dir = new File(WALLHAVEN_DIR);
+        wallhavenPath = dir.getAbsolutePath();
+
+        if (!dir.exists() || !dir.isDirectory()) {
+            System.out.println("目录不存在：" + wallhavenPath);
+            return;
+        }
+
+        // 遍历并删除文件
+        File[] files = dir.listFiles((d, name) -> {
+            String lower = name.toLowerCase();
+            return lower.endsWith(".jpg") || lower.endsWith(".png") || lower.endsWith(".jpeg");
+        });
+
+        if (files != null) {
+            for (File file : files) {
+                if (file.delete()) {
+                    System.out.println("已删除文件：" + file.getName());
+                } else {
+                    System.out.println("删除失败：" + file.getName());
+                }
+            }
+        }
+        System.out.println("Wallhaven 文件夹已清空，路径：" + wallhavenPath);
+        int deleted = photoMapper.delete(new LambdaQueryWrapper<Photo>()
+                .like(Photo::getPhotoUrl, "Wallhaven"));
+        System.out.println("已删除数据库记录：" + deleted + " 条");
+    }
+
 }

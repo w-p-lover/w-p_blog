@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.ican.mapper.PhotoMapper">
+    <insert id="insertBatch" parameterType="java.util.List">
+        INSERT INTO t_photo (album_id, photo_name, photo_url)
+        VALUES
+        <foreach collection="photos" item="item" separator=",">
+            (#{item.albumId}, #{item.photoName}, #{item.photoUrl})
+        </foreach>
+    </insert>
+
 
     <select id="selectPhotoBackVOList" resultType="com.ican.model.vo.PhotoBackVO">
         SELECT id, photo_name, photo_desc, photo_url
@@ -16,5 +24,6 @@
         SELECT id, photo_url
         FROM t_photo
         WHERE album_id = #{albumId}
+        ORDER BY create_time desc
     </select>
 </mapper>

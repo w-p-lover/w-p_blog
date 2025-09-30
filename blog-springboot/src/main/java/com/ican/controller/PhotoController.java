@@ -11,6 +11,7 @@ import com.ican.service.PhotoService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +19,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.ican.constant.OptTypeConstant.*;
 
@@ -29,11 +33,15 @@ import static com.ican.constant.OptTypeConstant.*;
  **/
 @Api(tags = "照片模块")
 @RestController
+@Slf4j
 public class PhotoController {
 
     @Autowired
     private PhotoService photoService;
 
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
+
+    private final AtomicReference<String> spiderStatus = new AtomicReference<>("IDLE");
     /**
      * 查看后台照片列表
      *
@@ -147,4 +155,26 @@ public class PhotoController {
         return Result.success(photoService.listPhotoVO(condition));
     }
 
+    @PostMapping("/photo/run")
+    public Result<?> runSpider() {
+        if ("RUNNING".equals(spiderStatus.get())) {
+            return Result.fail("爬虫正在运行，请稍后重试");
+        }
+        spiderStatus.set("RUNNING");
+        executor.submit(() -> {
+            try {
+                photoService.runPythonSpider(spiderStatus);
+                spiderStatus.set("COMPLETED");
+            } catch (Exception e) {
+                spiderStatus.set("FAILED");
+                log.error("爬虫任务发生异常：{}", e.getMessage());
+            }
+        });
+        return Result.success("爬虫任务已启动");
+    }
+
+    @GetMapping("photo/status")
+    public Result<String> getStatus() {
+        return Result.success(spiderStatus.get());
+    }
 }

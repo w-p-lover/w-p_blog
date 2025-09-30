@@ -21,6 +21,11 @@
         <el-button type="primary" plain icon="Upload" @click="upload = true">上传</el-button>
       </el-col>
       <el-col :span="1.5">
+        <el-button type="warning" plain icon="Plus"
+                   @click="handleRunSpider">壁纸脚本
+        </el-button>
+      </el-col>
+      <el-col :span="1.5">
         <el-button type="success" plain icon="Promotion"
                    :disabled="selectPhotoIdList.length == 0">移动
         </el-button>
@@ -140,8 +145,8 @@ import {AlbumInfo, Photo, PhotoForm, PhotoQuery} from '@/api/photo/types';
 import {Picture} from '@/model';
 import {messageConfirm, notifySuccess} from '@/utils/modal';
 import {getToken, token_prefix} from '@/utils/token';
-import {AxiosResponse} from 'axios';
-import {FormInstance, FormRules, UploadFile, UploadRawFile} from 'element-plus';
+import axios, {AxiosResponse} from 'axios';
+import {ElNotification, FormInstance, FormRules, UploadFile, UploadRawFile} from 'element-plus';
 import * as imageConversion from 'image-conversion';
 import {computed, onMounted, reactive, ref, toRefs, watch} from 'vue';
 import {useRoute} from "vue-router";
@@ -200,6 +205,17 @@ watch(photoList, () => {
     photoIdList.value.push(item.id);
   });
 });
+const showSpiderNotification = (type: 'success' | 'error' | 'warning' | 'info', message: string) => {
+  ElNotification({
+    title: '爬虫状态',
+    message,
+    type,
+    duration: 5000, // 显示 5 秒后自动关闭
+    offset: 60,     // 距离顶部 60px
+    dangerouslyUseHTMLString: true
+  })
+}
+
 const handleSizeChange = (size: number) => {
   queryParams.value.size = size;
   getList();
@@ -265,6 +281,64 @@ const handleDelete = () => {
   }).catch(() => {
   });
 };
+
+const handleRunSpider = async () => {
+  if (loading.value) return;
+  loading.value = true;
+
+  try {
+    await axios.post('http://localhost:8080/photo/run', null, {});
+    showSpiderNotification('info',
+        `<div style="text-align: left; line-height: 1.6; margin-left: 40px">
+                    <strong>🚀 爬虫任务已启动</strong><br>
+                            📝 壁纸网站: <span style="color:#409EFF;">WallHaven</span><br>
+                            </div>`);
+    const startTime = Date.now();
+    const pollStatus = async () => {
+      try {
+        const {data} = await axios.get('http://localhost:8080/photo/status');
+        const status = data.data?.trim()?.toUpperCase();
+        console.log('爬虫状态:', status);
+
+        // 完成/失败或超时
+        if (['COMPLETED', 'FAILED'].includes(status) || Date.now() - startTime > 60000) {
+          loading.value = false;
+
+          getList();
+          console.log('爬虫完成，开始获取相册信息...');
+          getAlbumInfo(Number(route.params.albumId)).then(({data}) => {
+            albumInfo.value = data.data;
+          });
+          if (status === 'COMPLETED') {
+            showSpiderNotification('success', '爬虫任务完成！');
+          } else if (status === 'FAILED') {
+            showSpiderNotification('error', '爬虫任务失败！');
+          } else {
+            showSpiderNotification('warning', '爬虫任务超时！');
+          }
+
+        } else {
+          // 每次轮询间隔 5 秒
+          setTimeout(pollStatus, 5000);
+        }
+
+      } catch (err) {
+        console.error('轮询失败:', err);
+        loading.value = false;
+        showSpiderNotification('error', '轮询失败，请重试！');
+      }
+    };
+
+    // 启动第一次轮询
+    await pollStatus();
+
+  } catch (err) {
+    console.error('启动爬虫失败:', err);
+    loading.value = false;
+    showSpiderNotification('error', '启动爬虫失败！');
+  }
+};
+
 const handleAdd = () => {
   let photoUrlList: string[] = [];
   if (uploadList.value.length > 0) {

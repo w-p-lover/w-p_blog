@@ -34,4 +34,6 @@ public interface PhotoMapper extends BaseMapper<Photo> {
      * @return 后台照片列表
      */
     List<PhotoVO> selectPhotoVOList(@Param("albumId") Integer albumId);
+
+    void insertBatch(List<Photo> photos);
 }
