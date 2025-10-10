@@ -105,17 +105,17 @@ const menuList = [
       },
       {
         name: "游戏",
-        icon: "search",
+        icon: "steam",
         path: "/steam"
       },
       {
         name: "共享",
-        icon: "search",
+        icon: "trumpet",
         path: "/collab"
       },
       {
         name: "路线",
-        icon: "search",
+        icon: "fun",
         path: "/life"
       },
       {
@@ -141,7 +141,7 @@ const menuList = [
       },
       {
         name: "聊天",
-        icon: "trumpet",
+        icon: "friend",
         path: "/chat"
       }
     ]
