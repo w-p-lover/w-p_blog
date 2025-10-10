@@ -25,7 +25,7 @@ export interface Doc {
     /** 主作者 */
     leadAuthor: string;
     /** 版本号 */
-    version: number;
+    version: string;
     /** 浏览量 */
     views: number;
     /** 编辑次数 */

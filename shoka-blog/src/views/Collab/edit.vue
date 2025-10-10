@@ -88,7 +88,7 @@
               <div class="popover-container">
                 <div style="margin-bottom: 1rem">可选标签</div>
                 <el-tag
-                    v-for="(item, index) in tagList"
+                    v-for="(item) in tagList"
                     :key="item.id"
                     :class="tagClass(item.tagName)"
                     @click="addTag(item.tagName)"
@@ -114,7 +114,8 @@
             <div class="collab-group">
               <div class="collab-row" v-for="(item, idx) in docForm.collaborators" :key="idx">
                 <el-select v-model="item.name" placeholder="选择协作者"
-                           :disabled="mode === '查看' || (mode !== '新建' && item.name !== user.nickname && item.role == 'editor' && item.addMode !== true)"
+                           :disabled="mode === '查看' || (mode !== '新建' && item.name !== user.nickname
+                           && item.role == 'editor' && item.addMode !== true)"
                            style=" width: 250px; margin-right: 16px"
                            @change="i => onCollabChange(item, i)">
                   <el-option
@@ -125,7 +126,8 @@
                   />
                 </el-select>
                 <el-select v-model="item.role" placeholder="选择角色"
-                           :disabled="mode === '查看' || (mode !== '新建' && item.name !== user.nickname && item.role == 'editor' && item.addMode !== true)"
+                           :disabled="mode === '查看' || (mode !== '新建' && item.name !== user.nickname
+                           && item.role == 'editor' && item.addMode !== true)"
                            style=" width: 250px; margin-right: 16px">
                   <el-option label="编辑者" value="editor"/>
                   <el-option label="查看者" value="viewer"/>
@@ -191,7 +193,9 @@ import RichTextEditor from '@/components/Edit/index.vue';
 import useStore from '@/store';
 import {getUserList} from "@/api/user";
 import {Delete, Plus} from '@element-plus/icons-vue';
-import {getCategoryList, getCollabCategoryList} from "@/api/category";
+import {getCollabCategoryList} from "@/api/category";
+import {submitForPublish} from "@/api/version";
+import {DocVersion} from "@/api/version/types";
 
 interface CollabUser {
   name: string;
@@ -211,6 +215,8 @@ const docForm = reactive({
   content: '',
   collaborators: [{name: user.nickname || '默认用户', role: 'editor', avatar: user.avatar, addMode: false,}],
   status: "docForm",
+  leadAuthor: user.nickname || '默认用户',
+  version: '',
 });
 
 const collabList = ref<CollabUser[]>([]);
@@ -235,7 +241,7 @@ const mode = ref<'新建' | '编辑' | '查看'>('新建');
 const formRules = reactive({
   title: [{required: true, message: '请输入标题', trigger: 'blur'}],
   tags: [{type: 'array', min: 1, message: '请选择至少一个标签', trigger: 'change'}],
-  categoryName: [{required: true, message: '请选择分类', trigger: 'change'}],
+  categoryName: [{required: true, message: '请选择分类', trigger: 'blur'}],
   content: [{required: true, message: '请输入内容', trigger: 'blur'}]
 });
 
@@ -306,28 +312,24 @@ async function fetchDoCategory() {
 // 分类操作
 function handleSelectCategory(item: any) {
   docForm.categoryName = item.categoryName;
+  docForm.description = docForm.description + "分类添加\n"
 }
-
-function onCollabChange(item: any, selectedName: string) {
-  const selectedUser = collabList.value.find(u => u.name === selectedName)
-  if (selectedUser) {
-    item.avatar = selectedUser.avatar
-    // 可以根据需要同步更新 role
-    item.role = item.role || 'editor'
-  }
-}
-
 
 function addCategory(name: string) {
   docForm.categoryName = name;
+  docForm.description = docForm.description + "分类添加\n"
 }
 
 function saveCategory() {
-  if (categoryName.value) docForm.categoryName = categoryName.value;
+  if (categoryName.value){
+    docForm.categoryName = categoryName.value;
+    docForm.description = docForm.description + "分类添加\n"
+  }
 }
 
 function removeCategory() {
   docForm.categoryName = '';
+  docForm.description = docForm.description + "分类删除\n"
 }
 
 function searchCategory(query: string, cb: any) {
@@ -345,23 +347,30 @@ function tagClass(name: string) {
 }
 
 function handleSelectTag(item: any) {
-  if (!docForm.tags.includes(item.tagName))
+  if (!docForm.tags.includes(item.tagName)){
     docForm.tags.push(item.tagName);
+    docForm.description = docForm.description + "标签添加\n"
+  }
 }
 
 function addTag(name: string) {
-  if (!docForm.tags.includes(name) && docForm.tags.length < 3)
+  if (!docForm.tags.includes(name) && docForm.tags.length < 3){
     docForm.tags.push(name);
+    docForm.description = docForm.description + "标签添加\n"
+  }
 }
 
 function saveTag() {
-  if (tagName.value && !docForm.tags.includes(tagName.value) && docForm.tags.length < 3)
+  if (tagName.value && !docForm.tags.includes(tagName.value) && docForm.tags.length < 3){
     docForm.tags.push(tagName.value);
+    docForm.description = docForm.description + "标签添加\n"
+  }
   tagName.value = '';
 }
 
 function removeTag(name: string) {
   docForm.tags = docForm.tags.filter(t => t !== name);
+  docForm.description = docForm.description + "标签删除\n"
 }
 
 function searchTag(query: string, cb: any) {
@@ -375,12 +384,25 @@ function searchTag(query: string, cb: any) {
 // 协作者操作
 function addCollab() {
   docForm.collaborators.push({name: '', role: 'viewer', avatar: '', addMode: true});
+  docForm.description = docForm.description + "添加协作者\n"
   console.log(docForm.collaborators)
 }
 
 function removeCollab(idx: number) {
   docForm.collaborators.splice(idx, 1);
+  docForm.description = docForm.description + "删除协作者\n"
 }
+
+function onCollabChange(item: any, selectedName: string) {
+  const selectedUser = collabList.value.find(u => u.name === selectedName)
+  if (selectedUser) {
+    item.avatar = selectedUser.avatar
+    // 可以根据需要同步更新 role
+    item.role = item.role || 'editor'
+  }
+  docForm.description = docForm.description + "修改协作者\n"
+}
+
 
 // 表单操作
 async function validateForm() {
@@ -412,11 +434,31 @@ const submitDoc = async () => {
   if (!await validateForm()) return;
   try {
     const payload = {...docForm};
-    const {data} = await createDoc(payload);
-    if (data.flag) {
+    const docVersion: DocVersion = {
+      docId: docForm.id,
+      version: '1.0',
+      status: 'DRAFT',
+      author: docForm.leadAuthor,
+      createdAt: new Date().toLocaleString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      }).replace(/\//g, '-'),
+      description: "新文档创建: " + docForm.title,
+      content: docForm.content
+    };
+    const { data: updateDocData } = await createDoc(payload);
+    const { data: submitData } = await submitForPublish(docForm.id, docVersion);
+
+    if (updateDocData.flag && submitData.flag) {
       ElMessage.success('文档创建成功');
-    } else {
-      ElMessage.error(data.msg || '文档创建失败');
+    } else if(!updateDocData.flag){
+      ElMessage.error(updateDocData.msg || '创建失败');
+    } else if (!submitData.flag){
+      ElMessage.error(submitData.msg || '版本提交失败');
     }
   } catch (error) {
     ElMessage.error('网络错误，创建文档失败');
@@ -427,11 +469,31 @@ const editDoc = async () => {
   if (!await validateForm()) return;
   try {
     const payload = {...docForm};
-    const {data} = await updateDoc(payload);
-    if (data.flag) {
+    const docVersion: DocVersion = {
+      docId: docForm.id,
+      version: docForm.version,
+      status: 'PENDING',
+      author: docForm.leadAuthor,
+      createdAt: new Date().toLocaleString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      }).replace(/\//g, '-'),
+      description: "文档更新: " + docForm.title,
+      content: docForm.content
+    };
+    const { data: createDocData } = await createDoc(payload);
+    const { data: submitData } = await submitForPublish(docForm.id, docVersion);
+
+    if (createDocData.flag && submitData.flag) {
       ElMessage.success('文档修改成功');
-    } else {
-      ElMessage.error(data.msg || '修改失败');
+    } else if(!createDocData.flag){
+      ElMessage.error(createDocData.msg || '修改失败');
+    } else if (!submitData.flag){
+      ElMessage.error(submitData.msg || '版本提交失败');
     }
   } catch (error) {
     ElMessage.error('网络错误，修改文档失败');
