@@ -23,9 +23,10 @@ import com.ican.utils.FileUtils;
 import com.ican.utils.PageUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -33,6 +34,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
@@ -53,24 +55,26 @@ import static com.ican.enums.FilePathEnum.PHOTO;
 public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements PhotoService {
 
     private final PhotoMapper photoMapper;
-
     private final AlbumMapper albumMapper;
-
     private final UploadStrategyContext uploadStrategyContext;
-
     private final BlogFileMapper blogFileMapper;
 
-    private static final String WALLHAVEN_DIR = System.getProperty("user.dir") + "/blog-springboot/src/main/resources/static/Wallhaven";
+    // 从配置文件注入，避免硬编码
+    @Value("${spider.wallhaven.dir}")
+    private String wallhavenDir;
+    @Value("${spider.python.cmd}")
+    private String pythonCmd;
+    @Value("${spider.photo.album.id}")
+    private Integer albumId;
 
+    // ---------------------- 原有业务方法（无需修改） ----------------------
     @Override
     public PageResult<PhotoBackVO> listPhotoBackVO(ConditionDTO condition) {
-        // 查询照片数量
         Long count = photoMapper.selectCount(new LambdaQueryWrapper<Photo>()
                 .eq(Objects.nonNull(condition.getAlbumId()), Photo::getAlbumId, condition.getAlbumId()));
         if (count == 0) {
             return new PageResult<>();
         }
-        // 查询照片列表
         List<PhotoBackVO> photoList = photoMapper.selectPhotoBackVOList(PageUtils.getLimit(),
                 PageUtils.getSize(), condition.getAlbumId());
         return new PageResult<>(photoList, count);
@@ -91,7 +95,6 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
     @Override
     @Transactional
     public void addPhoto(PhotoDTO photo) {
-        // 批量保存照片
         List<Photo> pictureList = photo.getPhotoUrlList().stream()
                 .map(url -> Photo.builder()
                         .albumId(photo.getAlbumId())
@@ -128,30 +131,30 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
     @Override
     public Map<String, Object> listPhotoVO(ConditionDTO condition) {
         Map<String, Object> result = new HashMap<>(2);
-        String albumName = albumMapper.selectOne(new LambdaQueryWrapper<Album>()
-                        .select(Album::getAlbumName).eq(Album::getId, condition.getAlbumId()))
-                .getAlbumName();
+        Album album = albumMapper.selectOne(new LambdaQueryWrapper<Album>()
+                .select(Album::getAlbumName).eq(Album::getId, condition.getAlbumId()));
+        if (Objects.isNull(album)) {
+            result.put("albumName", "未知相册");
+            result.put("photoVOList", Collections.emptyList());
+            return result;
+        }
         List<PhotoVO> photoVOList = photoMapper.selectPhotoVOList(condition.getAlbumId());
-        result.put("albumName", albumName);
+        result.put("albumName", album.getAlbumName());
         result.put("photoVOList", photoVOList);
         return result;
     }
 
     @Override
     public String uploadPhoto(MultipartFile file) {
-        // 上传文件
         String url = uploadStrategyContext.executeUploadStrategy(file, PHOTO.getPath());
         try {
-            // 获取文件md5值
             String md5 = FileUtils.getMd5(file.getInputStream());
-            // 获取文件扩展名
             String extName = FileUtils.getExtension(file);
             BlogFile existFile = blogFileMapper.selectOne(new LambdaQueryWrapper<BlogFile>()
                     .select(BlogFile::getId)
                     .eq(BlogFile::getFileName, md5)
                     .eq(BlogFile::getFilePath, PHOTO.getFilePath()));
             if (Objects.isNull(existFile)) {
-                // 保存文件信息
                 BlogFile newFile = BlogFile.builder()
                         .fileUrl(url)
                         .fileName(md5)
@@ -163,111 +166,166 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
                 blogFileMapper.insert(newFile);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("上传照片时保存文件信息失败", e); // 打印完整堆栈，方便排查
         }
         return url;
     }
 
+    /**
+     * 运行Python爬虫：移除@Transactional，避免事务包含长时间爬虫操作
+     */
     @Override
-    @Transactional
     public void runPythonSpider(AtomicReference<String> status) {
-        // 删除之前爬虫数据
-        clearBeforeSpider();
-        // 运行爬虫
+        // 1. 先清理旧数据（独立事务，执行完立即提交，释放锁）
         try {
+            clearBeforeSpider();
+            log.info("爬虫前置清理完成");
+        } catch (Exception e) {
+            log.error("爬虫前置清理失败", e);
+            status.set("FAILED"); // 显式标记失败状态
+            return;
+        }
+
+        // 2. 运行Python爬虫：管理临时文件和进程资源
+        Process process = null;
+        File tempFile = null;
+        try {
+            // 读取classpath下的python脚本，创建临时文件
             ClassPathResource resource = new ClassPathResource("static/wall.py");
-            File tempFile = File.createTempFile("photo", ".py");
+            tempFile = File.createTempFile("photo_spider_", ".py"); // 临时文件名加前缀，便于识别
             Files.copy(resource.getInputStream(), tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            log.info("创建Python临时脚本：{}", tempFile.getAbsolutePath());
 
-            String pythonCmd = "python"; // 最好改成配置项
-            ProcessBuilder pb = new ProcessBuilder(
-                    pythonCmd,
-                    tempFile.getAbsolutePath()
-/*                "--language", language != null ? language : "",
-                "--category", category != null ? category : "");*/
-            );
-            pb.redirectErrorStream(true);
-            Process process = pb.start();
+            // 启动爬虫进程
+            ProcessBuilder pb = new ProcessBuilder(pythonCmd, tempFile.getAbsolutePath());
+            pb.redirectErrorStream(true); // 错误流和输出流合并，方便日志查看
+            process = pb.start();
 
-            System.out.println("--------------------------爬虫执行--------------------------");
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+            // 读取爬虫日志
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    System.out.println("[爬虫日志] " + line);
+                    log.info("[爬虫日志] {}", line); // 统一用log，支持日志归档
                 }
             }
+
+            // 等待爬虫执行完成，获取退出码
             int exitCode = process.waitFor();
-            System.out.println("-------------------爬虫执行完成，退出码：" + exitCode + "-------------------");
+            log.info("爬虫执行完成，退出码：{}（0表示成功）", exitCode);
+            if (exitCode != 0) {
+                log.error("爬虫执行失败，退出码非0：{}", exitCode);
+                status.set("FAILED");
+                return;
+            }
+
+            // 3. 插入新数据（独立事务，执行完立即提交）
+            status.set("INSERTING");
             insertImages(status);
+            log.info("爬虫图片插入完成，最终状态：{}", status.get());
 
         } catch (Exception e) {
-            log.error("爬虫任务发生异常：{}", e.getMessage());
+            log.error("爬虫执行过程异常", e); // 打印完整堆栈，而非仅消息
+            status.set("FAILED");
+        } finally {
+            // 强制释放资源：销毁进程 + 删除临时文件
+            if (process != null && process.isAlive()) {
+                process.destroy();
+                log.info("强制销毁爬虫进程");
+            }
+            if (tempFile != null && tempFile.exists() && !tempFile.delete()) {
+                log.warn("临时Python脚本删除失败：{}", tempFile.getAbsolutePath());
+            }
         }
     }
 
-    @Transactional
-    public void insertImages(AtomicReference<String> status) {
-        // 获取爬虫图片
-        File dir = new File(WALLHAVEN_DIR);
+    @Override
+    public double getPhotoCount() {
+        File dir = new File(wallhavenDir);
         if (!dir.exists() || !dir.isDirectory()) {
-            System.out.println("目录不存在：" + dir.getAbsolutePath());
+            log.warn("统计照片数量时，目录不存在：{}", wallhavenDir);
+            return 0;
+        }
+        File[] files = dir.listFiles();
+        return files == null ? 0 : files.length;
+    }
+
+    /**
+     * 插入爬虫图片：独立事务（REQUIRES_NEW），与外层爬虫逻辑解耦
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
+    public void insertImages(AtomicReference<String> status) {
+        File dir = new File(wallhavenDir);
+        if (!dir.exists() || !dir.isDirectory()) {
+            log.error("插入图片时目录不存在：{}", dir.getAbsolutePath());
+            status.set("FAILED");
             return;
         }
+
+        // 过滤图片文件（jpg/png/jpeg）
         File[] files = dir.listFiles((d, name) -> {
-            String lower = name.toLowerCase();
-            return lower.endsWith(".jpg") || lower.endsWith(".png") || lower.endsWith(".jpeg");
+            String lowerName = name.toLowerCase();
+            return lowerName.endsWith(".jpg") || lowerName.endsWith(".png") || lowerName.endsWith(".jpeg");
         });
+
         if (files == null || files.length == 0) {
-            System.out.println("目录下没有图片文件");
+            log.info("目录下无图片文件：{}", dir.getAbsolutePath());
+            status.set("COMPLETED"); // 无文件也算执行完成，而非失败
             return;
         }
+
+        // 转换为Photo列表并批量插入
         List<Photo> photos = Arrays.stream(files)
                 .map(file -> {
                     String fileName = file.getName();
                     String url = "http://localhost:8080/Wallhaven/" + fileName;
                     return Photo.builder()
-                            .albumId(1)
+                            .albumId(albumId) // 从配置注入，避免硬编码1
                             .photoName(fileName)
                             .photoUrl(url)
                             .build();
                 })
                 .collect(Collectors.toList());
-        this.saveBatch(photos);
-        System.out.println("成功插入 " + photos.size() + " 张图片");
 
+        this.saveBatch(photos);
+        log.info("成功插入图片：{} 张（目录：{}）", photos.size(), dir.getAbsolutePath());
         status.set("COMPLETED");
     }
 
-    @Transactional
+    /**
+     * 清理旧数据：独立事务（REQUIRES_NEW），删除文件+删除数据库记录，执行完立即提交
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
     public void clearBeforeSpider() {
-        String wallhavenPath;
-        File dir = new File(WALLHAVEN_DIR);
-        wallhavenPath = dir.getAbsolutePath();
-
+        File dir = new File(wallhavenDir);
         if (!dir.exists() || !dir.isDirectory()) {
-            System.out.println("目录不存在：" + wallhavenPath);
+            log.warn("清理旧数据时目录不存在：{}", wallhavenDir);
             return;
         }
 
-        // 遍历并删除文件
+        // 1. 删除目录下的图片文件（统计成功/失败数量，便于排查）
         File[] files = dir.listFiles((d, name) -> {
-            String lower = name.toLowerCase();
-            return lower.endsWith(".jpg") || lower.endsWith(".png") || lower.endsWith(".jpeg");
+            String lowerName = name.toLowerCase();
+            return lowerName.endsWith(".jpg") || lowerName.endsWith(".png") || lowerName.endsWith(".jpeg");
         });
 
+        int deletedFileCount = 0;
+        int failedFileCount = 0;
         if (files != null) {
             for (File file : files) {
                 if (file.delete()) {
-                    System.out.println("已删除文件：" + file.getName());
+                    deletedFileCount++;
                 } else {
-                    System.out.println("删除失败：" + file.getName());
+                    failedFileCount++;
+                    log.warn("清理文件失败：{}（可能被占用）", file.getAbsolutePath());
                 }
             }
         }
-        System.out.println("Wallhaven 文件夹已清空，路径：" + wallhavenPath);
-        int deleted = photoMapper.delete(new LambdaQueryWrapper<Photo>()
-                .like(Photo::getPhotoUrl, "Wallhaven"));
-        System.out.println("已删除数据库记录：" + deleted + " 条");
-    }
+        log.info("清理目录完成：路径={}，成功删除={} 个，失败={} 个",
+                wallhavenDir, deletedFileCount, failedFileCount);
 
+        // 2. 删除数据库中对应记录（独立事务，执行完立即提交，释放锁）
+        int deletedDbCount = photoMapper.delete(new LambdaQueryWrapper<Photo>()
+                .like(Photo::getPhotoUrl, "Wallhaven"));
+        log.info("清理数据库记录完成：删除 {} 条", deletedDbCount);
+    }
 }
