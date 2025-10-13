@@ -4,13 +4,14 @@ import os
 import time
 import random
 from requests.exceptions import RequestException
+import sys
 
 headers = {
     'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.54 Safari/537.36'
 }
 
 SAVE_DIR = r"D:\IdeaProjects\blog\blog-springboot\src\main\resources\static\Wallhaven"
-
+sys.stdout = open(sys.stdout.fileno(), mode='w', buffering=1, encoding='utf-8')
 # 添加带重试机制的请求函数
 def requests_with_retry(url, max_retries=3, delay_range=(2, 5)):
     """带重试机制的请求函数，处理429等错误"""
@@ -69,7 +70,7 @@ def download_image(final_url, max_retries=2):
 
 # 定义获取每页html信息的函数
 def get_html_info(page):
-    url = f'https://wallhaven.cc/toplist?page={page}'
+    url = f'https://wallhaven.cc/hot?page={page}'
     print(f"正在获取第{page}页的内容...")
     resp = requests_with_retry(url)
     if resp:
@@ -146,6 +147,7 @@ def get_pic(resp_html):
 
 
 def main():
+    first_time = time.time()
     page_range = range(1, 2)  # 爬取1-3页的壁纸
     for i in page_range:
         r = get_html_info(i)
@@ -158,6 +160,8 @@ def main():
             page_delay = random.uniform(3, 4)
             print(f"等待{page_delay:.2f}秒后处理下一页...")
             time.sleep(page_delay)
+    end_time = time.time()
+    print(end_time - first_time)
 
 
 if __name__ == '__main__':
