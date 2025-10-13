@@ -137,6 +137,32 @@
       <img :src="dialogImageUrl" style="max-width:100%"/>
     </el-dialog>
   </div>
+  <div v-if="loading" class="spider-status-container">
+    <!-- 状态图标：根据状态显示不同图标，增强直观性 -->
+    <div class="spider-status-icon" :class="statusIconClass">
+      <i v-if="spiderStatus === 'RUNNING'" class="el-icon-loading"></i>
+      <i v-else-if="spiderStatus === 'COMPLETED'" class="el-icon-circle-check"></i>
+      <i v-else-if="spiderStatus === 'FAILED'" class="el-icon-circle-exclamation"></i>
+      <i v-else class="el-icon-spider"></i> <!-- 未开始用爬虫图标 -->
+    </div>
+
+    <!-- 文字区域：拆分主状态和详情，优化排版层次 -->
+    <div class="spider-status-text">
+      <h4 class="status-title" :class="statusTextClass">{{ spiderMessage }}</h4>
+    </div>
+
+    <!-- 进度条：优化尺寸、颜色渐变，增加过渡动画 -->
+    <div class="spider-progress-wrapper">
+      <el-progress
+          type="line"
+          :percentage="spiderPercentage"
+          :status="statusProgressClass"
+          :color="progressColor"
+          :stroke-width="12"
+      :gap-degree="30"
+      ></el-progress>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -151,6 +177,16 @@ import * as imageConversion from 'image-conversion';
 import {computed, onMounted, reactive, ref, toRefs, watch} from 'vue';
 import {useRoute} from "vue-router";
 
+import { Loading, CircleCheck, CircleClose, User } from '@element-plus/icons-vue'; // 这里换成你需要的图标
+
+
+const props = defineProps({
+  spiderStatus: String
+});
+
+const spiderMessage = ref('');
+const status = ref('');
+const spiderPercentage = ref(0.0);
 const photoFormRef = ref<FormInstance>();
 const rules = reactive<FormRules>({
   photoName: [{required: true, message: "请输入照片名称", trigger: "blur"}],
@@ -296,12 +332,15 @@ const handleRunSpider = async () => {
     const startTime = Date.now();
     const pollStatus = async () => {
       try {
-        const {data} = await axios.get('http://localhost:8080/photo/status');
-        const status = data.data?.trim()?.toUpperCase();
+        const { data } = await axios.get('http://localhost:8080/photo/status');
+        status.value = data.data.status?.trim()?.toUpperCase();
+        spiderPercentage.value = data.data.spiderPercentage;
+        spiderMessage.value = data.data.message || '';
         console.log('爬虫状态:', status);
 
         // 完成/失败或超时
-        if (['COMPLETED', 'FAILED'].includes(status) || Date.now() - startTime > 60000) {
+        if (['COMPLETED', 'FAILED'].includes(status.value) || Date.now() - startTime > 180000) // 3分钟
+        {
           loading.value = false;
 
           getList();
@@ -309,9 +348,9 @@ const handleRunSpider = async () => {
           getAlbumInfo(Number(route.params.albumId)).then(({data}) => {
             albumInfo.value = data.data;
           });
-          if (status === 'COMPLETED') {
+          if (status.value === 'COMPLETED') {
             showSpiderNotification('success', '爬虫任务完成！');
-          } else if (status === 'FAILED') {
+          } else if (status.value === 'FAILED') {
             showSpiderNotification('error', '爬虫任务失败！');
           } else {
             showSpiderNotification('warning', '爬虫任务超时！');
@@ -319,7 +358,7 @@ const handleRunSpider = async () => {
 
         } else {
           // 每次轮询间隔 5 秒
-          setTimeout(pollStatus, 5000);
+          setTimeout(pollStatus, 15000);
         }
 
       } catch (err) {
@@ -381,6 +420,38 @@ onMounted(() => {
   getAlbumInfo(Number(route.params.albumId)).then(({data}) => {
     albumInfo.value = data.data;
   });
+});
+
+const statusIconClass = computed(() => {
+  const base = 'spider-icon';
+  if (status.value === 'RUNNING') return `${base} icon-loading`;
+  if (status.value === 'COMPLETED') return `${base} icon-success`;
+  if (status.value === 'FAILED') return `${base} icon-failed`;
+  return `${base} icon-default`;
+});
+
+const statusTextClass = computed(() => {
+  if (status.value === 'COMPLETED') return 'text-success';
+  if (status.value === 'FAILED') return 'text-failed';
+  return 'text-default';
+});
+
+const statusDetailClass = computed(() => {
+  return status.value === 'FAILED' ? 'detail-failed' : 'detail-default';
+});
+
+const statusProgressClass = computed(() => {
+  if (status.value === 'COMPLETED') return 'success';
+  if (status.value === 'FAILED') return 'exception';
+  return '';
+});
+
+const progressColor = computed(() => {
+  // 进度条渐变色：运行中用蓝紫渐变，成功用绿蓝渐变，失败用红橙渐变
+  if (status.value === 'RUNNING') return ['#4096ff', '#6772e5'];
+  if (status.value === 'COMPLETED') return ['#67c23a', '#52c41a'];
+  if (status.value === 'FAILED') return ['#f56c6c', '#fa8c16'];
+  return '#4096ff'; // 未开始用默认蓝色
 });
 </script>
 
@@ -453,4 +524,117 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
 }
+.spider-status-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  border: 1px solid #f0f2f5;
+  border-radius: 16px;
+  padding: 28px 32px;
+  margin-top: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.spider-status-container:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
+  transform: translateY(-2px);
+}
+
+/* 状态图标：控制大小、颜色，加载动画 */
+.spider-icon {
+  font-size: 28px;
+  margin-bottom: 16px;
+  transition: color 0.3s ease;
+}
+
+.icon-loading {
+  color: #4096ff;
+  animation: spin 1.5s linear infinite; /* 加载动画更流畅 */
+}
+
+.icon-success {
+  color: #67c23a;
+}
+
+.icon-failed {
+  color: #f56c6c;
+}
+
+.icon-default {
+  color: #909399;
+}
+
+/* 文字区域：优化字体层级、间距、颜色 */
+.spider-status-text {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.status-title {
+  font-size: 16px;
+  font-weight: 500;
+  margin: 0 0 8px;
+  transition: color 0.3s ease;
+}
+
+.text-default {
+  color: #303133;
+}
+
+.text-success {
+  color: #67c23a;
+}
+
+.text-failed {
+  color: #f56c6c;
+}
+
+.status-detail {
+  font-size: 13px;
+  margin: 0;
+  transition: color 0.3s ease;
+}
+
+.detail-default {
+  color: #909399;
+}
+
+.detail-failed {
+  color: #f56c6c;
+  /* 失败时增加轻微抖动动画，提醒用户 */
+  animation: shake 0.5s ease-in-out;
+}
+
+/* 进度条容器：控制尺寸，增加内边距 */
+.spider-progress-wrapper {
+  width: 100%;
+  max-width: 280px; /* 缩小仪表盘最大宽度，更精致 */
+}
+
+/* 加载动画：更平滑的旋转 */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 失败抖动动画：轻微晃动，增强交互反馈 */
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-3px);
+  }
+  75% {
+    transform: translateX(3px);
+  }
+}
+
 </style>
