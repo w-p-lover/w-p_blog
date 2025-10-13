@@ -17,6 +17,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -173,8 +174,35 @@ public class PhotoController {
         return Result.success("爬虫任务已启动");
     }
 
-    @GetMapping("photo/status")
-    public Result<String> getStatus() {
-        return Result.success(spiderStatus.get());
+    @GetMapping("/photo/status")
+    public Result<?> getStatus() {
+        Map<String, Object> statusInfo = new HashMap<>();
+        double photoCount = photoService.getPhotoCount();
+        double spiderPercentage = photoCount * 100 / 24;
+        String message;
+        switch (spiderStatus.get()) {
+            case "RUNNING":
+                message = "爬虫正在运行中...";
+                break;
+            case "INSERTING":
+                message = "正在插入图片数据...";
+                break;
+            case "COMPLETED":
+                message = "爬虫任务已完成 ✅";
+                break;
+            case "FAILED":
+                message = "爬虫任务失败 ❌";
+                break;
+            default:
+                message = "空闲中";
+                break;
+        }
+
+        statusInfo.put("status", spiderStatus.get());
+        statusInfo.put("timestamp", System.currentTimeMillis());
+        statusInfo.put("message", message);
+        statusInfo.put("spiderPercentage", spiderPercentage);
+        return Result.success(statusInfo);
     }
+
 }
