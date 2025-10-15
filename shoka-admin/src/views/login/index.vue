@@ -36,7 +36,7 @@
 <script setup lang="ts">
 import router from "@/router";
 import useStore from '@/store';
-import {FormInstance, FormRules} from 'element-plus';
+import {ElMessage, FormInstance, FormRules} from 'element-plus';
 import {reactive, ref} from 'vue';
 import {login} from "@/api/login";
 import {setToken} from "@/utils/token";
@@ -58,45 +58,90 @@ const rules = reactive<FormRules>({
 });
 
 const handleLogin = () => {
-  let reg = /^[A-Za-z0-9\u4e00-\u9fa5]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/;
+  const reg = /^[A-Za-z0-9\u4e00-\u9fa5]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/;
   if (!reg.test(loginForm.username)) {
-    console.log("邮箱格式不正确");
+    ElMessage({
+      type: 'warning',
+      message: '邮箱格式不正确，请重新输入',
+      offset: 100 // 弹窗位置，避免遮挡输入框
+    });
     return;
   }
   loading.value = true;
   login(loginForm)
-      .then(({data}) => {
-        console.log("sdsds")
-        if (data.flag) {
-          console.log(data.data)
-          setToken(data.data);
-          router.push("/")
-        } else {
-        }
-        loading.value = false;
-      }).catch(() => {
-    loading.value = true;
-  });
-}
+    .then(({ data }) => {
+      if (data.flag) {
+        console.log(data.data);
+        setToken(data.data);
+        router.push("/");
+      }
+      loading.value = false;
+    })
+    .catch((err) => {
+      loading.value = false;
+      ElMessage({
+        type: 'error',
+        message: '登录失败，请检查账号密码或网络',
+        offset: 100
+      });
+      console.error('登录错误:', err);
+    });
+};
 
 </script>
 <style lang="scss" scoped>
 
+// 给根容器添加动画
 .login {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 100%;
+  height: 100vh;
   background-image: url('../../assets/bg.png');
   background-size: cover;
+  background-position: center; // 背景居中
+  animation: fadeIn 0.2s ease-in-out;
 }
 
+// 新增动画定义
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+// 优化底部版权信息：增加半透明背景，避免与背景融合
+.el-login-footer {
+  height: 40px;
+  line-height: 40px;
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.8); // 文字半透明，更柔和
+  font-family: Arial,serif;
+  font-size: 12px;
+  letter-spacing: 1px;
+  // 新增：底部文字背景，提高可读性
+  background: rgba(0, 0, 0, 0.1);
+}
+
+// 样式中更新 .title 类
 .title {
   margin: -40px auto 35px auto;
   text-align: center;
-  color: #ffffff;
   font-size: 36px;
+  font-weight: 600;
+  // 新增：蓝色渐变文字+阴影
+  background: linear-gradient(120deg, #b8d2ff, #ffffff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .login-form {
@@ -132,25 +177,55 @@ const handleLogin = () => {
 }
 
 :deep(.el-input__wrapper) {
-  background-color: rgba(176, 197, 221, 0.7);
-  height: 46px;
-  border: thin #ffffff;
+  background-color: rgba(176, 197, 221, 0.8); // 提高背景透明度，更通透
+  height: 48px;
+  border: 1px solid transparent; // 初始透明边框
+  border-radius: 8px; // 增大圆角，与容器呼应
+  transition: all 0.3s ease; // 新增过渡，动画更流畅
+}
+
+:deep(.el-input__wrapper.is-focus) {
+  background-color: rgba(255, 255, 255, 0.9); // 聚焦时背景更白，突出
+  border-color: #4096ff; // 聚焦边框用主色调蓝色
+  box-shadow: 0 0 0 3px rgba(64, 150, 255, 0.2); // 聚焦阴影，强化反馈
 }
 
 :deep(.el-input__icon) {
-  color: rgb(44, 51, 65, .4); /* 将颜色修改为你想要的颜色 */
+  color: rgb(44, 51, 65, 0.6); // 加深图标颜色，更清晰
+  transition: color 0.3s ease;
 }
 
-//输入框颜色
+:deep(.el-input__wrapper.is-focus .el-input__icon) {
+  color: #4096ff; // 图标同步变主色调
+}
+
 :deep(.el-input__inner) {
-  color: rgb(44, 51, 65);
+  color: rgb(30, 35, 45); // 加深文字颜色，更清晰
   font-family: sans-serif;
+  font-size: 15px; // 微调字号
 }
 
-//提示框的字体颜色
-:deep(input::-webkit-input-placeholder) {
-  color: rgb(105, 112, 124);
-  font-family: sans-serif;
+.login-form .el-button {
+  height: 48px;
+  font-size: 16px;
+  font-weight: 500;
+  background: linear-gradient(135deg, rgba(39, 87, 189, 0.92), rgba(64, 150, 255, 0.89));
+  border-color: transparent;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.login-form .el-button:hover {
+  background: linear-gradient(135deg, rgba(30, 74, 168, 0.91), rgba(54, 136, 255, 0.91));
+  box-shadow: 0 4px 12px rgba(7, 109, 236, 0.3);
+}
+
+.login-form .el-button:active {
+  box-shadow: 0 2px 8px rgba(64, 150, 255, 0.2);
+}
+
+:deep(.el-button--loading .el-loading-spinner) {
+  margin-right: 8px;
 }
 
 .login-tip {
@@ -167,7 +242,7 @@ const handleLogin = () => {
   width: 100%;
   text-align: center;
   color: #fff;
-  font-family: Arial;
+  font-family: Arial,serif;
   font-size: 12px;
   letter-spacing: 1px;
 }
