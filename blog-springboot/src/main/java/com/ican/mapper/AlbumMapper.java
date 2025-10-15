@@ -6,6 +6,7 @@ import com.ican.model.dto.AlbumDTO;
 import com.ican.model.vo.AlbumBackVO;
 import com.ican.model.vo.AlbumVO;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -50,6 +51,9 @@ public interface AlbumMapper extends BaseMapper<Album> {
      * @return 相册列表
      */
     List<AlbumVO> selectAlbumVOList();
+
+    @Select("select id from t_album where album_name = #{albumName}")
+    Integer getIdByName(String albumName);
 }
 
 
