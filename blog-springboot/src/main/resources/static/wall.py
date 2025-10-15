@@ -12,6 +12,8 @@ headers = {
 
 SAVE_DIR = r"D:\IdeaProjects\blog\blog-springboot\src\main\resources\static\Wallhaven"
 sys.stdout = open(sys.stdout.fileno(), mode='w', buffering=1, encoding='utf-8')
+
+
 # 添加带重试机制的请求函数
 def requests_with_retry(url, max_retries=3, delay_range=(2, 5)):
     """带重试机制的请求函数，处理429等错误"""
@@ -147,8 +149,11 @@ def get_pic(resp_html):
 
 
 def main():
+    final_page = 3
+    print(f"TOTAL_COUNT: {final_page * 24 - 24}")
+    sys.stdout.flush()
     first_time = time.time()
-    page_range = range(1, 2)  # 爬取1-3页的壁纸
+    page_range = range(1, final_page)  # 爬取1-3页的壁纸
     for i in page_range:
         r = get_html_info(i)
         if r is not None:
