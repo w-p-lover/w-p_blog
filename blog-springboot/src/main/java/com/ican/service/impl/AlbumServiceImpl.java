@@ -20,6 +20,7 @@ import com.ican.utils.BeanCopyUtils;
 import com.ican.utils.FileUtils;
 import com.ican.utils.PageUtils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -37,6 +38,7 @@ import static com.ican.enums.FilePathEnum.PHOTO;
  *
  * @author xcs
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements AlbumService {
@@ -133,7 +135,7 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
                 blogFileMapper.insert(newFile);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("上传文件失败：{}",e.getMessage());
         }
         return url;
     }

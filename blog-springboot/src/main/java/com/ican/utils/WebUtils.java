@@ -1,5 +1,7 @@
 package com.ican.utils;
 
+import lombok.extern.slf4j.Slf4j;
+
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -9,6 +11,7 @@ import java.io.PrintWriter;
  *
  * @author xcs
  */
+@Slf4j
 public class WebUtils {
 
     /**
@@ -27,7 +30,7 @@ public class WebUtils {
             writer.flush();
             writer.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("渲染响应字符串时发生IO异常{}", e.getMessage());
         }
     }
 

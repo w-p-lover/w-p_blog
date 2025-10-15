@@ -15,6 +15,7 @@ import com.ican.strategy.context.UploadStrategyContext;
 import com.ican.utils.FileUtils;
 import com.ican.utils.PageUtils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -43,6 +44,7 @@ import static com.ican.constant.CommonConstant.TRUE;
  *
  * @author xcs
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BlogFileServiceImpl extends ServiceImpl<BlogFileMapper, BlogFile> implements BlogFileService {
@@ -99,7 +101,7 @@ public class BlogFileServiceImpl extends ServiceImpl<BlogFileMapper, BlogFile> i
                     .build();
             blogFileMapper.insert(newFile);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("上传失败:  {}", e.getMessage());
         }
     }
 
@@ -184,10 +186,13 @@ public class BlogFileServiceImpl extends ServiceImpl<BlogFileMapper, BlogFile> i
                 // 下载压缩包
                 downloadFile(filePath, blogFile.getFileName() + ".zip");
             } catch (IOException e) {
-                e.printStackTrace();
+                log.error("压缩失败：{}", e.getMessage());
             } finally {
                 if (dest.exists()) {
-                    dest.delete();
+                    boolean deleted = dest.delete();
+                    if (!deleted) {
+                        log.warn("临时压缩文件删除失败，路径：{}", dest.getAbsolutePath());
+                    }
                 }
             }
         }

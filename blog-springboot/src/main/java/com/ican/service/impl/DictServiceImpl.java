@@ -21,6 +21,7 @@ import com.ican.model.vo.excelvo.UserExVo;
 import com.ican.model.vo.excelvo.VisitExVo;
 import com.ican.service.DictService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -41,6 +42,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @Date：2024/8/14 14:56
  * @Filename：DictServiceImpl
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class DictServiceImpl implements DictService {
@@ -165,7 +167,7 @@ public class DictServiceImpl implements DictService {
             response.flushBuffer();
 
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("导出Excel失败：{}", e.getMessage());
         }
     }
 
