@@ -1,4 +1,5 @@
 <template>
+  <div class="photo-page-root">
   <div class="app-container">
     <!-- 相册信息 -->
     <el-row :gutter="12" class="mb15">
@@ -43,8 +44,8 @@
     </el-row>
     <!-- 照片列表 -->
     <el-checkbox-group v-model="selectPhotoIdList" @change="handleCheckedPhotoChange">
-      <el-row class="picture-list" :gutter="10">
-        <el-col :xs="12" :sm="6" :lg="4" v-for="photo of photoList" :key="photo.id" style="margin-bottom:1rem;">
+      <el-row class="picture-list" :gutter="18">
+        <el-col :xs="8" :sm="6" :lg="4" v-for="photo of photoList" :key="photo.id" style="margin-bottom:1rem;">
           <el-checkbox :label="photo.id">
             <template #default>
               <div class="photo-item">
@@ -137,7 +138,7 @@
       <img :src="dialogImageUrl" style="max-width:100%"/>
     </el-dialog>
   </div>
-  <div v-if="loading" class="spider-status-container">
+  <div v-if="spiderLoading" class="spider-status-container">
     <!-- 状态图标：根据状态显示不同图标，增强直观性 -->
     <div class="spider-status-icon" :class="statusIconClass">
       <i v-if="spiderStatus === 'RUNNING'" class="el-icon-loading"></i>
@@ -163,6 +164,7 @@
       ></el-progress>
     </div>
   </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -176,8 +178,6 @@ import {ElNotification, FormInstance, FormRules, UploadFile, UploadRawFile} from
 import * as imageConversion from 'image-conversion';
 import {computed, onMounted, reactive, ref, toRefs, watch} from 'vue';
 import {useRoute} from "vue-router";
-
-import { Loading, CircleCheck, CircleClose, User } from '@element-plus/icons-vue'; // 这里换成你需要的图标
 
 
 const props = defineProps({
@@ -199,6 +199,7 @@ const authorization = computed(() => {
 const route = useRoute();
 const data = reactive({
   count: 0,
+  spiderLoading:false,
   loading: false,
   upload: false,
   update: false,
@@ -208,7 +209,7 @@ const data = reactive({
   dialogVisible: false,
   queryParams: {
     current: 1,
-    size: 18,
+    size: 24,
     albumId: Number(route.params.albumId),
   } as PhotoQuery,
   photoForm: {} as PhotoForm,
@@ -219,6 +220,7 @@ const data = reactive({
   uploadList: [] as Picture[],
 });
 const {
+  spiderLoading,
   count,
   loading,
   upload,
@@ -319,51 +321,62 @@ const handleDelete = () => {
 };
 
 const handleRunSpider = async () => {
-  if (loading.value) return;
-  loading.value = true;
+  if (spiderLoading.value) return;
+  spiderLoading.value = true;
 
   try {
-    await axios.post('http://localhost:8080/photo/run', null, {});
+    // 获取专辑名称
+    const albumName = albumInfo.value.albumName;
+
+    // 向后端传递专辑名称参数
+    await axios.post('http://localhost:8080/photo/run', {
+      albumName: albumName  // 传递专辑名称给后端
+    }, {});
+
+    // 显示通知，包含专辑名称信息
     showSpiderNotification('info',
         `<div style="text-align: left; line-height: 1.6; margin-left: 40px">
-                    <strong>🚀 爬虫任务已启动</strong><br>
-                            📝 壁纸网站: <span style="color:#409EFF;">WallHaven</span><br>
-                            </div>`);
+            <strong>🚀 爬虫任务已启动</strong><br>
+            📝 壁纸网站: <span style="color:#409EFF;">WallHaven</span><br>
+            📁 专辑名称: <span style="color:#409EFF;">${albumName || '未指定'}</span><br>
+        </div>`);
+
     const startTime = Date.now();
     const pollStatus = async () => {
+      spiderLoading.value = true;
       try {
-        const { data } = await axios.get('http://localhost:8080/photo/status');
+        // 轮询状态时也可以传递专辑名称作为参数
+        const { data } = await axios.get(`http://localhost:8080/photo/status?albumName=${encodeURIComponent(albumName)}`);
         status.value = data.data.status?.trim()?.toUpperCase();
         spiderPercentage.value = data.data.spiderPercentage;
         spiderMessage.value = data.data.message || '';
         console.log('爬虫状态:', status);
 
         // 完成/失败或超时
-        if (['COMPLETED', 'FAILED'].includes(status.value) || Date.now() - startTime > 180000) // 3分钟
+        if (['COMPLETED', 'FAILED'].includes(status.value) || Date.now() - startTime > 480000) // 3分钟
         {
-          loading.value = false;
-
+          spiderLoading.value = false;
           getList();
           console.log('爬虫完成，开始获取相册信息...');
           getAlbumInfo(Number(route.params.albumId)).then(({data}) => {
             albumInfo.value = data.data;
           });
           if (status.value === 'COMPLETED') {
-            showSpiderNotification('success', '爬虫任务完成！');
+            showSpiderNotification('success', `《${albumName}》专辑爬虫任务完成！`);
           } else if (status.value === 'FAILED') {
-            showSpiderNotification('error', '爬虫任务失败！');
+            showSpiderNotification('error', `《${albumName}》专辑爬虫任务失败！`);
           } else {
-            showSpiderNotification('warning', '爬虫任务超时！');
+            showSpiderNotification('warning', `《${albumName}》专辑爬虫任务超时！`);
           }
 
         } else {
-          // 每次轮询间隔 5 秒
-          setTimeout(pollStatus, 15000);
+          // 每次轮询间隔 15 秒
+          setTimeout(pollStatus, 10000);
         }
 
       } catch (err) {
         console.error('轮询失败:', err);
-        loading.value = false;
+        spiderLoading.value = false;
         showSpiderNotification('error', '轮询失败，请重试！');
       }
     };
@@ -448,14 +461,17 @@ const statusProgressClass = computed(() => {
 
 const progressColor = computed(() => {
   // 进度条渐变色：运行中用蓝紫渐变，成功用绿蓝渐变，失败用红橙渐变
-  if (status.value === 'RUNNING') return ['#4096ff', '#6772e5'];
-  if (status.value === 'COMPLETED') return ['#67c23a', '#52c41a'];
-  if (status.value === 'FAILED') return ['#f56c6c', '#fa8c16'];
+  if (status.value === 'RUNNING') return 'linear-gradient(to right, #4096ff, #6772e5)';
+  if (status.value === 'COMPLETED') return 'linear-gradient(to right, #67c23a, #52c41a)';
+  if (status.value === 'FAILED') return 'linear-gradient(to right, #f56c6c, #fa8c16)';
   return '#4096ff'; // 未开始用默认蓝色
 });
 </script>
 
 <style lang="scss" scoped>
+.photo-page-root {
+  padding: 20px;
+}
 .album-cover {
   border-radius: 4px;
   width: 5rem;

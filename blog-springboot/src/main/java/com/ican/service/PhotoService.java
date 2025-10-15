@@ -85,12 +85,19 @@ public interface PhotoService extends IService<Photo> {
     /**
      * 运行图片爬虫
      */
-    void runPythonSpider(AtomicReference<String> status) throws IOException;
+    void runPythonSpider(AtomicReference<String> status , String albumName) throws IOException;
 
     /**
      * 获取照片数量
      *
      * @return 照片数量
      */
-    double getPhotoCount();
+    double getPhotoCount(String albumName);
+
+    /**
+     * 获取照片爬取总数
+     *
+     * @return 照片数量
+     */
+    int getTotalCount();
 }
