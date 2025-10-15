@@ -18,6 +18,7 @@ import com.ican.service.TalkService;
 import com.ican.strategy.context.UploadStrategyContext;
 import com.ican.utils.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -39,6 +40,7 @@ import static com.ican.enums.CommentTypeEnum.TALK;
  *
  * @author xcs
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements TalkService {
@@ -191,7 +193,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements Ta
                 blogFileMapper.insert(newFile);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+           log.error(e.getMessage());
         }
         return url;
     }

@@ -11,6 +11,7 @@ import com.ican.service.SiteConfigService;
 import com.ican.strategy.context.UploadStrategyContext;
 import com.ican.utils.FileUtils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,6 +29,7 @@ import static com.ican.enums.FilePathEnum.CONFIG;
  *
  * @author xcs
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SiteConfigServiceImpl extends ServiceImpl<SiteConfigMapper, SiteConfig> implements SiteConfigService {
@@ -83,7 +85,7 @@ public class SiteConfigServiceImpl extends ServiceImpl<SiteConfigMapper, SiteCon
                 blogFileMapper.insert(newFile);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("上传失败{}", e.getMessage());
         }
         return url;
     }

@@ -10,6 +10,7 @@ import com.ican.model.vo.QqUserInfoVO;
 import com.ican.model.vo.SocialTokenVO;
 import com.ican.model.vo.SocialUserInfoVO;
 import com.ican.utils.CommonUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -26,6 +27,7 @@ import static com.ican.constant.SocialLoginConstant.*;
  * @author xcs
  * @date 2023/04/06 18:43
  **/
+@Slf4j
 @Service("qqLoginStrategyImpl")
 public class QqLoginStrategyImpl extends AbstractLoginStrategyImpl {
 
@@ -81,7 +83,7 @@ public class QqLoginStrategyImpl extends AbstractLoginStrategyImpl {
                 throw new ServiceException("qq登录错误");
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("qq登录错误：{}", e.getMessage());
             throw new ServiceException("qq登录错误");
         }
     }

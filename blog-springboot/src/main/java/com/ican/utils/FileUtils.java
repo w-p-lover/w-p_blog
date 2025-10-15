@@ -1,6 +1,7 @@
 package com.ican.utils;
 
 import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.DigestUtils;
@@ -18,7 +19,7 @@ import java.util.Objects;
  *
  * @author xcs
  */
-@Log4j2
+@Slf4j
 public class FileUtils {
 
     private static final Map<String, Integer> fileTypeMap = new HashMap<>();
@@ -91,7 +92,7 @@ public class FileUtils {
             tempFile = File.createTempFile(fileName, extName);
             multipartFile.transferTo(tempFile);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("file convert error：{}", e.getMessage());
         }
         return tempFile;
     }
