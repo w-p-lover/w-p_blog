@@ -157,28 +157,43 @@ public class PhotoController {
     }
 
     @PostMapping("/photo/run")
-    public Result<?> runSpider() {
+    public Result<?> runSpider(@RequestBody Map<String, String> requestParam) {
+        // 获取前端传递的专辑名称参数
+        String albumName = requestParam.getOrDefault("albumName", "");
+
+        // 验证参数（可选，根据业务需求添加）
+        if (albumName.trim().isEmpty()) {
+            return Result.fail("专辑名称不能为空");
+        }
+
+        // 检查爬虫运行状态
         if ("RUNNING".equals(spiderStatus.get())) {
             return Result.fail("爬虫正在运行，请稍后重试");
         }
+
         spiderStatus.set("RUNNING");
         executor.submit(() -> {
             try {
-                photoService.runPythonSpider(spiderStatus);
+                // 将专辑名称传递给服务层，由服务层决定具体爬虫逻辑
+                photoService.runPythonSpider(spiderStatus, albumName);
                 spiderStatus.set("COMPLETED");
             } catch (Exception e) {
                 spiderStatus.set("FAILED");
-                log.error("爬虫任务发生异常：{}", e.getMessage());
+                log.error("专辑[{}]爬虫任务发生异常：{}", albumName, e.getMessage());
             }
         });
-        return Result.success("爬虫任务已启动");
+
+        return Result.success("专辑[" + albumName + "]的爬虫任务已启动");
     }
 
+
     @GetMapping("/photo/status")
-    public Result<?> getStatus() {
+    public Result<?> getStatus(@RequestParam String albumName) {
         Map<String, Object> statusInfo = new HashMap<>();
-        double photoCount = photoService.getPhotoCount();
-        double spiderPercentage = photoCount * 100 / 24;
+        int totalCount = photoService.getTotalCount();
+        double photoCount = photoService.getPhotoCount(albumName);
+        double spiderPercentage = Math.round(photoCount * 100 / totalCount);
+
         String message;
         switch (spiderStatus.get()) {
             case "RUNNING":

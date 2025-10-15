@@ -38,6 +38,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -58,9 +59,9 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
     private final AlbumMapper albumMapper;
     private final UploadStrategyContext uploadStrategyContext;
     private final BlogFileMapper blogFileMapper;
-
+    private final AtomicInteger totalCount = new AtomicInteger(0);
     // 从配置文件注入，避免硬编码
-    @Value("${spider.wallhaven.dir}")
+    @Value("${spider.dir}")
     private String wallhavenDir;
     @Value("${spider.python.cmd}")
     private String pythonCmd;
@@ -171,78 +172,137 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         return url;
     }
 
-    /**
-     * 运行Python爬虫：移除@Transactional，避免事务包含长时间爬虫操作
-     */
     @Override
-    public void runPythonSpider(AtomicReference<String> status) {
-        // 1. 先清理旧数据（独立事务，执行完立即提交，释放锁）
+    public void runPythonSpider(AtomicReference<String> status, String albumName) {
+        totalCount.set(0);
+        // 校验专辑名称（避免空值导致的后续问题）
+        if (albumName == null || albumName.trim().isEmpty()) {
+            log.error("专辑名称不能为空，终止爬虫任务");
+            status.set("FAILED");
+            return;
+        }
+        String normalizedAlbumName = albumName.trim(); // 标准化专辑名称（去空格）
+
+        // 1. 按专辑清理旧数据（只清理当前专辑的历史数据，而非全部）
         try {
-            clearBeforeSpider();
-            log.info("爬虫前置清理完成");
+            clearBeforeSpider(normalizedAlbumName); // 修改清理方法，增加专辑参数
+            log.info("专辑[{}]的爬虫前置清理完成", normalizedAlbumName);
         } catch (Exception e) {
-            log.error("爬虫前置清理失败", e);
-            status.set("FAILED"); // 显式标记失败状态
+            log.error("专辑[{}]的爬虫前置清理失败", normalizedAlbumName, e);
+            status.set("FAILED");
             return;
         }
 
-        // 2. 运行Python爬虫：管理临时文件和进程资源
+        // 2. 运行Python爬虫（根据专辑名称选择脚本或传递参数）
         Process process = null;
         File tempFile = null;
         try {
-            // 读取classpath下的python脚本，创建临时文件
-            ClassPathResource resource = new ClassPathResource("static/wall.py");
-            tempFile = File.createTempFile("photo_spider_", ".py"); // 临时文件名加前缀，便于识别
-            Files.copy(resource.getInputStream(), tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            log.info("创建Python临时脚本：{}", tempFile.getAbsolutePath());
+            // 2.1 根据专辑名称选择不同的Python脚本（或传递参数）
+            String scriptResource = getScriptByAlbum(normalizedAlbumName); // 动态选择脚本
+            ClassPathResource resource = new ClassPathResource(scriptResource);
 
-            // 启动爬虫进程
-            ProcessBuilder pb = new ProcessBuilder(pythonCmd, tempFile.getAbsolutePath());
-            pb.redirectErrorStream(true); // 错误流和输出流合并，方便日志查看
+            // 2.2 创建临时脚本文件
+            tempFile = File.createTempFile("photo_spider_" + normalizedAlbumName + "_", ".py");
+            Files.copy(resource.getInputStream(), tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            log.info("专辑[{}]的Python临时脚本创建完成：{}", normalizedAlbumName, tempFile.getAbsolutePath());
+
+            // 2.3 启动爬虫进程（传递专辑名称作为参数给Python脚本）
+            ProcessBuilder pb = new ProcessBuilder(
+                    pythonCmd,
+                    tempFile.getAbsolutePath(),
+                    normalizedAlbumName // 传递专辑名称给Python脚本
+            );
+            pb.redirectErrorStream(true);
             process = pb.start();
 
-            // 读取爬虫日志
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
+            // 2.4 读取爬虫日志（增加专辑标识）
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    log.info("[爬虫日志] {}", line); // 统一用log，支持日志归档
+                    log.info("[全局爬虫日志] {}", line);
+
+                    // 解析总数量（匹配Python输出的TOTAL_COUNT前缀）
+                    if (line.startsWith("TOTAL_COUNT: ")) {
+                        String totalStr = line.split(": ")[1].trim();
+                        try {
+                            int total = Integer.parseInt(totalStr);
+                            totalCount.set(total); // 更新全局总数
+                            log.info("解析到全局总需爬取数量：{}", total);
+                        } catch (NumberFormatException e) {
+                            log.error("解析总数量失败，格式错误：{}", line);
+                        }
+                    }
                 }
             }
 
-            // 等待爬虫执行完成，获取退出码
+            // 2.5 等待爬虫完成并检查退出码
             int exitCode = process.waitFor();
-            log.info("爬虫执行完成，退出码：{}（0表示成功）", exitCode);
+            log.info("专辑[{}]的爬虫执行完成，退出码：{}（0表示成功）", normalizedAlbumName, exitCode);
             if (exitCode != 0) {
-                log.error("爬虫执行失败，退出码非0：{}", exitCode);
+                log.error("专辑[{}]的爬虫执行失败，退出码非0", normalizedAlbumName);
                 status.set("FAILED");
                 return;
             }
 
-            // 3. 插入新数据（独立事务，执行完立即提交）
+            // 3. 按专辑插入新数据（将图片与当前专辑关联）
             status.set("INSERTING");
-            insertImages(status);
-            log.info("爬虫图片插入完成，最终状态：{}", status.get());
+            insertAlbumImages(status, normalizedAlbumName); // 修改插入方法，增加专辑参数
+            log.info("专辑[{}]的图片插入完成，最终状态：{}", normalizedAlbumName, status.get());
 
         } catch (Exception e) {
-            log.error("爬虫执行过程异常", e); // 打印完整堆栈，而非仅消息
+            log.error("专辑[{}]的爬虫执行过程异常", normalizedAlbumName, e);
             status.set("FAILED");
         } finally {
-            // 强制释放资源：销毁进程 + 删除临时文件
+            // 强制释放资源
             if (process != null && process.isAlive()) {
                 process.destroy();
-                log.info("强制销毁爬虫进程");
+                log.info("专辑[{}]的爬虫进程已强制销毁", normalizedAlbumName);
             }
             if (tempFile != null && tempFile.exists() && !tempFile.delete()) {
-                log.warn("临时Python脚本删除失败：{}", tempFile.getAbsolutePath());
+                log.warn("专辑[{}]的临时Python脚本删除失败：{}", normalizedAlbumName, tempFile.getAbsolutePath());
             }
         }
     }
 
+
+    /**
+     * 根据专辑名称选择对应的Python脚本
+     * （可根据实际业务扩展，比如不同专辑用不同爬虫逻辑）
+     */
+    private String getScriptByAlbum(String albumName) {
+        // 示例：如果是"风景"专辑，用专门的脚本；其他用默认脚本
+        if (albumName.contains("壁纸")) {
+            return "static/wall.py";
+        } else if (albumName.contains("pixiv")) {
+            return "static/pixiv.py";
+        }
+        return "static/wall.py";
+    }
+
+    /**
+     * 根据专辑名称选择对应的Python脚本
+     * （可根据实际业务扩展，比如不同专辑用不同爬虫逻辑）
+     */
+    private String getDirAlbum(String albumName) {
+        // 示例：如果是"风景"专辑，用专门的脚本；其他用默认脚本
+        if (albumName.contains("壁纸")) {
+            return "Wallhaven";
+        } else if (albumName.contains("pixiv")) {
+            return "pixiv";
+        }
+        return "Wallhaven";
+    }
+
+
+    public int getTotalCount() {
+        return totalCount.get();
+    }
     @Override
-    public double getPhotoCount() {
-        File dir = new File(wallhavenDir);
+    public double getPhotoCount(String albumName) {
+        File dir = new File(wallhavenDir + getDirAlbum(albumName));
         if (!dir.exists() || !dir.isDirectory()) {
-            log.warn("统计照片数量时，目录不存在：{}", wallhavenDir);
+            log.warn("统计照片数量时，目录不存在：{}", wallhavenDir + getDirAlbum(albumName));
             return 0;
         }
         File[] files = dir.listFiles();
@@ -253,79 +313,90 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
      * 插入爬虫图片：独立事务（REQUIRES_NEW），与外层爬虫逻辑解耦
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
-    public void insertImages(AtomicReference<String> status) {
-        File dir = new File(wallhavenDir);
-        if (!dir.exists() || !dir.isDirectory()) {
-            log.error("插入图片时目录不存在：{}", dir.getAbsolutePath());
+    public void insertAlbumImages(AtomicReference<String> status, String albumName) {
+        // 1. 为当前专辑创建独立目录（避免不同专辑文件混淆）
+        Integer albumId = albumMapper.getIdByName(albumName);
+        String albumDirPath = wallhavenDir + getDirAlbum(albumName) ;
+        File albumDir = new File(albumDirPath);
+
+        // 确保目录存在（不存在则创建）
+        if (!albumDir.exists() && !albumDir.mkdirs()) {
+            log.error("创建专辑目录失败：{}", albumDirPath);
             status.set("FAILED");
             return;
         }
 
-        // 过滤图片文件（jpg/png/jpeg）
-        File[] files = dir.listFiles((d, name) -> {
+        // 2. 过滤当前专辑目录下的图片文件
+        File[] files = albumDir.listFiles((d, name) -> {
             String lowerName = name.toLowerCase();
             return lowerName.endsWith(".jpg") || lowerName.endsWith(".png") || lowerName.endsWith(".jpeg");
         });
 
         if (files == null || files.length == 0) {
-            log.info("目录下无图片文件：{}", dir.getAbsolutePath());
-            status.set("COMPLETED"); // 无文件也算执行完成，而非失败
+            log.info("专辑[{}]目录下无图片文件：{}", albumName, albumDirPath);
+            status.set("COMPLETED");
             return;
         }
 
-        // 转换为Photo列表并批量插入
+        // 3. 转换为Photo列表（关联当前专辑信息）
         List<Photo> photos = Arrays.stream(files)
                 .map(file -> {
                     String fileName = file.getName();
-                    String url = "http://localhost:8080/Wallhaven/" + fileName;
+                    // URL包含专辑标识，便于前端区分
+                    String url = "http://localhost:8080/" + getDirAlbum(albumName) + "/" + fileName;
                     return Photo.builder()
-                            .albumId(albumId) // 从配置注入，避免硬编码1
+                            .albumId(albumId) // 关联专辑ID
                             .photoName(fileName)
                             .photoUrl(url)
                             .build();
                 })
                 .collect(Collectors.toList());
 
+        // 4. 批量插入数据库（只插入当前专辑的图片）
         this.saveBatch(photos);
-        log.info("成功插入图片：{} 张（目录：{}）", photos.size(), dir.getAbsolutePath());
+        log.info("专辑[{}]成功插入图片：{} 张（目录：{}）",
+                albumName, photos.size(), albumDirPath);
         status.set("COMPLETED");
     }
 
     /**
-     * 清理旧数据：独立事务（REQUIRES_NEW），删除文件+删除数据库记录，执行完立即提交
+     * 清理旧数据：只清理当前专辑的文件和数据库记录
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
-    public void clearBeforeSpider() {
-        File dir = new File(wallhavenDir);
-        if (!dir.exists() || !dir.isDirectory()) {
-            log.warn("清理旧数据时目录不存在：{}", wallhavenDir);
-            return;
-        }
+    public void clearBeforeSpider(String albumName) {
+        // 1. 定位当前专辑的目录
+        String albumDirPath = wallhavenDir + getDirAlbum(albumName);
+        File albumDir = new File(albumDirPath);
 
-        // 1. 删除目录下的图片文件（统计成功/失败数量，便于排查）
-        File[] files = dir.listFiles((d, name) -> {
-            String lowerName = name.toLowerCase();
-            return lowerName.endsWith(".jpg") || lowerName.endsWith(".png") || lowerName.endsWith(".jpeg");
-        });
+        if (!albumDir.exists() || !albumDir.isDirectory()) {
+            log.warn("专辑[{}]清理目录不存在：{}", albumName, albumDirPath);
+            // 目录不存在仍需清理数据库记录
+        } else {
+            // 2. 删除当前专辑目录下的图片文件
+            File[] files = albumDir.listFiles((d, name) -> {
+                String lowerName = name.toLowerCase();
+                return lowerName.endsWith(".jpg") || lowerName.endsWith(".png") || lowerName.endsWith(".jpeg");
+            });
 
-        int deletedFileCount = 0;
-        int failedFileCount = 0;
-        if (files != null) {
-            for (File file : files) {
-                if (file.delete()) {
-                    deletedFileCount++;
-                } else {
-                    failedFileCount++;
-                    log.warn("清理文件失败：{}（可能被占用）", file.getAbsolutePath());
+            int deletedFileCount = 0;
+            int failedFileCount = 0;
+            if (files != null) {
+                for (File file : files) {
+                    if (file.delete()) {
+                        deletedFileCount++;
+                    } else {
+                        failedFileCount++;
+                        log.warn("专辑[{}]清理文件失败：{}", albumName, file.getAbsolutePath());
+                    }
                 }
             }
+            log.info("专辑[{}]目录清理完成：路径={}，成功删除={} 个，失败={} 个",
+                    albumName, albumDirPath, deletedFileCount, failedFileCount);
         }
-        log.info("清理目录完成：路径={}，成功删除={} 个，失败={} 个",
-                wallhavenDir, deletedFileCount, failedFileCount);
 
-        // 2. 删除数据库中对应记录（独立事务，执行完立即提交，释放锁）
+        // 3. 删除数据库中当前专辑的记录（精准匹配，避免影响其他专辑）
         int deletedDbCount = photoMapper.delete(new LambdaQueryWrapper<Photo>()
-                .like(Photo::getPhotoUrl, "Wallhaven"));
-        log.info("清理数据库记录完成：删除 {} 条", deletedDbCount);
+                .like(Photo::getPhotoUrl, getDirAlbum(albumName)));
+        log.info("专辑[{}]数据库记录清理完成：删除 {} 条", albumName, deletedDbCount);
     }
 }
