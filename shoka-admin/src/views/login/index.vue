@@ -10,7 +10,7 @@
         </el-input>
       </el-form-item>
       <el-form-item prop="password">
-        <el-input v-model="loginForm.password" type="password" show-password size="large" placeholder="密码"
+        <el-input v-model="loginForm.password" type="text" show-password size="large" placeholder="密码"
                   @keyup.enter="handleLogin()">
           <template #prefix>
             <svg-icon icon-class="password"></svg-icon>
@@ -101,7 +101,7 @@ const handleLogin = () => {
   background-image: url('../../assets/bg.png');
   background-size: cover;
   background-position: center; // 背景居中
-  animation: fadeIn 0.2s ease-in-out;
+  animation: fadeIn 0.3s ease-in-out;
 }
 
 // 新增动画定义
@@ -114,7 +114,6 @@ const handleLogin = () => {
   }
 }
 
-// 优化底部版权信息：增加半透明背景，避免与背景融合
 .el-login-footer {
   height: 40px;
   line-height: 40px;
@@ -122,11 +121,10 @@ const handleLogin = () => {
   bottom: 0;
   width: 100%;
   text-align: center;
-  color: rgba(255, 255, 255, 0.8); // 文字半透明，更柔和
+  color: rgba(255, 255, 255, 0.8);
   font-family: Arial,serif;
   font-size: 12px;
   letter-spacing: 1px;
-  // 新增：底部文字背景，提高可读性
   background: rgba(0, 0, 0, 0.1);
 }
 
@@ -177,32 +175,32 @@ const handleLogin = () => {
 }
 
 :deep(.el-input__wrapper) {
-  background-color: rgba(176, 197, 221, 0.8); // 提高背景透明度，更通透
+  background-color: rgba(176, 197, 221, 0.8);
   height: 48px;
-  border: 1px solid transparent; // 初始透明边框
-  border-radius: 8px; // 增大圆角，与容器呼应
-  transition: all 0.3s ease; // 新增过渡，动画更流畅
+  border: 1px solid transparent;
+  border-radius: 8px;
+  transition: all 0.3s ease;
 }
 
 :deep(.el-input__wrapper.is-focus) {
-  background-color: rgba(255, 255, 255, 0.9); // 聚焦时背景更白，突出
-  border-color: #4096ff; // 聚焦边框用主色调蓝色
-  box-shadow: 0 0 0 3px rgba(64, 150, 255, 0.2); // 聚焦阴影，强化反馈
+  background-color: rgba(209, 229, 241, 0.8);
+  border-color: #4096ff;
+  box-shadow: 0 0 0 3px rgba(64, 150, 255, 0.2);
 }
 
 :deep(.el-input__icon) {
-  color: rgb(44, 51, 65, 0.6); // 加深图标颜色，更清晰
+  color: rgb(44, 51, 65, 0.6);
   transition: color 0.3s ease;
 }
 
 :deep(.el-input__wrapper.is-focus .el-input__icon) {
-  color: #4096ff; // 图标同步变主色调
+  color: #4096ff;
 }
 
 :deep(.el-input__inner) {
-  color: rgb(30, 35, 45); // 加深文字颜色，更清晰
+  color: rgb(30, 35, 45);
   font-family: sans-serif;
-  font-size: 15px; // 微调字号
+  font-size: 15px;
 }
 
 .login-form .el-button {
