@@ -33,7 +33,7 @@ CONFIG = {
     "USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
                   "(KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
     "USER_ID": "120524657",          # pixiv user id (用于 x-user-id / Referer)
-    "DATE": (datetime.datetime.now() - datetime.timedelta(days=12)).strftime("%Y%m%d"),              # 存储子目录
+    "DATE": (datetime.datetime.now() - datetime.timedelta(days=30)).strftime("%Y%m%d"),              # 存储子目录
     "THREADS": 12,
     "CAPACITY_MB": 10000,            # 总流量上限 (MB)
     "STANDARD_TIMEOUT": 10,
