@@ -37,15 +37,15 @@
       <!-- 表格列 -->
       <el-table-column type="selection" width="55" align="center"></el-table-column>
       <!--任务名称 -->
-      <el-table-column label="任务名称" width="160" align="center" prop="taskName"
+      <el-table-column label="任务名称" width="200" align="center" prop="taskName"
                        :show-overflow-tooltip="true"></el-table-column>
       <!--任务组名 -->
       <el-table-column label="任务组名" width="140" align="center" prop="taskGroup"></el-table-column>
       <!-- 调用目标 -->
-      <el-table-column label="调用目标" align="center" prop="invokeTarget"
+      <el-table-column label="调用目标" width="260" align="center" prop="invokeTarget"
                        :show-overflow-tooltip="true"></el-table-column>
       <!-- cron执行表达式 -->
-      <el-table-column label="cron执行表达式" align="center" prop="cronExpression"
+      <el-table-column label="cron执行表达式" width="180" align="center" prop="cronExpression"
                        :show-overflow-tooltip="true"></el-table-column>
       <!-- 状态 -->
       <el-table-column label="状态" align="center" width="100">
@@ -55,7 +55,7 @@
         </template>
       </el-table-column>
       <!-- 备注 -->
-      <el-table-column label="备注" align="center" width="160">
+      <el-table-column label="备注" align="center" width="300">
         <template #default="scope">
           {{ scope.row.remark }}
         </template>
@@ -72,7 +72,7 @@
         </template>
       </el-table-column>
       <!-- 操作 -->
-      <el-table-column label="操作" align="center" width="180">
+      <el-table-column label="操作" align="center">
         <template #default="scope">
           <el-button type="primary" icon="Edit" link @click="openModel(scope.row)">
             编辑
