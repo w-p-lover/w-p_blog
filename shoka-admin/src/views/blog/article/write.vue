@@ -1,125 +1,268 @@
 <template>
   <div class="app-container">
-    <!-- 文章标题 -->
+    <!-- 文章标题区域 -->
     <div class="operation-container">
-      <el-input v-model="articleForm.articleTitle" placeholder="请输入文章标题"></el-input>
-      <el-button type="danger" style="margin-left: 10px" @click="openModel">发布文章</el-button>
+      <el-input
+          v-model="articleForm.articleTitle"
+          placeholder="请输入文章标题"
+          class="title-input"
+          :class="{ 'title-empty': !articleForm.articleTitle.trim() }"
+      ></el-input>
+      <el-button
+          type="primary"
+          class="publish-btn"
+          @click="openModel"
+      >
+        发布文章
+      </el-button>
     </div>
-    <!-- 文章内容 -->
-    <md-editor ref="editorRef" v-model="articleForm.articleContent" :theme="isDark ? 'dark' : 'light'"
-               class="md-container" :toolbars="toolbars" @on-upload-img="uploadImg" placeholder="请输入文章内容..."  previewTheme = "smart-blue">
-      <template #defToolbars>
-        <emoji-extension :on-insert="insert"/>
-      </template>
-    </md-editor>
+
+    <!-- 文章内容编辑器 -->
+    <div class="editor-wrapper">
+      <md-editor
+          ref="editorRef"
+          v-model="articleForm.articleContent"
+          :theme="isDark ? 'dark' : 'light'"
+          class="md-container"
+          :toolbars="toolbars"
+          @on-upload-img="uploadImg"
+          placeholder="请输入文章内容..."
+          previewTheme="smart-blue"
+      >
+        <template #defToolbars>
+          <emoji-extension :on-insert="insert"/>
+        </template>
+      </md-editor>
+    </div>
+
     <!-- 发布或修改对话框 -->
-    <el-dialog title="发布文章" v-model="addOrUpdate" width="600px" top="0.5vh" append-to-body>
-      <el-form ref="articleFormRef" label-width="80px" :model="articleForm" :rules="rules">
+    <el-dialog
+        title="发布文章"
+        v-model="addOrUpdate"
+        width="600px"
+        top="0.5vh"
+        append-to-body
+        class="custom-dialog"
+    >
+      <el-form
+          ref="articleFormRef"
+          label-width="80px"
+          :model="articleForm"
+          :rules="rules"
+          class="article-form"
+      >
         <!-- 文章分类 -->
-        <el-form-item label="文章分类" prop="categoryName">
-          <el-tag type="success" v-show="articleForm.categoryName" :disable-transitions="true" :closable="true"
-                  @close="removeCategory">
+        <el-form-item label="文章分类" prop="categoryName" class="form-item">
+          <el-tag
+              type="success"
+              v-show="articleForm.categoryName"
+              :disable-transitions="true"
+              :closable="true"
+              @close="removeCategory"
+              class="selected-tag"
+          >
             {{ articleForm.categoryName }}
           </el-tag>
+
           <!-- 分类选项 -->
-          <el-popover v-if="!articleForm.categoryName" placement="bottom-start" width="460" trigger="click">
+          <el-popover
+              v-if="!articleForm.categoryName"
+              placement="bottom-start"
+              width="460"
+              trigger="click"
+              popper-class="custom-popover"
+          >
             <template #reference>
-              <el-button type="success" plain>添加分类</el-button>
+              <el-button type="success" plain class="add-btn">添加分类</el-button>
             </template>
             <div class="popover-title">分类</div>
             <!-- 搜索框 -->
-            <el-autocomplete style="width: 100%" v-model="categoryName" :fetch-suggestions="searchCategory"
-                             placeholder="请输入分类名搜索,enter可添加自定义分类" :trigger-on-focus="false"
-                             @keyup.enter="saveCategory"
-                             @select="handleSelectCategory">
+            <el-autocomplete
+                style="width: 100%"
+                v-model="categoryName"
+                :fetch-suggestions="searchCategory"
+                placeholder="请输入分类名搜索,enter可添加自定义分类"
+                :trigger-on-focus="false"
+                @keyup.enter="saveCategory"
+                @select="handleSelectCategory"
+                class="search-input"
+            >
               <template #default="{ item }">
                 <div>{{ item.categoryName }}</div>
               </template>
             </el-autocomplete>
-            <!-- 分类 -->
+            <!-- 分类列表 -->
             <div class="popover-container">
-              <div v-for="item of categoryList" :key="item.id" class="category-item"
-                   @click="addCategory(item.categoryName)">
+              <div
+                  v-for="item of categoryList"
+                  :key="item.id"
+                  class="category-item"
+                  @click="addCategory(item.categoryName)"
+              >
                 {{ item.categoryName }}
               </div>
             </div>
           </el-popover>
         </el-form-item>
+
         <!-- 文章标签 -->
-        <el-form-item label="文章标签" prop="tagNameList">
-          <el-tag v-for="(item, index) of articleForm.tagNameList" :key="index" :disable-transitions="true"
-                  :closable="true" @close="removeTag(item)" style="margin-right: 1rem;">
-            {{ item }}
-          </el-tag>
+        <el-form-item label="文章标签" prop="tagNameList" class="form-item">
+          <div class="tags-container">
+            <el-tag
+                v-for="(item, index) of articleForm.tagNameList"
+                :key="index"
+                :disable-transitions="true"
+                :closable="true"
+                @close="removeTag(item)"
+                class="tag-item"
+            >
+              {{ item }}
+            </el-tag>
+          </div>
+
           <!-- 标签选项 -->
-          <el-popover placement="bottom-start" width="460" trigger="click"
-                      v-if="articleForm.tagNameList.length < 3">
+          <el-popover
+              placement="bottom-start"
+              width="460"
+              trigger="click"
+              v-if="articleForm.tagNameList.length < 3"
+              popper-class="custom-popover"
+          >
             <template #reference>
-              <el-button type="success" plain>添加标签</el-button>
+              <el-button type="success" plain class="add-btn">添加标签</el-button>
             </template>
             <div class="popover-title">标签</div>
             <!-- 搜索框 -->
-            <el-autocomplete style="width: 100%" v-model="tagName" :fetch-suggestions="searchTag"
-                             placeholder="请输入标签名搜索,enter可添加自定义标签" :trigger-on-focus="false"
-                             @keyup.enter="saveTag"
-                             @select="handleSelectTag">
+            <el-autocomplete
+                style="width: 100%"
+                v-model="tagName"
+                :fetch-suggestions="searchTag"
+                placeholder="请输入标签名搜索,enter可添加自定义标签"
+                :trigger-on-focus="false"
+                @keyup.enter="saveTag"
+                @select="handleSelectTag"
+                class="search-input"
+            >
               <template #default="{ item }">
                 <div>{{ item.tagName }}</div>
               </template>
             </el-autocomplete>
-            <!-- 标签 -->
+            <!-- 标签列表 -->
             <div class="popover-container">
-              <div style="margin-bottom: 1rem">添加标签</div>
-              <el-tag v-for="(item, index) of tagList" :key="index" :class="tagClass(item.tagName)"
-                      @click="addTag(item.tagName)" style="margin-right: 1rem;">
-                {{ item.tagName }}
-              </el-tag>
+              <div class="section-title">推荐标签</div>
+              <div class="tags-grid">
+                <el-tag
+                    v-for="(item, index) of tagList"
+                    :key="index"
+                    :class="tagClass(item.tagName)"
+                    @click="addTag(item.tagName)"
+                    class="selectable-tag"
+                >
+                  {{ item.tagName }}
+                </el-tag>
+              </div>
             </div>
           </el-popover>
         </el-form-item>
+
         <!-- 文章类型 -->
-        <el-form-item label="文章类型" prop="articleType">
-          <el-select v-model="articleForm.articleType" placeholder="请选择类型">
-            <el-option v-for="item in typeList" :key="item.value" :label="item.label" :value="item.value">
-            </el-option>
+        <el-form-item label="文章类型" prop="articleType" class="form-item">
+          <el-select
+              v-model="articleForm.articleType"
+              placeholder="请选择类型"
+              class="form-select"
+          >
+            <el-option
+                v-for="item in typeList"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+            ></el-option>
           </el-select>
         </el-form-item>
+
         <!-- 缩略图 -->
-        <el-form-item label="缩略图" prop="articleCover">
-          <el-upload drag :show-file-list="false" :headers="authorization"
-                     action="http://121.41.87.40:8080/admin/article/upload"
-                     accept="image/*" :before-upload="beforeUpload" :on-success="handleSuccess">
+        <el-form-item label="缩略图" prop="articleCover" class="form-item">
+          <el-upload
+              drag
+              :show-file-list="false"
+              :headers="authorization"
+              action="http://121.41.87.40:8080/admin/article/upload"
+              accept="image/*"
+              :before-upload="beforeUpload"
+              :on-success="handleSuccess"
+              class="cover-uploader"
+          >
             <el-icon class="el-icon--upload" v-if="articleForm.articleCover === ''">
               <upload-filled/>
             </el-icon>
             <div class="el-upload__text" v-if="articleForm.articleCover === ''">
               将文件拖到此处，或<em>点击上传</em>
             </div>
-            <img v-else :src="articleForm.articleCover" width="360"/>
+            <img
+                v-else
+                :src="articleForm.articleCover"
+                width="360"
+                class="preview-image"
+                loading="lazy"
+            />
           </el-upload>
         </el-form-item>
+
         <!-- 置顶 -->
-        <el-form-item label="置顶" prop="isTop">
-          <el-switch v-model="articleForm.isTop" :active-value="1" :inactive-value="0"></el-switch>
+        <el-form-item label="置顶" prop="isTop" class="form-item switch-item">
+          <el-switch
+              v-model="articleForm.isTop"
+              :active-value="1"
+              :inactive-value="0"
+              class="form-switch"
+          ></el-switch>
         </el-form-item>
+
         <!-- 推荐 -->
-        <el-form-item label="推荐" prop="isRecommend">
-          <el-switch v-model="articleForm.isRecommend" :active-value="1" :inactive-value="0"></el-switch>
+        <el-form-item label="推荐" prop="isRecommend" class="form-item switch-item">
+          <el-switch
+              v-model="articleForm.isRecommend"
+              :active-value="1"
+              :inactive-value="0"
+              class="form-switch"
+          ></el-switch>
         </el-form-item>
+
         <!-- 发布形式 -->
-        <el-form-item label="发布形式" prop="status">
-          <el-radio-group v-model="articleForm.status">
-            <el-radio :label="1">公开</el-radio>
-            <el-radio :label="2">私密</el-radio>
-            <el-radio :label="3">草稿</el-radio>
+        <el-form-item label="发布形式" prop="status" class="form-item">
+          <el-radio-group v-model="articleForm.status" class="radio-group">
+            <el-radio :label="1" class="radio-option">公开</el-radio>
+            <el-radio :label="2" class="radio-option">私密</el-radio>
+            <el-radio :label="3" class="radio-option">草稿</el-radio>
           </el-radio-group>
         </el-form-item>
       </el-form>
+
       <template #footer>
         <div class="dialog-footer">
-          <el-button v-if="articleForm.status != 3" type="danger" @click="submitForm">发布文章</el-button>
-          <el-button v-else type="danger" @click="submitForm">保存草稿</el-button>
-          <el-button @click="addOrUpdate = false">取 消</el-button>
+          <el-button
+              v-if="articleForm.status != 3"
+              type="primary"
+              class="submit-btn"
+              @click="submitForm"
+          >
+            发布文章
+          </el-button>
+          <el-button
+              v-else
+              type="primary"
+              class="submit-btn"
+              @click="submitForm"
+          >
+            保存草稿
+          </el-button>
+          <el-button
+              class="cancel-btn"
+              @click="addOrUpdate = false"
+          >
+            取 消
+          </el-button>
         </div>
       </template>
     </el-dialog>
@@ -127,6 +270,7 @@
 </template>
 
 <script setup lang="ts">
+// 原有脚本逻辑保持不变
 import {
   addArticle,
   editArticle,
@@ -393,48 +537,314 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.app-container {
+  padding: 24px;
+  background-color: #f5f7fa;
+  min-height: 100vh;
+}
+
+/* 标题区域样式 */
 .operation-container {
   display: flex;
   align-items: center;
-  margin-bottom: 1.25rem;
+  margin-bottom: 24px;
+  gap: 16px;
+}
+
+.title-input {
+  flex: 1;
+  height: 52px;
+  font-size: 18px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.title-input:focus {
+  box-shadow: 0 0 0 2px rgba(145, 163, 255, 0.3);
+  border-color: #6b85ff;
+}
+
+.title-empty {
+  border-color: #ff4d4f;
+  animation: shake 0.5s ease;
+}
+
+.publish-btn {
+  height: 52px;
+  padding: 0 24px;
+  font-size: 16px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.publish-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(107, 133, 255, 0.3);
+}
+
+/* 编辑器区域样式 */
+.editor-wrapper {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.editor-wrapper:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
 .md-container {
-  min-height: 300px;
-  height: calc(100vh - 200px);
+  min-height: 500px;
+  height: calc(100vh - 220px);
+  border: none !important;
 }
 
-.popover-title {
-  margin-bottom: 1rem;
-  text-align: center;
+/* 对话框样式 */
+.custom-dialog {
+  --el-dialog-border-radius: 12px;
+  --el-dialog-box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }
 
-.popover-container {
-  margin-top: 1rem;
-  height: 260px;
-  overflow-y: auto;
+.custom-dialog .el-dialog__header {
+  padding: 20px 24px;
+  border-bottom: 1px solid #f0f2f5;
 }
 
-.category-item {
-  cursor: pointer;
-  padding: 0.6rem 0.5rem;
+.custom-dialog .el-dialog__title {
+  font-size: 18px;
+  font-weight: 600;
 }
 
-.category-item:hover {
-  background-color: #f0f9eb;
-  color: #67c23a;
+.custom-dialog .el-dialog__body {
+  padding: 24px;
+}
+
+/* 表单样式 */
+.article-form {
+  margin-top: 8px;
+}
+
+.form-item {
+  margin-bottom: 20px;
+}
+
+.form-item .el-form-item__label {
+  font-weight: 500;
+  color: #4e5969;
+}
+
+.add-btn {
+  margin-left: 8px;
+  transition: all 0.2s ease;
+}
+
+.add-btn:hover {
+  background-color: #5f92a6;
+}
+
+/* 标签样式 */
+.tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  height: 32px;
 }
 
 .tag-item {
-  margin-right: 1rem;
-  margin-bottom: 1rem;
+  background-color: #f0f5ff;
+  color: #4096ff;
+  height: 100%;
+  border-color: #bfdbfe;
+  transition: all 0.2s ease;
+}
+
+.tag-item:hover {
+  background-color: #e6f0ff;
+}
+
+.selected-tag {
+  margin-bottom: 8px;
+}
+
+/* 下拉弹窗样式 */
+.custom-popover {
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+}
+
+.popover-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #1d2129;
+  text-align: center;
+}
+
+.search-input {
+  margin-bottom: 16px;
+}
+
+.popover-container {
+  max-height: 260px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.popover-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.popover-container::-webkit-scrollbar-thumb {
+  background-color: #ddd;
+  border-radius: 3px;
+}
+
+.category-item {
+  padding: 8px 12px;
+  border-radius: 4px;
   cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 4px;
+}
+
+.category-item:hover {
+  background-color: #f0f5ff;
+  color: #4096ff;
+}
+
+.section-title {
+  margin-bottom: 12px;
+  font-weight: 500;
+  color: #86909c;
+  font-size: 14px;
+}
+
+.tags-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.selectable-tag {
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .tag-item-select {
-  margin-right: 1rem;
-  margin-bottom: 1rem;
-  cursor: not-allowed;
-  color: #ccccd8 !important;
+  background-color: #f5f5f5;
+  color: #d52828;
+  border-color: #d9d9d9;
+}
+
+/* 表单元素样式 */
+.form-select {
+  width: 100%;
+}
+
+.cover-uploader {
+  border: 1px dashed #d9d9d9;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.cover-uploader:hover {
+  border-color: #4096ff;
+}
+
+.preview-image {
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.preview-image:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.switch-item {
+  display: flex;
+  align-items: center;
+}
+
+.form-switch {
+  --el-switch-on-color: #6b85ff;
+}
+
+.radio-group {
+  display: flex;
+  gap: 20px;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* 底部按钮样式 */
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid #f0f2f5;
+}
+
+.submit-btn {
+  background-color: #6b85ff;
+  border-color: #6b85ff;
+  transition: all 0.2s ease;
+}
+
+.submit-btn:hover {
+  background-color: #5573e8;
+  border-color: #5573e8;
+}
+
+.cancel-btn {
+  transition: all 0.2s ease;
+}
+
+.cancel-btn:hover {
+  background-color: #f5f5f5;
+}
+
+/* 动画效果 */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-5px); }
+  40%, 80% { transform: translateX(5px); }
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .app-container {
+    padding: 16px;
+  }
+
+  .operation-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .title-input, .publish-btn {
+    width: 100%;
+  }
+
+  .md-container {
+    height: calc(100vh - 200px);
+  }
+
+  .custom-dialog {
+    width: 90% !important;
+  }
+
+  .radio-group {
+    flex-direction: column;
+    gap: 12px;
+  }
 }
 </style>
