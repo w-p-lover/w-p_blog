@@ -131,8 +131,8 @@
               </button>
               <div
                   class="doc-status"
-                  :class="doc.isEditing ? 'status-editing' : 'status-finished'">
-                {{ doc.isEditing ? '正在编辑' : '已完成' }}
+                  :class="doc.status === 'editing' ? 'status-editing' : 'status-finished'">
+                {{ doc.status === 'editing' ? '正在编辑' : '已完成' }}
               </div>
 
               <div class="card-header">
@@ -319,7 +319,7 @@ const fetchDocs = async () => {
         views: d.views || 0,
         editCount: d.editCount || 0,
         version: d.version || 1,
-        isEditing: d.isEditing || false,
+        status: d.status || false,
         comments: d.comments || 0,
       }));
       collabDocuments.value = allDocs.value;
@@ -402,8 +402,8 @@ const filteredCollabs = computed(() => {
           const matchTag = doc.tags.some(tag => tag.toLowerCase().includes(kw));
           if (!matchTitle && !matchExcerpt && !matchTag) return false;
         }
-        if (docStatus.value === "editing" && !doc.isEditing) return false;
-        if (docStatus.value === "finished" && doc.isEditing) return false;
+        if (docStatus.value === "editing" && doc.status !== 'editing') return false;
+        if (docStatus.value === "finished" && doc.status === 'editing') return false;
         return !(selectedTag.value !== "all" && !doc.tags.includes(selectedTag.value));
       })
       .sort((a, b) => {

@@ -36,6 +36,8 @@ export interface Doc {
     lastUpdateDate: string;
     /** 标签列表 */
     tags: string[];
+    /** 文档状态 */
+    status: string;
     /** 协作者列表（包含名字和可选头像） */
     collaborators: Array<{
         name: string;
@@ -94,4 +96,5 @@ export interface DocCard {
     version: number;
     isEditing: boolean;
     comments: number;
+    status: string;
 }

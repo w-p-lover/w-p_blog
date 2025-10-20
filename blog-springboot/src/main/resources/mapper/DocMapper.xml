@@ -14,6 +14,7 @@
         lead_author,
         version,
         views,
+        status,
         edit_count,
         is_editing,
         last_update_date,
