@@ -534,7 +534,17 @@ const progressColor = computed(() => {
     height: 100%;
   }
 }
+.text-default {
+  color: #333;
+}
 
+.text-failed {
+  color: red;
+}
+
+.text-success {
+  color: green;
+}
 .dialog-footer {
   display: flex;
   align-items: center;
@@ -597,15 +607,15 @@ const progressColor = computed(() => {
 }
 
 .text-default {
-  color: #303133;
+  color: #678ad1;
 }
 
 .text-success {
-  color: #67c23a;
+  color: #88c169;
 }
 
 .text-failed {
-  color: #f56c6c;
+  color: #c15858;
 }
 
 .status-detail {

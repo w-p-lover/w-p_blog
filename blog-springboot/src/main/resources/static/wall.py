@@ -72,7 +72,7 @@ def download_image(final_url, max_retries=2):
 
 # 定义获取每页html信息的函数
 def get_html_info(page):
-    url = f'https://wallhaven.cc/hot?page={page}'
+    url = f'https://wallhaven.cc/toplist?page={page}'
     print(f"正在获取第{page}页的内容...")
     resp = requests_with_retry(url)
     if resp:
@@ -149,7 +149,7 @@ def get_pic(resp_html):
 
 
 def main():
-    final_page = 3
+    final_page = 4
     print(f"TOTAL_COUNT: {final_page * 24 - 24}")
     sys.stdout.flush()
     first_time = time.time()
