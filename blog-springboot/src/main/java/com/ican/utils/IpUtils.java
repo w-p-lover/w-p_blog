@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 /**
@@ -94,8 +96,9 @@ public class IpUtils {
         try {
             String address = searcher.searchByStr(ip);
             if (StringUtils.hasText(address)) {
-                address = address.replace("|0", "");
-                address = address.replace("0|", "");
+                // 转码处理：GBK → UTF-8
+                address = new String(address.getBytes("GBK"), StandardCharsets.UTF_8);
+                address = address.replace("|0", "").replace("0|", "");
                 return address;
             }
             return address;
@@ -103,5 +106,6 @@ public class IpUtils {
             return "";
         }
     }
+
 
 }
