@@ -4,6 +4,7 @@ import com.ican.model.vo.BookVO;
 import com.ican.model.vo.PageResult;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * 书籍服务
@@ -60,4 +61,18 @@ public interface BookService {
      */
     void deleteResource(Integer bookId, int index);
 
+    /**
+     * 运行爬虫任务
+     */
+    void runPythonSpider(AtomicReference<String> spiderStatus);
+
+    /**
+     * 获取书籍总数
+     */
+    int getTotalCount();
+
+    /**
+     * 获取已爬取的书籍数量
+     */
+    double getBookCount();
 }
