@@ -24,7 +24,7 @@
 <script setup lang="ts">
 import {getAlbumList} from "@/api/album";
 import {Album} from "@/api/album/types";
-
+import Waves from "@/components/Waves.vue";
 const albumList = ref<Album[]>([]);
 onMounted(() => {
   getAlbumList().then(({data}) => {

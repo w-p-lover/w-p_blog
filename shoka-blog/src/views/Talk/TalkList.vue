@@ -80,6 +80,7 @@ import {Talk} from "@/api/talk/types";
 import {PageQuery} from "@/model";
 import {formatDateTime} from "@/utils/date";
 import {reactive, toRefs, onMounted} from "vue";
+import Waves from "@/components/Waves.vue";
 
 const data = reactive({
   count: 0,

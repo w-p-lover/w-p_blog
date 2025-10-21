@@ -18,7 +18,7 @@
 
 <script setup lang="ts">
 import useStore from "@/store";
-
+import Waves from "@/components/Waves.vue";
 const {blog} = useStore();
 </script>
 
