@@ -216,7 +216,7 @@
           <template #default="scope">
             <el-tag v-if="scope.row.articleType == 1" type="success" size="small">原创</el-tag>
             <el-tag v-if="scope.row.articleType == 2" type="danger" size="small">转载</el-tag>
-            <el-tag v-if="scope.row.articleType == 3" type="primary" size="small">翻译</el-tag>
+            <el-tag v-if="scope.row.articleType == 3" type="info" size="small">翻译</el-tag>
           </template>
         </el-table-column>
 
@@ -587,8 +587,7 @@ onMounted(() => {
 
 /* 搜索栏 */
 .search-card {
-  border: none;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: 2px 2px 8px rgb(0 0 0 / 10%)
 }
 
 .search-form {
@@ -641,11 +640,11 @@ onMounted(() => {
 }
 
 /* 已删除行样式 */
-::v-deep .deleted-row {
+:deep( .deleted-row) {
   background-color: #fef0f0 !important;
 }
 
-::v-deep .deleted-row td {
+:deep( .deleted-row td) {
   color: #909399 !important;
 }
 

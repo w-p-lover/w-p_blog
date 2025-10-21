@@ -35,13 +35,10 @@
 
 <script setup lang="ts">
 import router from "@/router";
-import useStore from '@/store';
 import {ElMessage, FormInstance, FormRules} from 'element-plus';
 import {reactive, ref} from 'vue';
 import {login} from "@/api/login";
 import {setToken} from "@/utils/token";
-
-const {user} = useStore();
 const ruleFormRef = ref<FormInstance>();
 const loading = ref(false);
 const loginForm = reactive({
