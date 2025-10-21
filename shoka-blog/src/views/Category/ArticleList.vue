@@ -42,7 +42,7 @@
 import {ArticleCondition, ArticleQuery} from '@/api/article/types';
 import {getCategoryArticleList} from '@/api/category';
 import {formatDate} from '@/utils/date';
-
+import Waves from "@/components/Waves/index.vue";
 const route = useRoute();
 const data = reactive({
   queryParams: {

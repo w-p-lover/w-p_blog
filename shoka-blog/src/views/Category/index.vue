@@ -38,7 +38,7 @@
 import {getCategoryList} from "@/api/category";
 import {Category} from "@/api/category/types";
 import Echarts from "@/components/Echarts/index.vue";
-
+import Waves from "@/components/Waves/index.vue";
 interface CollabCategory {
   id: number;
   categoryName: string;

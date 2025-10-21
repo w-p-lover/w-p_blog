@@ -247,6 +247,7 @@ import {ElMessage} from 'element-plus';
 import {Check, RefreshRight, Briefcase, Coffee} from "@element-plus/icons-vue"
 import type {FormInstance, FormRules} from 'element-plus';
 import {addFlowElement, getFlowList} from "@/api/life";
+import Waves from "@/components/Waves/index.vue";
 
 // -------------------------- 原有状态 + 黑夜主题状态 --------------------------
 const isDarkTheme = ref(false); // 黑夜主题开关（核心）

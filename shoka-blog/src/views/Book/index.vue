@@ -275,7 +275,7 @@ import {
 } from "@/api/book";
 import {Edit} from '@element-plus/icons-vue'
 import type {TagProps} from 'element-plus'
-
+import Waves from "@/components/Waves/index.vue";
 const showAddDialog = ref(false);
 const showDetailDialog = ref(false);
 const currentBook = ref<BookVO | null>(null);

@@ -15,6 +15,7 @@
 import Nav from "@/components/ChatHome/Chat/Nav.vue";
 import useStore from "@/store";
 import EventBus from "@/eventBus.ts";
+import Waves from "@/components/Waves/index.vue";
 const { user, app } = useStore();
 
 export default {

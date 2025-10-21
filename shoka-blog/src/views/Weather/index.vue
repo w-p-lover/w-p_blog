@@ -194,6 +194,8 @@ import {
 } from '@element-plus/icons-vue';
 import {ElMessage} from 'element-plus';
 import AmapDistrict from "@/components/Map/AmapDistrict.vue";
+import Waves from "@/components/Waves/index.vue";
+
 const defaultCity = ref('北京');
 const BASE_API = 'http://localhost:8080/weather';
 
