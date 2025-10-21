@@ -104,7 +104,7 @@ import {formatDateTime} from "@/utils/date";
 import {getTagList} from "@/api/tag";
 import {Tag} from "@/api/tag/types";
 import { marked } from 'marked'
-
+import Waves from "@/components/Waves/index.vue";
 const selectedTag = ref(null);
 const tagList = ref<Tag[]>([]);
 const dateRange = ref<[Date, Date]>([

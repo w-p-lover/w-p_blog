@@ -37,7 +37,7 @@
 import { ref, onMounted } from "vue";
 import { addMessage, getMessageList } from "@/api/message";
 import useStore from "@/store";
-
+import Waves from "@/components/Waves/index.vue";
 const { blog, user } = useStore();
 const messageContent = ref("");
 const show = ref(false);

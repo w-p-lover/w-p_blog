@@ -42,6 +42,7 @@
 import {ArticleCondition, ArticleQuery} from "@/api/article/types";
 import {getTagArticleList} from "@/api/tag";
 import {formatDate} from "@/utils/date";
+import Waves from "@/components/Waves/index.vue";
 
 const route = useRoute();
 const data = reactive({

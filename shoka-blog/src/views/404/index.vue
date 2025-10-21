@@ -13,6 +13,7 @@
 </template>
 
 <script setup lang="ts">
+import Waves from "@/components/Waves/index.vue";
 </script>
 
 <style scoped>

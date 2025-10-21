@@ -37,6 +37,7 @@ import {Archives} from '@/api/archives/types';
 import Pagination from '@/components/Pagination/index.vue';
 import {PageQuery} from '@/model';
 import {formatDate} from '@/utils/date';
+import Waves from "@/components/Waves/index.vue";
 
 const data = reactive({
   count: 0,

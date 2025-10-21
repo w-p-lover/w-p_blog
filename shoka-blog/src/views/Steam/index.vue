@@ -193,7 +193,7 @@ import {Teleport} from 'vue';
 import {ElMessage} from "element-plus";
 import {formatDateTime} from "@/utils/date";
 import steamIcon from '@/assets/icons/steam (1).svg';
-
+import Waves from "@/components/Waves/index.vue";
 const data = reactive({
   count: 0,
   queryParams: {

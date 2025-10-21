@@ -51,6 +51,7 @@
 import {updateUserInfo} from "@/api/user";
 import {UserInfo} from "@/api/user/types";
 import useStore from "@/store";
+import Waves from "@/components/Waves/index.vue";
 
 const {user, app} = useStore();
 const router = useRouter();
