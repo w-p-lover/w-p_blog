@@ -35,7 +35,7 @@
         <template #default="scope">
           <div class="create-time">
             <el-icon>
-              <clock/>
+              <Lock/>
             </el-icon>
             <span style="margin-left: 10px">{{ formatDate(scope.row.createTime) }}</span>
           </div>
@@ -78,7 +78,7 @@ import {addTag, deleteTag, getTagList, updateTag} from "@/api/tag";
 import {Tag, TagForm, TagQuery} from "@/api/tag/types";
 import {formatDate} from "@/utils/date";
 import {messageConfirm, notifySuccess} from "@/utils/modal";
-import {FormInstance, FormRules} from 'element-plus';
+import {FormInstance, FormRules,Lock} from 'element-plus';
 import {onMounted, reactive, ref, toRefs} from "vue";
 
 const tagFormRef = ref<FormInstance>();

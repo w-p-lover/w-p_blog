@@ -75,12 +75,13 @@
 </template>
 
 <script setup lang="ts">
-import {addCategory, deleteCategory, getCategoryList, updateCategory} from "@/api/category";
-import {Category, CategoryForm, CategoryQuery} from "@/api/category/types";
 import {formatDate} from "@/utils/date";
-import {messageConfirm, notifySuccess} from "@/utils/modal";
+import {Clock} from '@element-plus/icons-vue';
 import {FormInstance, FormRules} from 'element-plus';
 import {onMounted, reactive, ref, toRefs} from "vue";
+import {messageConfirm, notifySuccess} from "@/utils/modal";
+import {Category, CategoryForm, CategoryQuery} from "@/api/category/types";
+import {addCategory, deleteCategory, getCategoryList, updateCategory} from "@/api/category";
 
 const categoryFormRef = ref<FormInstance>();
 const rules = reactive<FormRules>({
