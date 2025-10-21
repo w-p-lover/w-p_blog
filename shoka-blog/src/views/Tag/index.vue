@@ -42,7 +42,7 @@ import {getTagList} from "@/api/tag";
 import {Tag} from "@/api/tag/types";
 import {getDocTags} from "@/api/collab";
 import {CollabTag} from "@/api/collab/type";
-
+import Waves from "@/components/Waves.vue";
 
 
 // 数据变量

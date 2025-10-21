@@ -51,7 +51,7 @@
 import {getFriendList} from "@/api/friend";
 import {Friend} from "@/api/friend/types";
 import useStore from "@/store";
-
+import Waves from "@/components/Waves.vue";
 const {blog} = useStore();
 const commentType = ref(2);
 const friendList = ref<Friend[]>([]);

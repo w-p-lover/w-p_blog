@@ -25,7 +25,7 @@
 <script setup lang="ts">
 import {getPhotoList} from '@/api/album';
 import {Photo, PhotoInfo} from '@/api/album/types';
-
+import Waves from "@/components/Waves.vue";
 const route = useRoute();
 const photoInfo = ref<PhotoInfo>({
   albumName: "",

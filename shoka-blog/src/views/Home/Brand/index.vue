@@ -19,7 +19,7 @@
 <script setup lang="ts">
 import useStore from "@/store";
 import EasyTyper from "easy-typer-js";
-
+import Waves from "@/components/Waves.vue";
 const obj = reactive({
   output: "",
   isEnd: false,

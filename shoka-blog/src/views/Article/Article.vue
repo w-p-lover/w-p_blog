@@ -130,7 +130,7 @@ import useStore from "@/store";
 import {formatDate} from "@/utils/date";
 import {Share} from 'vue3-social-share';
 import 'vue3-social-share/lib/index.css';
-
+import Waves from "@/components/Waves.vue";
 const {app, blog, user} = useStore();
 const articleRef = ref();
 const route = useRoute();

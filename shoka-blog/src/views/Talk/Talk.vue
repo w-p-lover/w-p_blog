@@ -43,6 +43,7 @@ import {getTalk, likeTalk} from "@/api/talk";
 import {Talk} from "@/api/talk/types";
 import useStore from "@/store";
 import {formatDateTime} from "@/utils/date";
+import Waves from "@/components/Waves.vue";
 
 const route = useRoute();
 const {user, app} = useStore();
