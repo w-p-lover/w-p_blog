@@ -47,12 +47,6 @@ public class ArticleVO {
     private Integer articleType;
 
     /**
-     * 浏览量
-     */
-    @ApiModelProperty(value = "浏览量")
-    private Integer viewCount;
-
-    /**
      * 点赞量
      */
     @ApiModelProperty(value = "点赞量")

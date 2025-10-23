@@ -37,7 +37,7 @@ public class Knife4jConfig {
     private ApiInfo apiInfo() {
         return new ApiInfoBuilder()
                 .title("博客API文档")
-                .description("基于SpringBoot + Vue开发的博客项目")
+                .description("小王的项目")
                 .termsOfServiceUrl("http://121.41.87.40:8080")
                 .contact(new Contact("w&p", "https://github.com/ICAN1999", "3169468598@qq.com"))
                 .version("2.0")

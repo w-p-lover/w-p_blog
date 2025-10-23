@@ -7,7 +7,7 @@ import {UserState} from "@/store/types";
 const {user} = useStore();
 
 export default class WebSocketService {
-    private stompClient: Client | null = null; // STOMP 客户端实例
+    private stompClient: Client | null = null;
     private userId: UnwrapRef<UserState["id"]> | undefined;
     constructor(userId: string) {
         this.userId = user.id
@@ -17,21 +17,20 @@ export default class WebSocketService {
      * @param onMessageCallback 消息接收回调函数
      */
     connect(onMessageCallback: (message: ChatMessage) => void): void {
-        const socket = new SockJS('http://localhost:8080/chat'); // 后端 WebSocket 端点
+        const socket = new SockJS('http://localhost:8080/chat');
         this.stompClient = new Client({
-            webSocketFactory: () => socket as WebSocket, // 通过 SockJS 创建 WebSocket
-            reconnectDelay: 5000,                      // 可选：自动重连延迟（毫秒）
+            webSocketFactory: () => socket as WebSocket,
+            reconnectDelay: 5000,
         });
 
         // 订阅服务端消息
         this.stompClient.onConnect = () => {
             console.log('WebSocket connected');
             if (this.stompClient && this.userId) {
-                // 根据用户ID订阅个人消息队列
                 this.stompClient.subscribe("/queue/messages/" + this.userId, (message) => {
                     console.log("websocket1:"+this.userId)
                     const parsedMessage: ChatMessage = JSON.parse(message.body);
-                    onMessageCallback(parsedMessage); // 处理接收到的消息
+                    onMessageCallback(parsedMessage);
                 });
             }
         };
@@ -42,7 +41,7 @@ export default class WebSocketService {
             console.error('Additional details:', frame.body);
         };
 
-        this.stompClient.activate(); // 激活连接
+        this.stompClient.activate();
     }
 
     /**
@@ -52,7 +51,7 @@ export default class WebSocketService {
     sendMessage(message: ChatMessage): void {
         if (this.stompClient && this.stompClient.connected) {
             this.stompClient.publish({
-                destination: '/app/send', // 服务端端点
+                destination: '/app/send',
                 body: JSON.stringify(message),
             });
         } else {
