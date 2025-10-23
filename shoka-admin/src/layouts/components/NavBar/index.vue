@@ -207,7 +207,7 @@ const exportExcel = () => {
 }
 
 /* 下拉菜单样式优化 */
-::v-deep .el-dropdown-menu {
+:deep( .el-dropdown-menu) {
   border-radius: 8px;
   border: 1px solid #e5e7eb;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
@@ -216,7 +216,7 @@ const exportExcel = () => {
   animation: dropdownFadeIn 0.2s ease-out;
 }
 
-::v-deep .el-dropdown-item {
+:deep( .el-dropdown-menu) {
   padding: 8px 16px;
   font-size: 14px;
   color: #374151;
@@ -233,7 +233,7 @@ const exportExcel = () => {
   }
 }
 
-::v-deep .el-dropdown-item.divided {
+:deep( .el-dropdown-item).divided {
   border-top: 1px dashed #e5e7eb;
 }
 
@@ -250,7 +250,7 @@ const exportExcel = () => {
 }
 
 /* 面包屑样式优化 */
-::v-deep .el-breadcrumb {
+:deep(.el-breadcrumb)  {
   font-size: 14px;
 
   .el-breadcrumb__item {
@@ -276,7 +276,7 @@ const exportExcel = () => {
 }
 
 /* tooltip样式优化 */
-::v-deep .el-tooltip__popper {
+:deep( .el-tooltip__popper) {
   border-radius: 6px;
   padding: 6px 10px;
   font-size: 12px;

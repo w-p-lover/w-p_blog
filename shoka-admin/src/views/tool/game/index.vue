@@ -266,7 +266,7 @@
         <el-form-item label="评分" prop="rating" class="form-item">
           <el-input
               v-model="currentGame.rating"
-              type="number"
+              type="text"
               placeholder="请输入评分"
               class="form-input"
               min="0"
@@ -321,7 +321,6 @@ import {getGameList, addGame, updateGame, deleteGameBatch} from "@/api/game";
 import {ElMessage, FormInstance, FormRules} from "element-plus";
 import {formatDate} from "@/utils/date";
 import {messageConfirm, notifySuccess} from "@/utils/modal";
-import {PageQuery} from "@/model";
 
 // 弹窗控制
 const dialogVisible = ref(false);

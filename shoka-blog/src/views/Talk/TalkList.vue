@@ -264,7 +264,7 @@ onMounted(() => getList());
 }
 
 .timeline-content {
-  background: #fff;
+  background: var(--grey-0);;
   border-radius: 0.75rem;
   padding: 1.5rem;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
@@ -317,7 +317,7 @@ onMounted(() => getList());
 
 .talk-user-name {
   font-weight: 600;
-  color: #333;
+  color: var(--grey-9);
   font-size: 1rem;
   display: flex;
   align-items: center;
@@ -330,7 +330,7 @@ onMounted(() => getList());
 }
 
 .talk-content {
-  color: #555;
+  color: var(--grey-9);
   line-height: 1.8;
   font-size: 0.95rem;
   margin-bottom: 1rem;

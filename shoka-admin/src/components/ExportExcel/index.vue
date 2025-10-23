@@ -114,7 +114,7 @@ defineExpose({
   }
 }
 
-::v-deep .el-switch__core {
+:deep( .el-switch__core)_ {
   background: #b1c0c0;
 }
 
