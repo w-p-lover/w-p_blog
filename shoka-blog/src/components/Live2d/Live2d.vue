@@ -113,10 +113,10 @@ onMounted(async () => {
   position: fixed;
   z-index: 999;
   pointer-events: auto;
-  right: -105px;
+  right: -160px;
   bottom: 0;
   width: 340px;
-  height: 40px;
+  height: 400px;
 }
 
 .message-box {
