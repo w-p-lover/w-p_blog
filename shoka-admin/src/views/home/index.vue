@@ -193,7 +193,7 @@ let category = reactive({
     }
   ]
 });
-let ariticleRank = reactive({
+let articleRank = reactive({
   tooltip: {
     trigger: 'axis',
     axisPointer: {
@@ -241,8 +241,8 @@ const getList = () => {
     }
     if (data.data.articleRankVOList != null) {
       data.data.articleRankVOList.forEach((item) => {
-        ariticleRank.series[0].data.push(item.viewCount);
-        ariticleRank.xAxis.data.push(item.articleTitle);
+        articleRank.series[0].data.push(item.viewCount);
+        articleRank.xAxis.data.push(item.articleTitle);
       });
     }
     if (data.data.categoryVOList != null) {

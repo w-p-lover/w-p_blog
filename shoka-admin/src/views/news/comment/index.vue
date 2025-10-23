@@ -41,7 +41,7 @@
       <!-- 头像 -->
       <el-table-column prop="avatar" label="头像" align="center" width="100">
         <template #default="scope">
-          <img :src="scope.row.avatar" width="40" height="40"/>
+          <img :src="scope.row.avatar" width="40" height="40" alt=""/>
         </template>
       </el-table-column>
       <!-- 评论人昵称 -->
@@ -122,6 +122,7 @@ import {CheckDTO} from '@/model';
 import {formatDate} from '@/utils/date';
 import {messageConfirm, notifySuccess} from '@/utils/modal';
 import {onMounted, reactive, toRefs} from 'vue';
+import {Clock} from '@element-plus/icons-vue';
 
 const data = reactive({
   count: 0,
@@ -177,7 +178,7 @@ const getList = () => {
   });
 };
 const handleCheck = (id?: number) => {
-  let ids: number[] = [];
+  let ids: number[];
   if (id == undefined) {
     ids = commentIdList.value;
   } else {

@@ -205,7 +205,7 @@
                 width="360"
                 class="preview-image"
                 loading="lazy"
-            />
+             alt=""/>
           </el-upload>
         </el-form-item>
 
@@ -295,6 +295,7 @@ import MdEditor from "md-editor-v3";
 import "md-editor-v3/lib/style.css";
 import {computed, onMounted, reactive, ref, toRefs} from "vue";
 import {useRoute} from "vue-router";
+import { UploadFilled } from '@element-plus/icons-vue'
 
 const route = useRoute();
 const articleId = route.params.articleId;

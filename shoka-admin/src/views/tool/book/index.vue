@@ -244,7 +244,7 @@
 
 <script setup lang="ts">
 import {ref, reactive, toRefs, onMounted, computed} from "vue";
-import {getBookList, addBook, updateBook, updateResource, deleteBookBatch, searchBook} from "@/api/book";
+import {getBookList, addBook, updateBook, deleteBookBatch, searchBook} from "@/api/book";
 import {BookVO} from "@/api/book/types";
 import {notifySuccess, messageConfirm} from "@/utils/modal";
 import {ElMessage, ElNotification, FormInstance, FormRules} from "element-plus";

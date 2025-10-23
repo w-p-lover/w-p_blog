@@ -89,7 +89,7 @@ onMounted(async () => {
       BackgroundRGBA: [0, 0, 0, 0],
       ResourcesPath: '/whitecatfree_vts/SDwhite_cat_free.model3.json', // 注意斜杠
       CanvasSize: { width: 300, height: 400 },
-      ShowToolBox: false,
+      ShowToolBox: true,
       LoadFromCache: true,
       Scale: 0.5,
       Offset: { x: 0, y: 0 }
