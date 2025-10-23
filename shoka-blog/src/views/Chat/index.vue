@@ -37,7 +37,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-::v-deep .el-container {
+:deep(.el-container ) {
   height: 100%;
 }
 

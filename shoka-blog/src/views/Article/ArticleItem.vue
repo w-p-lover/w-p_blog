@@ -194,7 +194,7 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 /* 修改日期选择器容器的背景色和圆角 */
-::v-deep .el-date-editor.el-input__wrapper {
+:deep( .el-date-editor.el-input__wrapper ){
   box-shadow: 0 0 0 1px var(--grey-9-a6) inset;
   padding: 18.3px 10px;
   color: var(--grey-9-a6);
