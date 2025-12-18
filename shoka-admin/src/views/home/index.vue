@@ -64,7 +64,7 @@
       <el-col :xs="24" :sm="24" :lg="8">
         <div class="chart-wrapper">
           <div class="title">文章浏览量排行🚀</div>
-          <Echarts :options="ariticleRank" height="350px"></Echarts>
+          <Echarts :options="articleRank" height="350px"></Echarts>
         </div>
       </el-col>
       <el-col :xs="24" :sm="24" :lg="8">
