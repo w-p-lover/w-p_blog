@@ -53,6 +53,11 @@ public class RedisServiceImpl implements RedisService {
     }
 
     @Override
+    public <T> Boolean setIfAbsent(String key, T value, long timeout, TimeUnit timeUnit) {
+        return redisTemplate.opsForValue().setIfAbsent(key, value, timeout, timeUnit);
+    }
+
+    @Override
     public <T> T getObject(String key) {
         return (T) redisTemplate.opsForValue().get(key);
     }

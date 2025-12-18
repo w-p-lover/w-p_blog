@@ -45,6 +45,7 @@ public class ArticleConsumer {
         switch (canalDTO.getType()) {
             case INSERT:
                 elasticsearchService.addArticle(article);
+                break;
             case UPDATE:
                 elasticsearchService.updateArticle(article);
                 break;
