@@ -1,7 +1,6 @@
 package com.ican.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.ican.entity.Article;
 import com.ican.entity.DocVersion;
 import com.ican.model.dto.DocVersionDTO;
 import com.ican.model.vo.DocVersionVO;
