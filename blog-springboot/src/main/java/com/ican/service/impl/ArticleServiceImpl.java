@@ -335,29 +335,30 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 redisService.setExpire(cacheKey, 25 + (int) (Math.random() * 10), TimeUnit.MINUTES);
                 return;
             }
-            // 使用本地锁（ReentrantLock）
-            ReentrantLock lock = (ReentrantLock) articleLocks.get(articleId);
-            lock.lock();  // 获取锁
-            try {
-                // 第二层精确检查
-                if (redisService.hasHashValue(cacheKey, articleId.toString())) {
-                    return;
+            // 使用Redis分布式锁
+            String lockKey = "article:lock:" + articleId;
+            if (redisService.setIfAbsent(lockKey, "1", 5, TimeUnit.SECONDS)) {
+                try {
+                    // 第二层精确检查
+                    if (redisService.hasHashValue(cacheKey, articleId.toString())) {
+                        return;
+                    }
+                    // 查询数据库并更新缓存
+                    ArticleVO article = articleMapper.selectArticleHomeById(articleId);
+                    if (article != null) {
+                        // 缓存数据并设置动态TTL
+                        redisService.setHash(
+                                cacheKey,
+                                articleId.toString(),
+                                JSONUtil.toJsonStr(article)
+                        );
+                        redisService.setExpire(cacheKey,
+                                getDynamicTTL(articleId),
+                                TimeUnit.MINUTES);
+                    }
+                } finally {
+                    redisService.deleteObject(lockKey);  // 释放锁
                 }
-                // 查询数据库并更新缓存
-                ArticleVO article = articleMapper.selectArticleHomeById(articleId);
-                if (article != null) {
-                    // 缓存数据并设置动态TTL
-                    redisService.setHash(
-                            cacheKey,
-                            articleId.toString(),
-                            JSONUtil.toJsonStr(article)
-                    );
-                    redisService.setExpire(cacheKey,
-                            getDynamicTTL(articleId),
-                            TimeUnit.MINUTES);
-                }
-            } finally {
-                lock.unlock();  // 释放锁
             }
         } catch (Exception e) {
             log.error("异步缓存哈希结构热点文章失败", e);
@@ -394,14 +395,29 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             return null;
         }
         ArticleVO article = localCache.get(articleId, Id -> {
-            // 2. 使用 ReentrantLock 来替代 synchronized，提升性能
-            ReentrantLock lock = (ReentrantLock) articleLocks.get(articleId);
-            lock.lock();  // 获取锁
+            // 2. 使用 Redis 分布式锁来替代本地锁，提升分布式环境下的性能和安全性
+            String lockKey = "article:lock:" + articleId;
+            boolean locked = false;
             try {
+                // 自旋尝试获取锁 (最多尝试 3 次，每次间隔 200ms)
+                for (int i = 0; i < 3; i++) {
+                    if (redisService.setIfAbsent(lockKey, "1", 5, TimeUnit.SECONDS)) {
+                        locked = true;
+                        break;
+                    }
+                    try {
+                        Thread.sleep(200);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+
                 // 3. 检查 Redis 缓存
                 String articleJson = redisService.getHash(HOT_ARTICLE, articleId.toString());
                 if (articleJson != null)
                     return JSONUtil.toBean(articleJson, ArticleVO.class);
+                
+                // 如果没有获取到锁且缓存为空，则降级查库（避免死锁导致数据一直为空）
                 // 4. 从数据库查询
                 ArticleVO dbArticle = articleMapper.selectArticleHomeById(articleId);
                 if (dbArticle == null) {
@@ -414,7 +430,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 redisService.setHash(HOT_ARTICLE, articleId.toString(), JSONUtil.toJsonStr(dbArticle));  // 更新 Redis
                 return dbArticle;
             } finally {
-                lock.unlock();
+                if (locked) {
+                    redisService.deleteObject(lockKey);
+                }
             }
         });
         return Optional.ofNullable(article)

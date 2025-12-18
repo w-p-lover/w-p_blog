@@ -67,6 +67,17 @@ public interface RedisService {
     <T> void setObject(String key, T value, long timeout, TimeUnit timeUnit);
 
     /**
+     * 设置有效时间（如果key不存在）
+     *
+     * @param key      键
+     * @param value    值
+     * @param timeout  有效时间
+     * @param timeUnit 时间单位
+     * @return 是否成功
+     */
+    <T> Boolean setIfAbsent(String key, T value, long timeout, TimeUnit timeUnit);
+
+    /**
      * 获取缓存对象
      *
      * @param key 键
