@@ -155,20 +155,29 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void updateArticleDelete(DeleteDTO delete) {
-        // 批量更新文章删除状态
-        List<Article> articleList = delete.getIdList()
-                .stream()
-                .map(id -> Article.builder()
-                        .id(id)
-                        .isDelete(delete.getIsDelete())
-                        .isTop(FALSE)
-                        .isRecommend(FALSE)
-                        .build())
-                .collect(Collectors.toList());
-        this.updateBatchById(articleList);
+        try {
+            // 批量更新文章删除状态
+            List<Article> articleList = delete.getIdList()
+                    .stream()
+                    .map(id -> Article.builder()
+                            .id(id)
+                            .isDelete(delete.getIsDelete())
+                            .isTop(FALSE) // 取消置顶
+                            .isRecommend(FALSE) // 取消推荐
+                            .build())
+                    .collect(Collectors.toList());
+
+            this.updateBatchById(articleList);
+
+            log.info("成功更新 {} 篇文章的删除状态", articleList.size());
+        } catch (Exception e) {
+            log.error("更新文章删除状态失败", e);
+            throw new RuntimeException("更新文章删除状态失败", e);
+        }
     }
+
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -226,11 +235,10 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     }
 
 
-    /**
+/*    *//**
      * 缓存热点文章内容
      *
-     * @param articleId 文章ID
-     */
+     *//*
     private void cacheHotArticleContent(Integer articleId) {
         // 检查是否已缓存
         String cacheKey = HOT_ARTICLE;
@@ -240,59 +248,31 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         }
         ArticleVO article = articleMapper.selectArticleHomeById(articleId);
         if (article != null) {
-            updateArticleStatsFromRedis(articleId,article);
+            updateArticleStatsFromRedis(articleId, article);
             redisService.setHash(cacheKey, articleId.toString(),
                     JSONUtil.toJsonStr(article), 1, TimeUnit.HOURS);
         }
-    }
+    }*/
 
     @Override
     public PageResult<ArticleHomeVO> listArticleHomeVO(String sort, Integer tagId, String start, String end) {
-        // 获取登录用户的电子邮件
-        String email = null;
-        if (StpUtil.isLogin()) {
-            User user = userMapper.selectOne(new LambdaQueryWrapper<User>()
-                    .select(User::getEmail)
-                    .eq(User::getId, StpUtil.getLoginIdAsInt()));
-            email = user != null ? user.getEmail() : null; // 防止空指针
-        }
 
-        // 判断是否使用特殊邮件
-        boolean isSpecialEmail = ObjectUtil.isNotNull(email) && (email.equals(MY_MAIL) || email.equals(MY_RED_MAIL));
-
-        // 获取文章列表
-        List<ArticleHomeVO> articleHomeVOS = isSpecialEmail
-                ? articleMapper.selectArticleAllList(sort, tagId, start, end)
-                : articleMapper.PselectArticleAllList(sort, tagId, start, end);
-
-        long count = articleHomeVOS.size();
-        if (count == 0) {
+        String email = getCurrentUserEmail();
+        boolean isSpecialEmail = checkSpecialEmail(email);
+        List<ArticleHomeVO> articles = queryArticles(sort, tagId, start, end, isSpecialEmail);
+        if (CollectionUtils.isEmpty(articles)) {
             return new PageResult<>();
         }
-
-        // 处理分页逻辑
-        int itemStart = (int) ((PageUtils.getCurrent() - 1) * PageUtils.getSize());
-        int itemEnd = (int) Math.min(itemStart + PageUtils.getSize(), (int) count);
-        List<ArticleHomeVO> paginatedArticles = articleHomeVOS.subList(itemStart, itemEnd);
-
-        // 如果指定标签 ID，直接返回分页结果
-        if (ObjectUtil.isNotNull(tagId)) {
-            return new PageResult<>(paginatedArticles, count);
-        }
-        // 浏览量
-        Map<Object, Double> viewCountMap = redisService.getZsetAllScore(ARTICLE_VIEW_COUNT);
-        paginatedArticles.forEach(item -> {
-            item.setArticleContent(item.getArticleContent().replaceAll("#", ""));
-            item.getTagVOList().sort(Comparator.comparingInt(TagOptionVO::getId));
-            Double viewCount = Optional.ofNullable(viewCountMap.get(item.getId())).orElse((double) 0);
-            if (viewCount >= 20 || item.getIsTop() == 1) { // 热点文章阈值
-                cacheHotArticleContent(item.getId());
-            }
-        });
-        return new PageResult<>(paginatedArticles, count);
+        PageResult<ArticleHomeVO> result = paginateResults(articles);
+        processHotArticles(articles);
+        return result;
     }
 
-    // 处理热点文章逻辑
+    /**
+     * 缓存热点文章内容
+     *
+     * @param articles 文章ID
+     */
     private void processHotArticles(List<ArticleHomeVO> articles) {
         // 批量获取所有文章的浏览数
         Map<Object, Double> viewCountMap = redisService.getZsetAllScore(ARTICLE_VIEW_COUNT);
