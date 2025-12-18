@@ -651,7 +651,79 @@ $text-color-placeholder: #909399;
 $border-radius: 8px;
 $shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.08);
 $transition: all 0.3s ease;
+// 爬虫状态面板
+.spider-status-container {
+  background: #ffffff;
+  border-radius: $border-radius;
+  padding: 25px 30px;
+  margin-top: 20px;
+  box-shadow: $shadow;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  max-width: 1400px;
+  margin-left: auto;
+  margin-right: auto;
 
+  &:hover {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  }
+
+  .spider-status-icon {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 18px;
+
+    .status-icon {
+      font-size: 32px;
+    }
+
+    .running {
+      color: $primary-color;
+      animation: spin 1.5s linear infinite;
+    }
+
+    .completed {
+      color: $success-color;
+    }
+
+    .failed {
+      color: $danger-color;
+    }
+
+    .default {
+      color: $text-color-placeholder;
+    }
+  }
+
+  .spider-status-text {
+    text-align: center;
+    margin-bottom: 20px;
+
+    .status-title {
+      font-size: 16px;
+      font-weight: 500;
+      margin: 0;
+      transition: color 0.3s ease;
+    }
+
+    .text-default {
+      color: $primary-color;
+    }
+
+    .text-success {
+      color: $success-color;
+    }
+
+    .text-failed {
+      color: $danger-color;
+    }
+  }
+
+  .spider-progress-wrapper {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+}
 .photo-item {
   .photo-operation {
     position: absolute;
@@ -973,79 +1045,7 @@ $transition: all 0.3s ease;
     }
   }
 
-  // 爬虫状态面板
-  .spider-status-container {
-    background: #ffffff;
-    border-radius: $border-radius;
-    padding: 25px 30px;
-    margin-top: 20px;
-    box-shadow: $shadow;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    max-width: 1400px;
-    margin-left: auto;
-    margin-right: auto;
 
-    &:hover {
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
-    }
-
-    .spider-status-icon {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 18px;
-
-      .status-icon {
-        font-size: 32px;
-      }
-
-      .running {
-        color: $primary-color;
-        animation: spin 1.5s linear infinite;
-      }
-
-      .completed {
-        color: $success-color;
-      }
-
-      .failed {
-        color: $danger-color;
-      }
-
-      .default {
-        color: $text-color-placeholder;
-      }
-    }
-
-    .spider-status-text {
-      text-align: center;
-      margin-bottom: 20px;
-
-      .status-title {
-        font-size: 16px;
-        font-weight: 500;
-        margin: 0;
-        transition: color 0.3s ease;
-      }
-
-      .text-default {
-        color: $primary-color;
-      }
-
-      .text-success {
-        color: $success-color;
-      }
-
-      .text-failed {
-        color: $danger-color;
-      }
-    }
-
-    .spider-progress-wrapper {
-      width: 100%;
-      max-width: 500px;
-      margin: 0 auto;
-    }
-  }
 
   // 动画
   @keyframes spin {
