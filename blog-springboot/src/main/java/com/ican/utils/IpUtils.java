@@ -95,17 +95,53 @@ public class IpUtils {
     public static String getIpSource(String ip) {
         try {
             String address = searcher.searchByStr(ip);
-            if (StringUtils.hasText(address)) {
-                // 转码处理：GBK → UTF-8
-                address = new String(address.getBytes("GBK"), StandardCharsets.UTF_8);
-                address = address.replace("|0", "").replace("0|", "");
-                return address;
+            if (!StringUtils.hasText(address)) {
+                return "";
             }
-            return address;
+
+            // 如果已经是正确中文，直接返回（最安全）
+            if (containsChinese(address) && !looksLikeGbkMisDecoded(address)) {
+                return clean(address);
+            }
+
+            // 只修复“GBK 被 UTF-8 误解”的那一类
+            if (looksLikeGbkMisDecoded(address)) {
+                address = new String(address.getBytes("GBK"), StandardCharsets.UTF_8);
+                return clean(address);
+            }
+
+            // 其他情况（包括 ����IP），直接返回原值或空
+            return clean(address);
         } catch (Exception e) {
             return "";
         }
     }
 
+    private static String clean(String address) {
+        return address.replace("|0", "").replace("0|", "");
+    }
 
+    /**
+     * 判断字符串里是否包含中文
+     */
+    private static boolean containsChinese(String str) {
+        for (char c : str.toCharArray()) {
+            if (c >= '\u4e00' && c <= '\u9fa5') {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 判断是否像“GBK → UTF-8 错解”的乱码
+     */
+    private static boolean looksLikeGbkMisDecoded(String str) {
+        // 这些字符几乎只会出现在 GBK 乱码中
+        return str.contains("鍐")
+                || str.contains("綉")
+                || str.contains("鏂")
+                || str.contains("绯")
+                || str.contains("鍖");
+    }
 }
