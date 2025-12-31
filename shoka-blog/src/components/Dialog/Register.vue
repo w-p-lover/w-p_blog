@@ -1,23 +1,4 @@
 <template>
-  <n-modal class="bg" v-model:show="dialogVisible" preset="dialog" :show-icon="false" transform-origin="center"
-           :block-scroll="false">
-    <n-input class="mt-11" placeholder="邮箱号" v-model:value="registerForm.username"></n-input>
-    <n-input-group class="mt-11">
-      <n-input placeholder="验证码" v-model:value="registerForm.code"></n-input>
-      <n-button color="#49b1f5" :disabled="flag" @click="sendCode">
-        {{ timer == 0 ? '发送' : `${timer}s` }}
-      </n-button>
-    </n-input-group>
-    <n-input class="mt-11" type="password" show-password-on="click" placeholder="密码"
-             v-model:value="registerForm.password"></n-input>
-    <n-button ref="registerRef" class="mt-11" color="#e9546b" style="width:100%" :loading="loading"
-              @click="handleRegister">
-      注册
-    </n-button>
-    <div class="mt-10"><span class="dialog-text">已有账号？</span><span class="colorFlag"
-                                                                       @click="handleLogin">登录</span>
-    </div>
-  </n-modal>
 </template>
 
 <script setup lang="ts">
