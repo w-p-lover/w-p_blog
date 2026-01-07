@@ -16,12 +16,13 @@
         发布文章
       </el-button>
     </div>
-
     <!-- 文章内容编辑器 -->
     <div class="editor-wrapper">
-      <md-editor
+      <umo-editor
+          :editor-key="options.editorKey"
           ref="editorRef"
           v-model="articleForm.articleContent"
+          @change="handleEditorChange"
           :theme="isDark ? 'dark' : 'light'"
           class="md-container"
           :toolbars="toolbars"
@@ -32,7 +33,7 @@
         <template #defToolbars>
           <emoji-extension :on-insert="insert"/>
         </template>
-      </md-editor>
+      </umo-editor>
     </div>
 
     <!-- 发布或修改对话框 -->
@@ -205,7 +206,8 @@
                 width="360"
                 class="preview-image"
                 loading="lazy"
-             alt=""/>
+                alt="文章缩略图"
+            />
           </el-upload>
         </el-form-item>
 
@@ -270,7 +272,7 @@
 </template>
 
 <script setup lang="ts">
-// 原有脚本逻辑保持不变
+// 接口请求相关
 import {
   addArticle,
   editArticle,
@@ -280,8 +282,13 @@ import {
   uploadArticleCover
 } from "@/api/article";
 import {ArticleForm, CategoryVO, TagVO} from "@/api/article/types";
+
+// 组件相关
 import EmojiExtension from '@/components/EmojiExtension/index.vue';
 import {toolbars} from '@/components/EmojiExtension/staticConfig';
+import { UmoEditor } from '@umoteam/editor';
+
+// 工具类/第三方库
 import router from "@/router";
 import useStore from "@/store";
 import {notifySuccess} from "@/utils/modal";
@@ -290,50 +297,54 @@ import {useDark, useDateFormat} from '@vueuse/core';
 import {AxiosError, AxiosResponse} from 'axios';
 import {ElMessage, FormInstance, FormRules, UploadRawFile} from 'element-plus';
 import * as imageConversion from 'image-conversion';
-import type {ExposeParam, InsertContentGenerator} from 'md-editor-v3';
-import MdEditor from "md-editor-v3";
-import "md-editor-v3/lib/style.css";
 import {computed, onMounted, reactive, ref, toRefs} from "vue";
 import {useRoute} from "vue-router";
 import { UploadFilled } from '@element-plus/icons-vue'
 
+// 编辑器Ref（修正类型：适配umo-editor）
+const editorRef = ref<InstanceType<typeof UmoEditor>>();
+const options = ref({
+  editorKey: 'article-editor-' + Date.now(), // 编辑器唯一标识
+});
+
+// 路由/表单相关
 const route = useRoute();
 const articleId = route.params.articleId;
-const editorRef = ref<ExposeParam>();
 const articleFormRef = ref<FormInstance>();
 const articleTitle = ref(useDateFormat(new Date(), "YYYY-MM-DD"));
 const {tag} = useStore();
+
+// 表单校验规则
 const rules = reactive<FormRules>({
   categoryName: [{required: true, message: "文章分类不能为空", trigger: "blur"}],
   tagNameList: [{required: true, message: "文章标签不能为空", trigger: "blur"}],
 });
+
+// 请求头（token）
 const authorization = computed(() => {
   return {
     Authorization: token_prefix + getToken(),
   }
 });
+
+// 暗黑模式
 const isDark = useDark();
+
+// 标签选中样式计算
 const tagClass = computed(() => {
   return function (item: string) {
     const index = articleForm.value.tagNameList.indexOf(item);
     return index !== -1 ? "tag-item-select" : "tag-item";
   };
 });
+
+// 响应式数据
 const data = reactive({
   addOrUpdate: false,
   typeList: [
-    {
-      value: 1,
-      label: "原创",
-    },
-    {
-      value: 2,
-      label: "转载",
-    },
-    {
-      value: 3,
-      label: "翻译",
-    },
+    { value: 1, label: "原创" },
+    { value: 2, label: "转载" },
+    { value: 3, label: "翻译" },
   ],
   articleForm: {
     id: undefined,
@@ -352,6 +363,8 @@ const data = reactive({
   categoryName: "",
   tagName: "",
 });
+
+// 解构响应式数据
 const {
   addOrUpdate,
   typeList,
@@ -361,31 +374,55 @@ const {
   categoryName,
   tagName,
 } = toRefs(data);
+
+// 编辑器图片上传
 const uploadImg = async (files: Array<File>, callback: (urls: string[]) => void) => {
-  const res = await Promise.all(
-      files.map((file) => {
-        return new Promise((rev, rej) => {
-          const form = new FormData();
-          form.append('file', file);
-          uploadArticleCover(form).then(({data}) => {
-            if (data.flag) {
-              rev(data);
-            }
-          }).catch((error: AxiosError) => rej(error));
-        });
-      })
-  );
-  callback(res.map((item: any) => item.data));
+  try {
+    const res = await Promise.all(
+        files.map((file) => {
+          return new Promise((resolve, reject) => {
+            const form = new FormData();
+            form.append('file', file);
+            uploadArticleCover(form).then(({data}) => {
+              if (data.flag) {
+                resolve(data);
+              } else {
+                reject(new Error(data.msg || '图片上传失败'));
+              }
+            }).catch((error: AxiosError) => reject(error));
+          });
+        })
+    );
+    callback(res.map((item: any) => item.data));
+  } catch (error) {
+    ElMessage.error('图片上传失败，请重试');
+    console.error('图片上传错误：', error);
+  }
 };
+
+// 手动同步编辑器内容到表单（核心修复点）
+const handleEditorChange = (content: string) => {
+  articleForm.value.articleContent = content;
+};
+
+// 打开发布弹窗
 const openModel = () => {
-  if (articleForm.value.articleTitle.trim() == "") {
+  // 主动获取编辑器最新内容（避免v-model同步延迟）
+  const latestContent = editorRef.value?.getContent?.() || articleForm.value.articleContent;
+  articleForm.value.articleContent = latestContent.trim();
+
+  // 标题校验
+  if (articleForm.value.articleTitle.trim() === "") {
     ElMessage.error("文章标题不能为空");
     return false;
   }
-  if (articleForm.value.articleContent.trim() == "") {
+  // 内容校验（现在能拿到真实内容）
+  if (articleForm.value.articleContent === "") {
     ElMessage.error("文章内容不能为空");
     return false;
   }
+
+  // 清空表单校验、加载分类/标签列表
   articleFormRef.value?.clearValidate();
   getCategoryOption().then(({data}) => {
     categoryList.value = data.data;
@@ -393,145 +430,198 @@ const openModel = () => {
   getTagOption().then(({data}) => {
     tagList.value = data.data;
   });
+
   addOrUpdate.value = true;
 };
+
+// 移除标签
 const removeTag = (item: string) => {
   const index = articleForm.value.tagNameList.indexOf(item);
-  articleForm.value.tagNameList.splice(index, 1);
+  if (index > -1) {
+    articleForm.value.tagNameList.splice(index, 1);
+  }
 };
+
+// 选择标签
 const handleSelectTag = (item: TagVO) => {
   addTag(item.tagName);
 };
+
+// 保存自定义标签
 const saveTag = () => {
-  if (tagName.value.trim() != "") {
+  if (tagName.value.trim() !== "") {
     addTag(tagName.value);
     tagName.value = "";
   }
 };
+
+// 添加标签
 const addTag = (item: string) => {
-  if (articleForm.value.tagNameList.indexOf(item) == -1) {
-    articleForm.value.tagNameList.push(item);
+  const trimItem = item.trim();
+  if (trimItem && articleForm.value.tagNameList.indexOf(trimItem) === -1) {
+    articleForm.value.tagNameList.push(trimItem);
   }
 };
+
+// 搜索标签
 const searchTag = (keyword: string, cb: (arg: TagVO[]) => void) => {
   const results = keyword
       ? tagList.value.filter(createTagFilter(keyword))
-      : tagList.value
+      : tagList.value;
   cb(results);
 };
+
+// 标签过滤函数
 const createTagFilter = (queryString: string) => {
-  return (restaurant: TagVO) => {
-    return (
-        restaurant.tagName.indexOf(queryString) !== -1
-    )
-  }
+  return (item: TagVO) => {
+    return item.tagName.indexOf(queryString) !== -1;
+  };
 };
+
+// 移除分类
 const removeCategory = () => {
   articleForm.value.categoryName = "";
 };
+
+// 选择分类
 const handleSelectCategory = (item: CategoryVO) => {
   addCategory(item.categoryName);
 };
+
+// 保存自定义分类
 const saveCategory = () => {
-  // 分类不为空
-  if (categoryName.value.trim() != "") {
+  if (categoryName.value.trim() !== "") {
     addCategory(categoryName.value);
     categoryName.value = "";
   }
 };
+
+// 添加分类
 const addCategory = (item: string) => {
-  articleForm.value.categoryName = item;
+  articleForm.value.categoryName = item.trim();
 };
+
+// 搜索分类
 const searchCategory = (keyword: string, cb: (arg: CategoryVO[]) => void) => {
   const results = keyword
       ? categoryList.value.filter(createCategoryFilter(keyword))
-      : categoryList.value
+      : categoryList.value;
   cb(results);
 };
+
+// 分类过滤函数
 const createCategoryFilter = (queryString: string) => {
-  return (restaurant: CategoryVO) => {
-    return (
-        restaurant.categoryName.indexOf(queryString) !== -1
-    )
+  return (item: CategoryVO) => {
+    return item.categoryName.indexOf(queryString) !== -1;
+  };
+};
+
+// 插入表情（适配umo-editor API）
+const insert = (content: string) => {
+  if (editorRef.value) {
+    // 调用umo-editor插入内容方法
+    editorRef.value.insertContent?.(content);
+    // 插入后同步表单内容
+    articleForm.value.articleContent = editorRef.value.getContent?.() || '';
   }
 };
-const insert = (generator: InsertContentGenerator) => {
-  editorRef.value?.insert(generator);
-};
+
+// 缩略图上传成功
 const handleSuccess = (response: AxiosResponse) => {
-  articleForm.value.articleCover = response.data;
+  if (response.data.flag) {
+    articleForm.value.articleCover = response.data.data;
+  } else {
+    ElMessage.error('缩略图上传失败：' + response.data.msg);
+  }
 };
+
+// 缩略图上传前压缩
 const beforeUpload = (rawFile: UploadRawFile) => {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
+    // 小于200KB直接上传
     if (rawFile.size / 1024 < 200) {
       resolve(rawFile);
+      return;
     }
-    // 压缩到200KB,这里的200就是要压缩的大小,可自定义
+    // 压缩到200KB
     imageConversion
         .compressAccurately(rawFile, 200)
         .then(res => {
           resolve(res);
+        })
+        .catch(() => {
+          resolve(rawFile); // 压缩失败则上传原文件
         });
   });
 };
+
+// 提交表单（发布/保存草稿）
 const submitForm = () => {
   articleFormRef.value?.validate((valid) => {
-    if (valid) {
-      if (articleForm.value.id !== undefined) {
-        updateArticle(articleForm.value).then(({data}) => {
-          if (data.flag) {
-            notifySuccess(data.msg);
-            tag.delView({path: `/article/write/${articleForm.value.id}`});
-            router.push({path: "/article/list"});
-            articleForm.value = {
-              id: undefined,
-              articleCover: "",
-              articleTitle: articleTitle.value,
-              articleContent: "",
-              categoryName: "",
-              tagNameList: [],
-              articleType: 1,
-              isTop: 0,
-              isRecommend: 0,
-              status: 1,
-            };
-          }
-          addOrUpdate.value = false;
-        });
+    if (!valid) return;
+
+    // 最终确认编辑器内容
+    const finalContent = editorRef.value?.getContent?.() || articleForm.value.articleContent;
+    articleForm.value.articleContent = finalContent;
+
+    // 编辑/新增逻辑
+    const request = articleForm.value.id
+        ? updateArticle(articleForm.value)
+        : addArticle(articleForm.value);
+
+    request.then(({data}) => {
+      if (data.flag) {
+        notifySuccess(data.msg);
+        // 关闭标签页并跳转列表
+        const path = articleForm.value.id
+            ? `/article/write/${articleForm.value.id}`
+            : "/article/write";
+        tag.delView({path});
+        router.push({path: "/article/list"});
+
+        // 重置表单
+        articleForm.value = {
+          id: undefined,
+          articleCover: "",
+          articleTitle: articleTitle.value,
+          articleContent: "",
+          categoryName: "",
+          tagNameList: [],
+          articleType: 1,
+          isTop: 0,
+          isRecommend: 0,
+          status: 1,
+        };
       } else {
-        addArticle(articleForm.value).then(({data}) => {
-          if (data.flag) {
-            notifySuccess(data.msg);
-            tag.delView({path: "/article/write"});
-            router.push({path: "/article/list"});
-            articleForm.value = {
-              id: undefined,
-              articleCover: "",
-              articleTitle: articleTitle.value,
-              articleContent: "",
-              categoryName: "",
-              tagNameList: [],
-              articleType: 1,
-              isTop: 0,
-              isRecommend: 0,
-              status: 1,
-            };
-          }
-          addOrUpdate.value = false;
-        });
+        ElMessage.error(data.msg || '操作失败');
       }
-    }
-  })
+      addOrUpdate.value = false;
+    }).catch((error) => {
+      ElMessage.error('网络异常，操作失败');
+      console.error('提交表单错误：', error);
+    });
+  });
 };
+
+// 初始化（编辑文章时回显数据）
 onMounted(() => {
   if (articleId) {
     editArticle(Number(articleId)).then(({data}) => {
       if (data.flag) {
         articleForm.value = data.data;
+        // 主动给编辑器赋值（避免v-model同步问题）
+        if (editorRef.value && data.data.articleContent) {
+          editorRef.value.setContent?.(data.data.articleContent);
+        }
       } else {
+        ElMessage.error(data.msg || '获取文章信息失败');
         tag.delView({path: `/article/write/${articleId}`});
         router.push({path: "/article/list"});
       }
+    }).catch(() => {
+      ElMessage.error('网络异常，获取文章信息失败');
+      tag.delView({path: `/article/write/${articleId}`});
+      router.push({path: "/article/list"});
     });
   }
 });
