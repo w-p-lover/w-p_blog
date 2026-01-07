@@ -142,7 +142,7 @@
             v-model="cityInput"
             :fetch-suggestions="fetchCities"
             placeholder="输入城市名，回车或选择"
-            @select="selectCity"
+            @select="onEnterCity"
             @keyup.enter.native="onEnterCity"
             clearable
         >
@@ -375,7 +375,6 @@ const onEnterCity = async () => {
   // 尝试匹配缓存
   const found = cityListCache.value.find(c => c.value === cityInput.value || c.name === cityInput.value);
   if (found) {
-    weatherTitle.value = found.adm1;
     selectCity(found);
     return;
   }
@@ -385,7 +384,6 @@ const onEnterCity = async () => {
     const {data} = await axios.get(`${BASE_API}/search`, {params: {keyword: cityInput.value.trim()}});
     const arr = data?.data || [];
     if (arr.length > 0) {
-      weatherTitle.value = arr[0].adm1
       selectCity({id: arr[0].id, name: arr[0].name, adm2: arr[0].adm2});
     } else {
       ElMessage.info('未找到匹配城市');
@@ -399,9 +397,11 @@ const onEnterCity = async () => {
 
 // 选择城市
 const selectCity = async (city) => {
+  debugger
   currentCity.value = city.name || city.value || currentCity.value;
   showCitySelector.value = false;
   cityInput.value = '';
+  weatherTitle.value = city.adm1;
   await fetchWeatherData(city.id || cityIdFallback(city));
 };
 
