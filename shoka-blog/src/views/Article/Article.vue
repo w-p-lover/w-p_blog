@@ -37,7 +37,7 @@
     <div class="main-container" v-if="article">
       <div class="left-container" :class="app.sideFlag ? 'test' : ''">
         <div class="article-container">
-          <v-md-preview ref="articleRef" class="md" v-viewer :text="article.articleContent"></v-md-preview>
+          <v-md-preview ref="articleRef" class="md" v-viewer :text="article.articleContent" :anchor-heading="{ enable: true }"></v-md-preview>
           <div class="article-post">
             <div class="tag-share">
               <router-link :to="`/tag/${tag.id}`" class="article-tag" v-for="tag in article.tagVOList" :key="tag.id">
@@ -115,7 +115,7 @@
       </div>
       <div class="right-container" :class="app.sideFlag ? 'temp' : ''">
         <div class="side-card">
-          <Catalog v-if="articleLoaded" :domRef="articleRef"></Catalog>
+          <Catalog v-if="articleLoaded && articleRef" :domRef="articleRef"></Catalog>
         </div>
       </div>
     </div>
