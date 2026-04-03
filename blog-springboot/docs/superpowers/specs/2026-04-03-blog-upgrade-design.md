@@ -60,7 +60,7 @@
 | 组件 | 变化 | 作用 |
 |------|------|------|
 | Spring Boot 2.6 → 3.x | 升级 | Spring AI 必须，Java 17 支持 |
-| Java 8/11 → Java 17 | 升级 | LTS，虚拟线程，Records，Switch 表达式 |
+| Java 8/11 → Java 17 | 升级 | LTS，Records，Text Block，Switch 表达式，instanceof 模式匹配 |
 | Caffeine + Redis（散落） → MultiLevelCacheManager | 重构 | 统一缓存抽象，@Cacheable 无感知 |
 | 手写 setNX → Redisson | 替换 | 安全的分布式锁，自动续期 |
 | 无 → @RateLimit + Redis Lua | 新增 | 接口限流，防刷 |
