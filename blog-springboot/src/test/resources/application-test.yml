@@ -1,0 +1,4 @@
+# 测试环境配置，继承 application.yml，覆盖需要的部分
+spring:
+  quartz:
+    auto-startup: false  # 测试时不启动定时任务
