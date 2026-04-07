@@ -2,7 +2,7 @@ package com.ican.model.dto;
 
 import lombok.Data;
 
-import javax.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank;
 
 /**
  * QQ登录DTO

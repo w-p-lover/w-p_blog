@@ -11,8 +11,6 @@ import com.ican.model.dto.ConditionDTO;
 import com.ican.model.vo.*;
 import com.ican.service.CommentService;
 import com.ican.strategy.context.LikeStrategyContext;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +25,6 @@ import static com.ican.constant.OptTypeConstant.UPDATE;
  *
  * @author xcs
  **/
-@Api(tags = "评论模块")
 @RestController
 public class CommentController {
 
@@ -43,7 +40,6 @@ public class CommentController {
      * @param condition 条件
      * @return {@link Result<CommentBackVO>} 后台评论
      */
-    @ApiOperation(value = "查看后台评论")
     @SaCheckPermission("news:comment:list")
     @GetMapping("/admin/comment/list")
     public Result<PageResult<CommentBackVO>> listCommentBackVO(ConditionDTO condition) {
@@ -57,7 +53,6 @@ public class CommentController {
      * @return {@link Result<>}
      */
     @SaCheckLogin
-    @ApiOperation(value = "添加评论")
     @SaCheckPermission("news:comment:add")
     @PostMapping("/comment/add")
     public Result<?> addComment(@Validated @RequestBody CommentDTO comment) {
@@ -72,7 +67,6 @@ public class CommentController {
      * @return {@link Result<>}
      */
     @OptLogger(value = DELETE)
-    @ApiOperation(value = "删除评论")
     @SaCheckPermission("news:comment:delete")
     @DeleteMapping("/admin/comment/delete")
     public Result<?> deleteComment(@RequestBody List<Integer> commentIdList) {
@@ -87,7 +81,6 @@ public class CommentController {
      * @return {@link Result<>}
      */
     @OptLogger(value = UPDATE)
-    @ApiOperation(value = "审核评论")
     @SaCheckPermission("news:comment:pass")
     @PutMapping("/admin/comment/pass")
     public Result<?> updateCommentCheck(@Validated @RequestBody CheckDTO check) {
@@ -102,7 +95,6 @@ public class CommentController {
      * @return {@link Result<>}
      */
     @SaCheckLogin
-    @ApiOperation(value = "点赞评论")
     @AccessLimit(seconds = 60, maxCount = 3)
     @SaCheckPermission("news:comment:like")
     @PostMapping("/comment/{commentId}/like")
@@ -116,7 +108,6 @@ public class CommentController {
      *
      * @return {@link List<RecentCommentVO>}
      */
-    @ApiOperation(value = "查看最新评论")
     @GetMapping("/recent/comment")
     public Result<List<RecentCommentVO>> listRecentCommentVO() {
         return Result.success(commentService.listRecentCommentVO());
@@ -128,7 +119,6 @@ public class CommentController {
      * @param condition 条件
      * @return {@link Result<CommentVO>}
      */
-    @ApiOperation(value = "查看评论")
     @GetMapping("/comment/list")
     public Result<PageResult<CommentVO>> listCommentVO(ConditionDTO condition) {
         return Result.success(commentService.listCommentVO(condition));
@@ -140,7 +130,6 @@ public class CommentController {
      * @param commentId 评论id
      * @return {@link Result<ReplyVO>} 回复评论列表
      */
-    @ApiOperation(value = "查看回复评论")
     @GetMapping("/comment/{commentId}/reply")
     public Result<List<ReplyVO>> listReply(@PathVariable("commentId") Integer commentId) {
         return Result.success(commentService.listReply(commentId));

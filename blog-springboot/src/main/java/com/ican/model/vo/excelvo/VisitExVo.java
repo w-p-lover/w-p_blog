@@ -4,8 +4,6 @@ import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.annotation.write.style.ColumnWidth;
 import com.alibaba.excel.annotation.write.style.ContentRowHeight;
 import com.alibaba.excel.annotation.write.style.HeadRowHeight;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -23,13 +21,11 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode
 @ColumnWidth(15)
 @Builder
-@ApiModel(description = "访问记录导出")
 public class VisitExVo {
     /**
      * 访问页
      */
     @ExcelProperty(value = "访问页", index = 0)
-    @ApiModelProperty(value = "访问页")
     private String page;
 
     /**
@@ -37,7 +33,6 @@ public class VisitExVo {
      */
     @ExcelProperty(value = "操作系统", index = 1)
     @ColumnWidth(50) // 设置列宽（可以根据需要调整宽度）
-    @ApiModelProperty(value = "操作系统")
     private String os;
 
     /**
@@ -45,7 +40,6 @@ public class VisitExVo {
      */
     @ExcelProperty(value = "浏览器", index = 2)
     @ColumnWidth(50) // 设置列宽（可以根据需要调整宽度）
-    @ApiModelProperty(value = "浏览器")
     private String browser;
 
     /**
@@ -53,7 +47,6 @@ public class VisitExVo {
      */
     @ExcelProperty(value = "IP地址", index = 3)
     @ColumnWidth(50) // 设置列宽（可以根据需要调整宽度）
-    @ApiModelProperty(value = "IP地址")
     private String ipAddress;
 
     /**
@@ -61,7 +54,6 @@ public class VisitExVo {
      */
     @ExcelProperty(value = "IP来源", index = 4)
     @ColumnWidth(50) // 设置列宽（可以根据需要调整宽度）
-    @ApiModelProperty(value = "IP来源")
     private String IpSource;
 
     /**
@@ -69,6 +61,5 @@ public class VisitExVo {
      */
     @ExcelProperty(value = "访问时间", index = 5)
     @ColumnWidth(50) // 设置列宽（可以根据需要调整宽度）
-    @ApiModelProperty(value = "访问时间")
     private String createTime;
 }

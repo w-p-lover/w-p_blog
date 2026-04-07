@@ -2,8 +2,8 @@ package com.ican.annotation;
 
 import com.ican.validator.CommentTypeValidator;
 
-import javax.validation.Constraint;
-import javax.validation.Payload;
+import jakarta.validation.Constraint;
+import jakarta.validation.Payload;
 import java.lang.annotation.*;
 
 /**
@@ -17,7 +17,7 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface CommentType {
 
-    String message() default "{javax.validation.constraints.NotBlank.message}";
+    String message() default "{jakarta.validation.constraints.NotBlank.message}";
 
     Class<?>[] groups() default {};
 

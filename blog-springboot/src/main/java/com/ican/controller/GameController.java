@@ -7,8 +7,6 @@ import com.ican.model.dto.GameDTO;
 import com.ican.model.vo.GameVO;
 import com.ican.model.vo.Result;
 import com.ican.service.GameService;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,7 +26,6 @@ public class GameController {
     /**
      * 获取游戏列表（分页）
      */
-    @ApiOperation("查看游戏库列表")
     @GetMapping("/list")
     public Result<Map<String, Object>> getGameList(ConditionDTO condition) {
         return Result.success(gameService.getGameList(condition));
@@ -41,8 +38,6 @@ public class GameController {
      * @return {@link Result<String>}
      */
     @OptLogger(value = UPLOAD)
-    @ApiOperation(value = "上传截图图片")
-    @ApiImplicitParam(name = "file", value = "截图图片", required = true, dataType = "MultipartFile")
     @SaCheckPermission("game:upload")
     @PostMapping("/admin/upload")
     public Result<String> uploadTalkCover(@RequestParam("file") MultipartFile file) {
@@ -51,7 +46,6 @@ public class GameController {
     /**
      * 获取游戏列表（分页）
      */
-    @ApiOperation("查看游戏库列表")
     @GetMapping("/admin/list")
     public Result<Map<String, Object>> getAdminGameList(ConditionDTO condition) {
         return Result.success(gameService.getAdminGameList(condition));
@@ -60,7 +54,6 @@ public class GameController {
 /*    *//**
      * 获取单个游戏详情
      *//*
-    @ApiOperation("获取游戏详情")
     @GetMapping("/admin/{id}")
     public Result<GameVO> getGame(@PathVariable("id") Long id) {
         return Result.success(gameService.getGameById(id));
@@ -69,7 +62,6 @@ public class GameController {
     /**
      * 新增游戏
      */
-    @ApiOperation("新增游戏")
     @PostMapping("/admin/add")
     public Result<Void> addGame(@RequestBody GameDTO gameDTO) {
         gameService.addGame(gameDTO);
@@ -79,7 +71,6 @@ public class GameController {
     /**
      * 更新游戏
      */
-    @ApiOperation("更新游戏")
     @PutMapping("/admin/update")
     public Result<Void> updateGame(@RequestBody GameDTO gameDTO) {
         gameService.updateGame(gameDTO);
@@ -89,7 +80,6 @@ public class GameController {
     /**
      * 删除游戏（支持批量）
      */
-    @ApiOperation("删除游戏")
     @DeleteMapping("/admin/delete")
     public Result<Void> deleteGame(@RequestBody List<Long> ids) {
         gameService.deleteGameBatch(ids);

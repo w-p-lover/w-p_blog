@@ -1,7 +1,5 @@
 package com.ican.model.vo;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import static com.ican.enums.StatusCodeEnum.FAIL;
@@ -13,31 +11,26 @@ import static com.ican.enums.StatusCodeEnum.SUCCESS;
  * @author xcs
  */
 @Data
-@ApiModel(description = "结果返回类")
 public class Result<T> {
 
     /**
      * 返回状态
      */
-    @ApiModelProperty(value = "返回状态")
     private Boolean flag;
 
     /**
      * 状态码
      */
-    @ApiModelProperty(value = "状态码")
     private Integer code;
 
     /**
      * 返回信息
      */
-    @ApiModelProperty(value = "返回信息")
     private String msg;
 
     /**
      * 返回数据
      */
-    @ApiModelProperty(value = "返回数据")
     private T data;
 
     public static <T> Result<T> success() {

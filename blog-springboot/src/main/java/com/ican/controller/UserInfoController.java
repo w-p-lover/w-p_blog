@@ -8,8 +8,6 @@ import com.ican.model.vo.PageResult;
 import com.ican.model.vo.Result;
 import com.ican.model.vo.UserInfoVO;
 import com.ican.service.UserService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.validation.annotation.Validated;
@@ -21,7 +19,6 @@ import org.springframework.web.multipart.MultipartFile;
  *
  * @author xcs
  **/
-@Api(tags = "用户信息模块")
 @RestController
 @EnableAspectJAutoProxy(proxyTargetClass = false)
 public class UserInfoController {
@@ -35,7 +32,6 @@ public class UserInfoController {
      * @return {@link UserInfoVO} 用户信息
      */
     @SaCheckLogin
-    @ApiOperation(value = "获取登录用户信息")
     @GetMapping("/user/getUserInfo")
     public Result<UserInfoVO> getUserInfo() {
         return Result.success(userService.getUserInfo());
@@ -47,7 +43,6 @@ public class UserInfoController {
      * @param email 邮箱信息
      * @return {@link Result<>}
      */
-    @ApiOperation(value = "修改用户邮箱")
     @SaCheckPermission(value = "user:email:update")
     @PutMapping("/user/email")
     public Result<?> updateUserEmail(@Validated @RequestBody EmailDTO email) {
@@ -61,7 +56,6 @@ public class UserInfoController {
      * @param file 文件
      * @return {@link Result<String>} 头像地址
      */
-    @ApiOperation(value = "修改用户头像")
     @SaCheckPermission(value = "user:avatar:update")
     @PostMapping("/user/avatar")
     public Result<String> updateUserAvatar(@RequestParam(value = "file") MultipartFile file) {
@@ -74,7 +68,6 @@ public class UserInfoController {
      * @param userInfo 用户信息
      * @return {@link Result<>}
      */
-    @ApiOperation(value = "修改用户信息")
     @PutMapping("/user/info")
     public Result<?> updateUserInfo(@Validated @RequestBody UserInfoDTO userInfo) {
         userService.updateUserInfo(userInfo);
@@ -87,7 +80,6 @@ public class UserInfoController {
      * @param user 用户信息
      * @return {@link Result<>}
      */
-    @ApiOperation(value = "修改用户密码")
     @PutMapping("/user/password")
     public Result<?> updatePassword(@Validated @RequestBody UserDTO user) {
         userService.updatePassword(user);
@@ -101,7 +93,6 @@ public class UserInfoController {
      * @param condition 条件
      * @return {@link OnlineVO} 在线用户列表
      */
-    @ApiOperation(value = "查看共享平台已存在用户")
     @GetMapping("/collab/writerList")
     public Result<PageResult<DocDTO.CollabDTO>> getUserLis(ConditionDTO condition) {
         return Result.success(userService.getUserLis(condition));
