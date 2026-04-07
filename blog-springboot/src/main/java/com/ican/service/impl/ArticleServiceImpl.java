@@ -66,6 +66,8 @@ import static com.ican.enums.FilePathEnum.ARTICLE;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+//TODO 布隆过滤器
+//TODO 看一下能不能兼容延迟双删，如果不行就去看看大麦那边
 public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> implements ArticleService {
 
     private final UserMapper userMapper;

@@ -158,7 +158,7 @@
             <!-- 已有账号跳转 -->
             <div class="register-tip mt-10">
               <span class="dialog-text">已有账号？</span>
-              <span class="colorFlag" @click="handleLogin">登录</span>
+              <span class="colorFlag" @click="switchToLogin">登录</span>
             </div>
           </div>
         </div>

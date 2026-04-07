@@ -173,7 +173,7 @@ sa-token:
   is-log: false
 
 spider:
-  dir: ${user.dir}/blog-springboot/src/main/resources/static/
+  dir: ${user.dir}\src\main\resources\static\
   python:
     cmd: python
   photo:
