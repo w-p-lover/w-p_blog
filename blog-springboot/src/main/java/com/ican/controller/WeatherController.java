@@ -4,7 +4,7 @@ import com.ican.model.dto.WeatherData;
 import com.ican.model.vo.Result;
 import com.ican.service.WeatherService;
 import org.springframework.web.bind.annotation.*;
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.List;
 
 @RestController

@@ -5,8 +5,6 @@ import com.ican.model.dto.ChatMesDTO;
 import com.ican.model.vo.FriendshipVO;
 import com.ican.model.vo.ChatRecordVO;
 import com.ican.service.ChatService;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -34,8 +32,6 @@ public class ChatController {
     }
 
     @OptLogger(value = UPLOAD)
-    @ApiOperation(value = "上传聊天文件")
-    @ApiImplicitParam(name = "file", value = "聊天文件", required = true, dataType = "MultipartFile")
     @PostMapping("/upload")
     public String uploadTalkFile(@RequestParam("type") String type,@RequestParam("file") MultipartFile file) {
         return chatService.uploadTalkFile(type,file);
@@ -55,7 +51,6 @@ public class ChatController {
     }
 
     @GetMapping("/getUserUid")
-    @ApiOperation("获取用户Uid")
         public String getUserUid() {
             //好像没用
             return chatService.getUserUid();

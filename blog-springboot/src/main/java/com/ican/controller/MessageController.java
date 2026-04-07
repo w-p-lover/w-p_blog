@@ -12,8 +12,6 @@ import com.ican.model.vo.MessageVO;
 import com.ican.model.vo.PageResult;
 import com.ican.model.vo.Result;
 import com.ican.service.MessageService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -28,7 +26,6 @@ import static com.ican.constant.OptTypeConstant.UPDATE;
  *
  * @author xcs
  */
-@Api(tags = "留言模块")
 @RestController
 public class MessageController {
 
@@ -41,7 +38,6 @@ public class MessageController {
      * @return {@link MessageVO} 留言列表
      */
     @VisitLogger(value = "留言")
-    @ApiOperation(value = "查看留言列表")
     @GetMapping("/message/list")
     public Result<List<MessageVO>> listMessageVO() {
         return Result.success(messageService.listMessageVO());
@@ -53,7 +49,6 @@ public class MessageController {
      * @param condition 条件
      * @return {@link Result<MessageBackVO>} 留言列表
      */
-    @ApiOperation(value = "查看后台留言列表")
     @SaCheckPermission("news:message:list")
     @GetMapping("/admin/message/list")
     public Result<PageResult<MessageBackVO>> listMessageBackVO(ConditionDTO condition) {
@@ -67,7 +62,6 @@ public class MessageController {
      * @return {@link Result<>}
      */
     @AccessLimit(seconds = 60, maxCount = 3)
-    @ApiOperation(value = "添加留言")
     @PostMapping("/message/add")
     public Result<?> addMessage(@Validated @RequestBody MessageDTO message) {
         messageService.addMessage(message);
@@ -81,7 +75,6 @@ public class MessageController {
      * @return {@link Result<>}
      */
     @OptLogger(value = DELETE)
-    @ApiOperation(value = "删除留言")
     @SaCheckPermission("news:message:delete")
     @DeleteMapping("/admin/message/delete")
     public Result<?> deleteMessage(@RequestBody List<Integer> messageIdList) {
@@ -96,7 +89,6 @@ public class MessageController {
      * @return {@link Result<>}
      */
     @OptLogger(value = UPDATE)
-    @ApiOperation(value = "审核留言")
     @SaCheckPermission("news:message:pass")
     @PutMapping("/admin/message/pass")
     public Result<?> updateMessageCheck(@Validated @RequestBody CheckDTO check) {

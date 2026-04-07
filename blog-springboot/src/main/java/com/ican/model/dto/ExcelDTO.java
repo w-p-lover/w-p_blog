@@ -1,6 +1,5 @@
 package com.ican.model.dto;
 
-import io.swagger.annotations.ApiModel;
 import lombok.Data;
 import org.checkerframework.checker.units.qual.A;
 
@@ -15,7 +14,6 @@ import java.util.List;
  * @Filename：ExcelDTO
  */
 @Data
-@ApiModel(description = "Excel导出结构DTO")
 public class ExcelDTO {
     private boolean articleInfo;
     private boolean sayInfo;

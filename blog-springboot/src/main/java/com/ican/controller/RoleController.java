@@ -10,8 +10,6 @@ import com.ican.model.vo.PageResult;
 import com.ican.model.vo.Result;
 import com.ican.model.vo.RoleVO;
 import com.ican.service.RoleService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -26,7 +24,6 @@ import static com.ican.constant.OptTypeConstant.*;
  * @author xcs
  * @date 2022/12/05 09:58
  **/
-@Api(tags = "角色模块")
 @RestController
 public class RoleController {
 
@@ -39,7 +36,6 @@ public class RoleController {
      * @param condition 查询条件
      * @return {@link RoleVO} 角色列表
      */
-    @ApiOperation(value = "查看角色列表")
     @SaCheckPermission("system:role:list")
     @GetMapping("/admin/role/list")
     public Result<PageResult<RoleVO>> listRoleVO(ConditionDTO condition) {
@@ -53,7 +49,6 @@ public class RoleController {
      * @return {@link Result<>}
      */
     @OptLogger(value = ADD)
-    @ApiOperation(value = "添加角色")
     @SaCheckPermission("system:role:add")
     @PostMapping("/admin/role/add")
     public Result<?> addRole(@Validated @RequestBody RoleDTO role) {
@@ -68,7 +63,6 @@ public class RoleController {
      * @return {@link Result<>}
      */
     @OptLogger(value = DELETE)
-    @ApiOperation(value = "删除角色")
     @SaCheckPermission("system:role:delete")
     @DeleteMapping("/admin/role/delete")
     public Result<?> deleteRole(@RequestBody List<String> roleIdList) {
@@ -83,7 +77,6 @@ public class RoleController {
      * @return {@link Result<>}
      */
     @OptLogger(value = UPDATE)
-    @ApiOperation(value = "修改角色")
     @SaCheckPermission("system:role:update")
     @PutMapping("/admin/role/update")
     public Result<?> updateRole(@Validated @RequestBody RoleDTO role) {
@@ -98,7 +91,6 @@ public class RoleController {
      * @return {@link Result<>}
      */
     @OptLogger(value = UPDATE)
-    @ApiOperation(value = "修改角色状态")
     @SaCheckPermission(value = {"system:role:update", "system:role:status"}, mode = SaMode.OR)
     @PutMapping("/admin/role/changeStatus")
     public Result<?> updateRoleStatus(@Validated @RequestBody RoleStatusDTO roleStatus) {
@@ -112,7 +104,6 @@ public class RoleController {
      * @param roleId 角色id
      * @return {@link List<Integer>} 角色的菜单权限
      */
-    @ApiOperation(value = "查看角色的菜单权限")
     @SaCheckPermission("system:role:list")
     @GetMapping("/admin/role/menu/{roleId}")
     public Result<List<Integer>> listRoleMenuTree(@PathVariable("roleId") String roleId) {

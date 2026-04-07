@@ -1,8 +1,6 @@
 package com.ican.model.vo;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,26 +16,22 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@ApiModel(description = "路由")
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class RouterVO {
 
     /**
      * 菜单名称
      */
-    @ApiModelProperty(value = "菜单名称")
     private String name;
 
     /**
      * 路由地址
      */
-    @ApiModelProperty(value = "路由地址")
     private String path;
 
     /**
      * 菜单组件
      */
-    @ApiModelProperty(value = "菜单组件")
     private String component;
 
     /**
@@ -48,18 +42,15 @@ public class RouterVO {
     /**
      * 重定向地址
      */
-    @ApiModelProperty(value = "重定向地址")
     private String redirect;
 
     /**
      * 其他信息
      */
-    @ApiModelProperty(value = "重定向地址")
     private MetaVO meta;
 
     /**
      * 子菜单列表
      */
-    @ApiModelProperty(value = "子菜单列表")
     private List<RouterVO> children;
 }

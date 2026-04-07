@@ -7,8 +7,6 @@ import com.ican.model.vo.GiteeTrendingVO;
 import com.ican.model.vo.PageResult;
 import com.ican.model.vo.Result;
 import com.ican.service.GiteeTrendingService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +19,6 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * Gitee 趋势控制器
  */
-@Api(tags = "Gitee 趋势模块")
 @Slf4j
 @RestController
 @RequestMapping("/gitee/trending")
@@ -39,7 +36,6 @@ public class GiteeTrendingController {
      * @param condition 查询条件
      * @return Gitee趋势列表
      */
-    @ApiOperation(value = "查看Gitee趋势列表")
     @GetMapping("/list")
     public Result<PageResult<GiteeTrendingVO>> listGiteeTrending(ConditionDTO condition) {
         return Result.success(giteeTrendingService.listGiteeTrending(condition));
@@ -51,7 +47,6 @@ public class GiteeTrendingController {
      *
      * @return Gitee趋势列表
      */
-    @ApiOperation(value = "查看Gitee趋势列表")
     @GetMapping("/type")
     public Result<List<String>> listGiteeTrendingType() {
         return Result.success(giteeTrendingService.listGiteeTrendingType());
@@ -62,7 +57,6 @@ public class GiteeTrendingController {
      *
      * @return Gitee趋势列表
      */
-    @ApiOperation(value = "查看Gitee趋势列表")
     @GetMapping("/language")
     public Result<List<String>> listGiteeTrendingLang() {
         return Result.success(giteeTrendingService.listGiteeTrendingLang());
