@@ -12,6 +12,7 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.ican.entity.*;
 import com.ican.mapper.*;
+import com.ican.metrics.BlogMetrics;
 import com.ican.model.dto.*;
 import com.ican.model.vo.*;
 import com.ican.service.ArticleService;
@@ -89,6 +90,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     private final UploadStrategyContext uploadStrategyContext;
 
     private final BlogFileMapper blogFileMapper;
+
+    private final BlogMetrics blogMetrics;
 
     @Autowired
     private ThreadPoolTaskExecutor hotArticleExecutor;
@@ -446,6 +449,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     }
 
     private void updateArticleStatsFromRedis(Integer articleId, ArticleVO articleVO) {
+        blogMetrics.incrementArticleView(articleId);
         Double viewCount = Optional.ofNullable(redisService
                 .getZsetScore(ARTICLE_VIEW_COUNT, articleId)).orElse((double) 0);
         // 缓存中浏览量+1
