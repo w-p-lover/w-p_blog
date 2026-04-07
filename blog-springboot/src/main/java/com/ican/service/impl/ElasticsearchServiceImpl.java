@@ -1,74 +1,54 @@
 package com.ican.service.impl;
 
-import com.alibaba.fastjson2.JSON;
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import com.ican.model.vo.ArticleSearchVO;
 import com.ican.service.ElasticsearchService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.elasticsearch.action.delete.DeleteRequest;
-import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.action.update.UpdateRequest;
-import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.client.RestClient;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.xcontent.XContentType;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.io.IOException;
 
 import static com.ican.constant.ElasticConstant.ARTICLE_INDEX;
 
-/**
- * es文章业务接口实现类
- *
- * @author xcs
- **/
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class ElasticsearchServiceImpl implements ElasticsearchService {
 
-    private final RestHighLevelClient elasticsearchClient;
+    private final ElasticsearchClient elasticsearchClient;
 
     @Override
     public void addArticle(ArticleSearchVO article) {
         try {
-            String json = JSON.toJSONString(article);
-            IndexRequest indexRequest = new IndexRequest()
+            elasticsearchClient.index(i -> i
                     .index(ARTICLE_INDEX)
                     .id(article.getId().toString())
-                    .source(json, XContentType.JSON);
-            elasticsearchClient.index(indexRequest, RequestOptions.DEFAULT);
-        } catch (IOException e) {
-           log.error(e.getMessage());
+                    .document(article));
+        } catch (Exception e) {
+            log.error("ES 索引文章失败, id={}: {}", article.getId(), e.getMessage());
         }
     }
 
     @Override
     public void updateArticle(ArticleSearchVO article) {
         try {
-            UpdateRequest request = new UpdateRequest()
+            elasticsearchClient.update(u -> u
                     .index(ARTICLE_INDEX)
-                    .doc(article)
-                    .id(article.getId().toString());
-            elasticsearchClient.update(request, RequestOptions.DEFAULT);
-        } catch (IOException e) {
-           log.error(e.getMessage());
-
+                    .id(article.getId().toString())
+                    .doc(article),
+                    ArticleSearchVO.class);
+        } catch (Exception e) {
+            log.error("ES 更新文章失败, id={}: {}", article.getId(), e.getMessage());
         }
     }
 
     @Override
-    public void deleteArticle(Integer id) {
+    public void deleteArticle(Integer articleId) {
         try {
-            DeleteRequest request = new DeleteRequest()
+            elasticsearchClient.delete(d -> d
                     .index(ARTICLE_INDEX)
-                    .id(id.toString());
-            // 2.发送请求
-            elasticsearchClient.delete(request, RequestOptions.DEFAULT);
-        } catch (IOException e) {
-           log.error(e.getMessage());
+                    .id(articleId.toString()));
+        } catch (Exception e) {
+            log.error("ES 删除文章失败, id={}: {}", articleId, e.getMessage());
         }
     }
 }

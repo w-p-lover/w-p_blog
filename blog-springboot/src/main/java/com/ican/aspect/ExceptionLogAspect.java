@@ -61,18 +61,15 @@ public class ExceptionLogAspect {
             log.error("无上下文错误：" + e.getMessage());
             return;
         }
-        // 获取操作
-        Api api = (Api) signature.getDeclaringType().getAnnotation(Api.class);
-        ApiOperation apiOperation = method.getAnnotation(ApiOperation.class);
         ExceptionLog exceptionLog = new ExceptionLog();
-        // 异常模块
-        exceptionLog.setModule(api.tags()[0]);
+        // 异常模块（使用类简名）
+        exceptionLog.setModule(signature.getDeclaringType().getSimpleName());
         // 请求URI
         exceptionLog.setUri(request.getRequestURI());
         // 异常名称
         exceptionLog.setName(e.getClass().getName());
-        // 操作描述
-        exceptionLog.setDescription(apiOperation.value());
+        // 操作描述（使用方法名）
+        exceptionLog.setDescription(method.getName());
         // 获取请求的类名
         String className = joinPoint.getTarget().getClass().getName();
         // 获取请求的方法名
