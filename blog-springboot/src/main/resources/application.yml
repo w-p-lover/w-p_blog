@@ -2,9 +2,6 @@ server:
   # 端口
   port: 8080
 spring:
-  mvc:
-    pathmatch:
-      matching-strategy: ant_path_matcher
   # 应用名称
   application:
     name: BlogApplication
@@ -208,3 +205,13 @@ oauth:
     app-id: QQ的APPID
     check-token-url: https://graph.qq.com/oauth2.0/me?access_token={access_token}
     user-info-url: https://graph.qq.com/user/get_user_info?openid={openid}&access_token={access_token}&oauth_consumer_key={oauth_consumer_key}
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+knife4j:
+  enable: true
+  setting:
+    language: zh_cn
