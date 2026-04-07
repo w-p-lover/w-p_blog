@@ -4,6 +4,8 @@
 
 **Goal:** 将项目从 Spring Boot 2.6 + Java 11 迁移至 Spring Boot 3.2 + Java 17，并接入可观测性三支柱（指标/日志/链路）对接已有的 Prometheus + Grafana + Loki。
 
+**Status:** ✅ COMPLETED (2026-04-07) — 4/4 tests passing, BUILD SUCCESS
+
 **Architecture:** 迁移策略是先建立 smoke test 基线，再按依赖顺序逐步升级（核心框架 → API 文档 → ES 客户端 → 可观测性），每步之后编译通过再继续。Springfox 完全不兼容 Spring Boot 3.x，整体替换为 springdoc-openapi + knife4j 4.x。ES 的 RestHighLevelClient 已废弃，替换为 Spring Data Elasticsearch 5.x 的 ElasticsearchClient。
 
 **Tech Stack:** Spring Boot 3.2.x, Java 17, springdoc-openapi 2.x, knife4j 4.x, co.elastic.clients:elasticsearch-java, Micrometer + Prometheus, Micrometer Tracing + OTel, logstash-logback-encoder
