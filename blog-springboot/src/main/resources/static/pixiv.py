@@ -29,7 +29,7 @@ from tqdm import tqdm
 # -----------------------------
 SAVE_DIR = r"D:\IdeaProjects\blog\blog-springboot\src\main\resources\static\pixiv"
 CONFIG = {
-    "COOKIE": "first_visit_datetime_pc=2025-10-08%2016%3A22%3A56; cc1=2025-10-08%2016%3A22%3A56; p_ab_id=0; p_ab_id_2=9; p_ab_d_id=2079616813; yuid_b=OGKEInA; _cfuvid=fnAtYueoyZ4iQYlUjom3NRkztOXK70uGw85aq43bo3M-1759908176346-0.0.1.1-604800000; _ga=GA1.1.1242572132.1759908179; PHPSESSID=120524657_1aEmPqBfgZpWAPFnWPIwxKCcjmH8zrJM; device_token=620a129494e3f0758322d42240f68216; privacy_policy_agreement=7; __cf_bm=A5P5fHSkqbak148DGs6UJ73aP5icztehLlVH9PeR6.0-1759908234-1.0.1.1-MwHwqlR8KKGQgsBnW5.VdyWYJPKIs.DWNbNOnGjt6.uonsWjRyx0HMYp0gmfimIcl6RqUvXisOGlz3xBrf1Elpou2VJ.JUhyeXz1RhxyofgAt1f.LhjSI9XjZsCJUureNPd0wITbRcgGJPOYcV5Upw; _ga_MZ1NL4PHH0=GS2.1.s1759908184$o1$g1$t1759908234$j10$l0$h0; c_type=22; privacy_policy_notification=0; a_type=0; b_type=2; _gcl_au=1.1.2038222779.1759908241; login_ever=yes; cf_clearance=omX1sJr4AAtjV42F.MenoWTz4q1IGN_Xy01DEULqbrg-1759908989-1.2.1.1-dS8ap6kxiX0tKSQ.unXmLswVU5z10PO9W7tqNSQ6iuoK3pdb2tZM6Bc0lytSDrQUMpspytbsYEoyIaUqZ4ZuvvIE3mt_.Hmvq4Ze3mt08zh2vKRzLzGLCuE5Q21Ro933ghYCb8zGn7isFZ8tUU9bGbtYuk.FoEBDJy6eWk0USly51.6IQkwcBvpzJKN1oaJCrh.MBrIKk1qHY.d9yZODuRwF0hvPhrvTyeT1sJdagk4; _ga_75BBYNYN9J=GS2.1.s1759908178$o1$g1$t1759908991$j58$l0$h0",
+    "COOKIE": "first_visit_datetime_pc=2026-01-12%2016%3A45%3A45; p_ab_id=9; p_ab_id_2=4; p_ab_d_id=1291616952; _ga=GA1.1.1918435873.1768203946; yuid_b=JwVHJZg; PHPSESSID=19713392fbba27ae2a2f70debade8096; cc1=2026-02-04%2012%3A22%3A12; __cf_bm=9nV9tM.98wExFOfTPCW5t90ufZNG0hNMtvhq9EAmUI8-1770175332-1.0.1.1-pJkXkUnHIpM.skh0tzw6t8ystxfBsKayMTSRnMSho2PG_0H2B1lOXnBPDXeExHsR1v8v.C4Fu3SyK9HAULNcPTp1jmQd6DQC5fVx2hYfPaUwbm8I2lk0HLpNY7D00PtE; _cfuvid=yh3XjWlPCk_zxTMjpRFz5pS43xX0T0UXPiCa371iRXs-1770175332273-0.0.1.1-604800000; _gcl_au=1.1.1873281218.1770175334; cf_clearance=S04.PEtZXrzWXp0vK1FnylUyp_VI01unu0zFgtt6aM4-1770175334-1.2.1.1-0yIXPsVz_ogLytCuaZ7Z7F8EbyI5PkVSZAbHVSFyqaNVyzE6MNKt.KELYqGT9ueTKbE1dHAXJz2xl5mPujvJHxAxvsdbxcm33rHHFnN1d8RU6.b5vwQqyWdztrVvbNy910qhlCGtDTWTlo9hLCVB9qZG9xG4eETzP3sI7NYgFNtcPBf0pjOEfXXNP0q5TBDd.peG2nJqTFewawYqf7QV31UEj6yHmW3LszVWd0CTyGw; _ga_75BBYNYN9J=GS2.1.s1770175333$o3$g1$t1770175533$j60$l0$h0",
     "USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
                   "(KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
     "USER_ID": "120524657",          # pixiv user id (用于 x-user-id / Referer)
@@ -361,7 +361,14 @@ class Collector:
             return set()
 
         with futures.ThreadPoolExecutor(max_workers=self.threads) as executor:
-            with tqdm(total=len(self.id_group), desc="collecting urls") as pbar:
+            with tqdm(
+                total=len(self.id_group),
+                desc="collecting urls",
+                ascii=True,  # 用 ASCII 字符避免编码问题
+                dynamic_ncols=False,  # 禁用动态调整列宽（日志系统不需要终端适配）
+                leave=True,  # 任务完成后保留最后一条进度条日志
+                bar_format="{desc}: {percentage:3.0f}%|{bar}| {n}/{total} [{elapsed}<{remaining}, {rate_fmt}]",  # 固定日志格式
+            ) as pbar:
                 urls_list = [f"https://www.pixiv.net/ajax/illust/{illust_id}/pages?lang=zh" for illust_id in self.id_group]
                 additional_headers_list = [
                     {

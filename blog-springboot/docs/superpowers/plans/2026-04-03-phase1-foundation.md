@@ -255,41 +255,65 @@ mvn compile -q 2>&1 | head -50
 
 ---
 
-## Task 3: 全局替换 javax → jakarta
+## Task 3: 全局替换 javax → jakarta + Swagger 注解迁移
 
-> Spring Boot 3.x 将所有 `javax.*` 包迁移到 `jakarta.*`。使用 IDEA 全局替换，然后验证。
+> Spring Boot 3.x 将所有 `javax.*` 包迁移到 `jakarta.*`。同时 Springfox 的 Swagger 2 注解需替换为 OpenAPI 3 注解。项目共有 59 个文件含 `javax.*`，137 个文件含 `io.swagger.annotations.*`。
 
 **Files:**
-- Modify: 所有 `src/main/java/` 和 `src/test/java/` 下包含 `javax.` 的 Java 文件
+- Modify: 所有 `src/main/java/` 下包含 `javax.` 或 `io.swagger.annotations` 的 Java 文件
 
-- [ ] **Step 1: 在 IDEA 中执行全局替换**
-
-`Edit → Find → Replace in Files`：
-
-| 替换项 | 查找 | 替换为 |
-|--------|------|--------|
-| Servlet API | `javax.servlet.` | `jakarta.servlet.` |
-| Validation | `javax.validation.` | `jakarta.validation.` |
-| Persistence | `javax.persistence.` | `jakarta.persistence.` |
-| Annotation | `javax.annotation.` | `jakarta.annotation.` |
-
-搜索范围：`src/` 目录，文件类型：`*.java`
-
-**注意：不要替换 `javax.sql.`（数据库 SQL 接口），这个不变。**
-
-- [ ] **Step 2: 再次编译，查看剩余错误**
+- [ ] **Step 1: 批量替换 javax → jakarta（命令行执行）**
 
 ```bash
-mvn compile -q 2>&1 | grep "error:" | grep -v "javax.sql" | head -30
+cd /d/IdeaProjects/blog/.worktrees/phase1-foundation/blog-springboot
+# Servlet
+find src/main/java -name "*.java" -exec sed -i 's/javax\.servlet\./jakarta.servlet./g' {} +
+# Validation
+find src/main/java -name "*.java" -exec sed -i 's/javax\.validation\./jakarta.validation./g' {} +
+# Annotation (仅 @PostConstruct 等)
+find src/main/java -name "*.java" -exec sed -i 's/javax\.annotation\./jakarta.annotation./g' {} +
 ```
 
-期望：`javax.*` 相关错误消失，剩下的是 Springfox 相关错误和 ES 客户端错误。
+- [ ] **Step 2: 批量删除 Swagger 2 注解 import 行**
 
-- [ ] **Step 3: Commit**
+Swagger 2 注解（`@Api`, `@ApiModel`, `@ApiOperation` 等）在 knife4j 4.x 不再需要显式标注，knife4j 会自动扫描。最快的做法是直接删除这些 import 行和注解使用：
+
+```bash
+# 删除 io.swagger.annotations 的所有 import 行
+find src/main/java -name "*.java" -exec sed -i '/^import io\.swagger\.annotations\./d' {} +
+```
+
+- [ ] **Step 3: 删除 @ApiModel、@ApiModelProperty、@Api、@ApiOperation 注解使用**
+
+由于 knife4j 4.x 可自动识别类和方法，只需删除这些注解声明（不影响运行和文档生成）：
+
+```bash
+# 删除 @ApiModel(...) 行（包含参数的）
+find src/main/java -name "*.java" -exec sed -i '/@ApiModel/d' {} +
+# 删除 @ApiModelProperty(...) 行
+find src/main/java -name "*.java" -exec sed -i '/@ApiModelProperty/d' {} +
+# 删除 @Api( 行
+find src/main/java -name "*.java" -exec sed -i '/@Api(/d' {} +
+# 删除 @ApiOperation 行
+find src/main/java -name "*.java" -exec sed -i '/@ApiOperation/d' {} +
+# 删除 @ApiParam 行
+find src/main/java -name "*.java" -exec sed -i '/@ApiParam/d' {} +
+```
+
+- [ ] **Step 4: 编译验证**
+
+```bash
+export JAVA_HOME="/d/IntelliJ IDEA 2025.2.4/jbr"
+"/d/IntelliJ IDEA 2025.2.4/plugins/maven/lib/maven3/bin/mvn" compile -q 2>&1 | grep "error:" | grep -v "javax.sql" | head -30
+```
+
+期望：`javax.*` 和 `io.swagger.annotations` 相关错误消失，剩下的是 ES 客户端错误。
+
+- [ ] **Step 5: Commit**
 
 ```bash
 git add src/
-git commit -m "refactor: javax.* → jakarta.* (Spring Boot 3 migration)"
+git commit -m "refactor: javax.* → jakarta.*，删除 Swagger 2 注解（Spring Boot 3 migration）"
 ```
 
 ---

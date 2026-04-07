@@ -1,7 +1,5 @@
 package com.ican.controller;
 
-import cn.dev33.satoken.annotation.SaCheckPermission;
-import com.ican.annotation.OptLogger;
 import com.ican.model.dto.ConditionDTO;
 import com.ican.model.vo.GiteeTrendingVO;
 import com.ican.model.vo.PageResult;
