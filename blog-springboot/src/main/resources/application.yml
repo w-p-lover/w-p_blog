@@ -89,6 +89,11 @@ spring:
       static-locations:
         - file:D:\\IdeaProjects\\blog\\blog-springboot\\src\\main\\resources\\static\\  # 指向 static 根目录（包含 Wallhaven）
         - classpath:/static/  # 保留默认的 classpath 路径（可选，防止其他静态资源失效）
+  # elasticsearch配置
+  elasticsearch:
+    uris: http://${ES_HOST:121.41.87.40}:${ES_PORT:9200}
+    connection-timeout: 5s
+    socket-timeout: 30s
 
 # 博客链接 域名后面要加/
 hefeng:
@@ -138,17 +143,6 @@ mybatis-plus:
     db-config:
       # 数据库表前缀
       table-prefix: t_
-# elasticsearch配置
-elasticsearch:
-  # elasticsearch用户名 这个不用改
-  username: elastic
-  password: changme
-  hostname: 121.41.87.40
-  port: 9200
-  scheme: http
-  connTimeout: 1000
-  socketTimeout: 30000
-  connectionRequestTimeout: 5000
 # Sa-Token 配置 (文档: https://sa-token.cc)
 sa-token:
   # token名称 (同时也是cookie名称)

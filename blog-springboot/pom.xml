@@ -40,6 +40,17 @@
         <commons-io.version>2.11.0</commons-io.version>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <!-- Force sa-token-core to 1.37.0 to match sa-token-spring-boot3-starter -->
+            <dependency>
+                <groupId>cn.dev33</groupId>
+                <artifactId>sa-token-core</artifactId>
+                <version>${saToken.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
 
         <dependency>

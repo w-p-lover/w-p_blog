@@ -69,17 +69,14 @@ public class OptLogAspect {
         if(method.getName().equals("uploadTalkFile")){
             return;
         }
-        // 获取操作
-        Api api = (Api) signature.getDeclaringType().getAnnotation(Api.class);
-        ApiOperation apiOperation = method.getAnnotation(ApiOperation.class);
         OptLogger optLogger = method.getAnnotation(OptLogger.class);
         // 获取request
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         HttpServletRequest request = Objects.requireNonNull(attributes).getRequest();
         // 日志保存到数据库
         OperationLog operationLog = new OperationLog();
-        // 操作模块
-        operationLog.setModule(api.tags()[0]);
+        // 操作模块（使用类简名）
+        operationLog.setModule(signature.getDeclaringType().getSimpleName());
         // 操作类型
         operationLog.setType(optLogger.value());
         // 请求URI
@@ -91,8 +88,8 @@ public class OptLogAspect {
         methodName = className + "." + methodName;
         // 请求方法
         operationLog.setName(methodName);
-        // 操作描述
-        operationLog.setDescription(apiOperation.value());
+        // 操作描述（使用方法名）
+        operationLog.setDescription(method.getName());
         // 请求参数
         if (joinPoint.getArgs()[0] instanceof MultipartFile) {
             operationLog.setParams(((MultipartFile) joinPoint.getArgs()[0]).getOriginalFilename());

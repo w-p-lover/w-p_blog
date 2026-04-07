@@ -1,44 +1,29 @@
 package com.ican.strategy.impl;
 
-import com.alibaba.fastjson2.JSON;
-import com.ican.mapper.ArticleMapper;
-import com.ican.model.vo.ArticleInfoVO;
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch.core.SearchResponse;
+import co.elastic.clients.elasticsearch.core.search.Hit;
 import com.ican.model.vo.ArticleSearchVO;
 import com.ican.strategy.SearchStrategy;
-import lombok.extern.log4j.Log4j2;
-import org.apache.commons.collections4.CollectionUtils;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.elasticsearch.action.search.SearchRequest;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.search.builder.SearchSourceBuilder;
-import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
-import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 import static com.ican.constant.CommonConstant.FALSE;
 import static com.ican.constant.ElasticConstant.*;
 import static com.ican.enums.ArticleStatusEnum.PUBLIC;
 
-@Log4j2
+@Slf4j
 @Service("esSearchStrategyImpl")
+@RequiredArgsConstructor
 public class EsSearchStrategyImpl implements SearchStrategy {
 
-    @Autowired
-    private RestHighLevelClient restHighLevelClient;
-    @Autowired
-    private ArticleMapper articleMapper;
+    private final ElasticsearchClient elasticsearchClient;
 
     @Override
     public List<ArticleSearchVO> searchArticle(String keyword) {
@@ -46,61 +31,45 @@ public class EsSearchStrategyImpl implements SearchStrategy {
             return new ArrayList<>();
         }
         try {
-            // 构建查询条件
-            BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery()
-                    .must(QueryBuilders.matchQuery("all", keyword))
-                    .must(QueryBuilders.termQuery("isDelete", FALSE))
-                    .must(QueryBuilders.termQuery("status", PUBLIC.getStatus()));
+            SearchResponse<ArticleSearchVO> response = elasticsearchClient.search(s -> s
+                    .index(ARTICLE_INDEX)
+                    .query(q -> q.bool(b -> b
+                            .must(m -> m.match(mm -> mm.field("all").query(keyword)))
+                            .must(m -> m.term(t -> t.field("isDelete").value((long) FALSE)))
+                            .must(m -> m.term(t -> t.field("status")
+                                    .value((long) (int) PUBLIC.getStatus())))
+                    ))
+                    .highlight(h -> h
+                            .requireFieldMatch(false)
+                            .fields(ARTICLE_TITLE, f -> f
+                                    .preTags(PRE_TAG).postTags(POST_TAG))
+                            .fields(ARTICLE_CONTENT, f -> f
+                                    .preTags(PRE_TAG).postTags(POST_TAG))
+                    ),
+                    ArticleSearchVO.class);
 
-            // 高亮设置
-            HighlightBuilder highlightBuilder = new HighlightBuilder()
-                    .field(new HighlightBuilder.Field(ARTICLE_TITLE).preTags(PRE_TAG).postTags(POST_TAG))
-                    .field(new HighlightBuilder.Field(ARTICLE_CONTENT).preTags(PRE_TAG).postTags(POST_TAG))
-                    .requireFieldMatch(false);
-
-            // 构建搜索请求
-            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder()
-                    .query(boolQueryBuilder)
-                    .highlighter(highlightBuilder);
-
-            SearchRequest searchRequest = new SearchRequest(ARTICLE_INDEX)
-                    .source(searchSourceBuilder);
-
-            // 执行搜索
-            SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
-
-            // 解析结果
-            return handleResponse(searchResponse);
+            return response.hits().hits().stream()
+                    .map(this::mapHitToVO)
+                    .toList();
         } catch (Exception e) {
-            log.error(e.getMessage());
+            log.error("ES 搜索失败: {}", e.getMessage());
+            return new ArrayList<>();
         }
-        return new ArrayList<>();
     }
 
-    private List<ArticleSearchVO> handleResponse(SearchResponse response) {
-        // 解析结果并返回
-        return Arrays.stream(response.getHits().getHits())
-                .map(hit -> {
-                    String articleId = hit.getId();
-                    ArticleSearchVO articleSearchVO = new ArticleSearchVO();
-                    String articleTitle = articleMapper.selectArticleInfoById(Integer.valueOf(articleId)).getArticleTitle();
-                    Map<String, HighlightField> highlightFields = hit.getHighlightFields();
-
-                    articleSearchVO.setId(Integer.valueOf(articleId));
-                    articleSearchVO.setArticleTitle(articleTitle);
-                    if (highlightFields.containsKey(ARTICLE_TITLE)) {
-                        articleSearchVO.setArticleTitle(highlightFields.get(ARTICLE_TITLE).fragments()[0].string());
-                    }
-                    if (highlightFields.containsKey(ARTICLE_CONTENT)) {
-                        articleSearchVO.setArticleContent(highlightFields.get(ARTICLE_CONTENT).fragments()[0].string());
-                    } else {
-                        // 假设有一个从JSON转换的方法
-                        articleSearchVO = JSON.parseObject(hit.getSourceAsString(), ArticleSearchVO.class);
-                        articleSearchVO.setArticleContent(articleSearchVO.getArticleContent().substring(0, 300));
-                    }
-                    return articleSearchVO;
-                })
-                .collect(Collectors.toList());
+    private ArticleSearchVO mapHitToVO(Hit<ArticleSearchVO> hit) {
+        ArticleSearchVO vo = hit.source();
+        if (vo == null) return new ArticleSearchVO();
+        Map<String, List<String>> highlights = hit.highlight();
+        if (highlights.containsKey(ARTICLE_TITLE)) {
+            vo.setArticleTitle(highlights.get(ARTICLE_TITLE).get(0));
+        }
+        if (highlights.containsKey(ARTICLE_CONTENT)) {
+            vo.setArticleContent(highlights.get(ARTICLE_CONTENT).get(0));
+        } else if (vo.getArticleContent() != null
+                && vo.getArticleContent().length() > 300) {
+            vo.setArticleContent(vo.getArticleContent().substring(0, 300));
+        }
+        return vo;
     }
-
 }
