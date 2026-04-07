@@ -11,7 +11,7 @@ spring:
   # mysql配置
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
-    driver-class-name: com.mysql.jdbc.Driver
+    driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://121.41.87.40:3306/blog?serverTimezone=Asia/Shanghai&allowMultiQueries=true&rewriteBatchedStatements=true&useSSL=false&useUnicode=true&characterEncoding=UTF-8
     username: root
     password: 1224
