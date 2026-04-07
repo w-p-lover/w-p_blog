@@ -2,6 +2,7 @@ package com.ican.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import java.util.Optional;
 import com.ican.entity.GiteeTrending;
 import com.ican.mapper.GiteeTrendingMapper;
 import com.ican.model.dto.ConditionDTO;
@@ -151,6 +152,11 @@ public class GiteeTrendingServiceImpl implements GiteeTrendingService {
     @Override
     public GiteeTrending getOne(Wrapper<GiteeTrending> queryWrapper, boolean throwEx) {
         return null;
+    }
+
+    @Override
+    public Optional<GiteeTrending> getOneOpt(Wrapper<GiteeTrending> queryWrapper, boolean throwEx) {
+        return Optional.empty();
     }
 
     @Override

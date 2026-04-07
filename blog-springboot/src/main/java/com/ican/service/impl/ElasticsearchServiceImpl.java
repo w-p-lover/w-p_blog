@@ -5,6 +5,7 @@ import com.ican.model.vo.ArticleSearchVO;
 import com.ican.service.ElasticsearchService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Service;
 
 import static com.ican.constant.ElasticConstant.ARTICLE_INDEX;
@@ -12,6 +13,7 @@ import static com.ican.constant.ElasticConstant.ARTICLE_INDEX;
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@ConditionalOnBean(ElasticsearchClient.class)
 public class ElasticsearchServiceImpl implements ElasticsearchService {
 
     private final ElasticsearchClient elasticsearchClient;

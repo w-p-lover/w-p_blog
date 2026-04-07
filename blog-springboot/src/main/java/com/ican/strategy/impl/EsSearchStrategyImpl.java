@@ -8,6 +8,7 @@ import com.ican.strategy.SearchStrategy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -21,6 +22,7 @@ import static com.ican.enums.ArticleStatusEnum.PUBLIC;
 @Slf4j
 @Service("esSearchStrategyImpl")
 @RequiredArgsConstructor
+@ConditionalOnBean(ElasticsearchClient.class)
 public class EsSearchStrategyImpl implements SearchStrategy {
 
     private final ElasticsearchClient elasticsearchClient;

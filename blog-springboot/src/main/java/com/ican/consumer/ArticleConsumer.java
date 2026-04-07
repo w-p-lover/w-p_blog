@@ -1,6 +1,7 @@
 package com.ican.consumer;
 
 import cn.hutool.json.JSONUtil;
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import com.ican.model.dto.CanalDTO;
 import com.ican.model.vo.ArticleSearchVO;
 import com.ican.service.ElasticsearchService;
@@ -11,6 +12,7 @@ import org.springframework.amqp.rabbit.annotation.Queue;
 import org.springframework.amqp.rabbit.annotation.QueueBinding;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
@@ -24,6 +26,7 @@ import static com.ican.constant.MqConstant.*;
  * @author xcs
  **/
 @Component
+@ConditionalOnBean(ElasticsearchClient.class)
 public class ArticleConsumer {
 
     @Autowired
