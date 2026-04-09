@@ -42,26 +42,29 @@ spring:
     multipart:
       max-request-size: 100MB
       max-file-size: 100MB
-  # redis配置
-  redis:
-    # Redis服务器地址
-    host: 121.41.87.40
-    # Redis服务器连接端口
-    port: 6379
-    # Redis服务器连接密码（默认为空）
-    password: 1224
-    # 连接超时时间
-    timeout: 10s
-    lettuce:
-      pool:
-        # 连接池最大连接数
-        max-active: 150
-        # 连接池最大阻塞等待时间（使用负值表示没有限制）
-        max-wait: 5000ms
-        # 连接池中的最大空闲连接
-        max-idle: 100
-        # 连接池中的最小空闲连接
-        min-idle: 50
+  # redis配置 (Spring Boot 3.x: spring.data.redis.*)
+  data:
+    redis:
+      # Redis服务器地址
+      host: 121.41.87.40
+      # Redis服务器连接端口
+      port: 6379
+      # Redis服务器连接密码（默认为空）
+      password: 1224
+      # 连接超时时间
+      timeout: 10s
+      lettuce:
+        pool:
+          # 连接池最大连接数
+          max-active: 150
+          # 连接池最大阻塞等待时间（使用负值表示没有限制）
+          max-wait: 5000ms
+          # 连接池中的最大空闲连接
+          max-idle: 100
+          # 连接池中的最小空闲连接
+          min-idle: 50
+      # Redis 数据库索引（默认为0）
+      database: 0
   # rabbitmq配置
   rabbitmq:
     host: 121.41.87.40
@@ -152,7 +155,7 @@ sa-token:
   # token有效期，单位s 默认30天, -1代表永不过期
   timeout: 18000
   # token临时有效期 (指定时间内无操作就视为token过期) 单位: 秒
-  activity-timeout: -1
+  active-timeout: -1
   # 关闭自动续签
   auto-renew: false
   # 是否允许同一账号并发登录 (为true时允许一起登录, 为false时新登录挤掉旧登录)
@@ -200,6 +203,10 @@ oauth:
     check-token-url: https://graph.qq.com/oauth2.0/me?access_token={access_token}
     user-info-url: https://graph.qq.com/user/get_user_info?openid={openid}&access_token={access_token}&oauth_consumer_key={oauth_consumer_key}
 
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} %highlight(%-5level) %magenta(${PID:- }) --- [%t] %cyan(%-40.40logger{39}) : %m%n"
+
 management:
   endpoints:
     web:
@@ -209,14 +216,15 @@ management:
     health:
       show-details: when_authorized
   metrics:
-    export:
-      prometheus:
-        enabled: true
     tags:
       application: ${spring.application.name}
   tracing:
     sampling:
       probability: 1.0
+  prometheus:
+    metrics:
+      export:
+        enabled: true
 
 springdoc:
   api-docs:
