@@ -13,6 +13,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.ExpressionParser;
+import org.springframework.expression.ParserContext;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.scripting.support.ResourceScriptSource;
@@ -90,7 +91,8 @@ public class RateLimitAspect {
             context.setVariable(paramNames[i], args[i]);
         }
 
-        // 解析表达式
-        return parser.parseExpression(key).getValue(context, String.class);
+        // 使用模板表达式模式，支持 "api:article:view:#{#articleId}" 这类混合字面量+SpEL
+        return parser.parseExpression(key, ParserContext.TEMPLATE_EXPRESSION)
+                .getValue(context, String.class);
     }
 }
