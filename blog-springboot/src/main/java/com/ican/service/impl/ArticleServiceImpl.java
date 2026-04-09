@@ -3,13 +3,12 @@ package com.ican.service.impl;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
+import com.ican.annotation.RateLimit;
+import com.ican.cache.MultiLevelCacheManager;
 import com.ican.entity.*;
 import com.ican.mapper.*;
 import com.ican.metrics.BlogMetrics;
@@ -27,28 +26,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
-
-import com.google.common.util.concurrent.Striped;
-
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 import static com.ican.constant.CommonConstant.FALSE;
@@ -59,16 +44,19 @@ import static com.ican.enums.ArticleStatusEnum.PUBLIC;
 import static com.ican.enums.FilePathEnum.ARTICLE;
 
 /**
- * 文章业务接口实现类
+ * 文章业务接口实现类（Phase 2 重构版）
  *
- * @author xcs
- * @date 2022/12/04 22:31
- **/
+ * 重构内容：
+ * 1. 使用 MultiLevelCacheManager 替代手写缓存逻辑
+ * 2. 使用 Redisson 分布式锁替代手写 setIfAbsent
+ * 3. 添加 @RateLimit 限流保护
+ * 4. 移除 Guava Striped 锁和 Caffeine 手动管理
+ *
+ * @author ican
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
-//TODO 布隆过滤器
-//TODO 看一下能不能兼容延迟双删，如果不行就去看看大麦那边
 public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> implements ArticleService {
 
     private final UserMapper userMapper;
@@ -93,18 +81,10 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     private final BlogMetrics blogMetrics;
 
+    private final MultiLevelCacheManager cacheManager;
+
     @Autowired
     private ThreadPoolTaskExecutor hotArticleExecutor;
-
-    // 使用Guava的Striped锁插件，在细粒度竞争时保证高性能，并且尽量避免锁长期保存的内存OMM问题
-    @SuppressWarnings("UnstableApiUsage")
-    public static final Striped<Lock> articleLocks =
-            Striped.lock(Runtime.getRuntime().availableProcessors() * 2);
-
-    Cache<Integer, ArticleVO> localCache = Caffeine.newBuilder()
-            .maximumSize(200)
-            .expireAfterWrite(5, TimeUnit.MINUTES)
-            .build();
 
     @Override
     public PageResult<ArticleBackVO> listArticleBackVO(ConditionDTO condition) {
@@ -157,6 +137,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 .in(ArticleTag::getArticleId, articleIdList));
         // 删除文章
         articleMapper.deleteBatchIds(articleIdList);
+        // 清除缓存
+        articleIdList.forEach(id -> cacheManager.evict("article:" + id));
     }
 
     @Override
@@ -176,13 +158,15 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
             this.updateBatchById(articleList);
 
+            // 清除缓存
+            delete.getIdList().forEach(id -> cacheManager.evict("article:" + id));
+
             log.info("成功更新 {} 篇文章的删除状态", articleList.size());
         } catch (Exception e) {
             log.error("更新文章删除状态失败", e);
             throw new RuntimeException("更新文章删除状态失败", e);
         }
     }
-
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -196,6 +180,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         baseMapper.updateById(newArticle);
         // 保存文章标签
         saveArticleTag(article, newArticle.getId());
+        // 清除缓存
+        cacheManager.evict("article:" + newArticle.getId());
     }
 
     @Override
@@ -222,6 +208,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 .isTop(top.getIsTop())
                 .build();
         articleMapper.updateById(newArticle);
+        // 清除缓存
+        cacheManager.evict("article:" + top.getId());
     }
 
     @Override
@@ -232,32 +220,14 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 .isRecommend(recommend.getIsRecommend())
                 .build();
         articleMapper.updateById(newArticle);
+        // 清除缓存
+        cacheManager.evict("article:" + recommend.getId());
     }
 
     @Override
     public List<ArticleSearchVO> listArticlesBySearch(String keyword) {
         return searchStrategyContext.executeSearchStrategy(keyword);
     }
-
-
-/*    *//**
-     * 缓存热点文章内容
-     *
-     *//*
-    private void cacheHotArticleContent(Integer articleId) {
-        // 检查是否已缓存
-        String cacheKey = HOT_ARTICLE;
-        if (redisService.hasHashValue(cacheKey, articleId.toString())) {
-            redisService.setExpire(cacheKey, 1, TimeUnit.HOURS);
-            return;
-        }
-        ArticleVO article = articleMapper.selectArticleHomeById(articleId);
-        if (article != null) {
-            updateArticleStatsFromRedis(articleId, article);
-            redisService.setHash(cacheKey, articleId.toString(),
-                    JSONUtil.toJsonStr(article), 1, TimeUnit.HOURS);
-        }
-    }*/
 
     @Override
     public PageResult<ArticleHomeVO> listArticleHomeVO(String sort, Integer tagId, String start, String end) {
@@ -274,178 +244,59 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     }
 
     /**
-     * 缓存热点文章内容
-     *
-     * @param articles 文章ID
+     * 缓存热点文章内容（使用多级缓存管理器）
      */
     private void processHotArticles(List<ArticleHomeVO> articles) {
-        // 批量获取所有文章的浏览数
         Map<Object, Double> viewCountMap = redisService.getZsetAllScore(ARTICLE_VIEW_COUNT);
-        Set<Integer> hotCandidates = new HashSet<>(); // 线程安全集合：收集需要异步处理的热点文章ID
-        // 顺序流处理文章，保证线程安全
+        Set<Integer> hotCandidates = new HashSet<>();
+
         for (ArticleHomeVO article : articles) {
             article.setArticleContent(article.getArticleContent().replaceAll("#", ""));
             sortTags(article.getTagVOList());
             Double viewCount = viewCountMap.getOrDefault(article.getId(), 0D);
-            // 判断是否为热点文章（浏览数≥20 或 置顶文章）
+
             if (viewCount >= 20 || article.getIsTop() == 1) {
-                hotCandidates.add(article.getId());  // 将热点文章ID加入集合
+                hotCandidates.add(article.getId());
             }
         }
-        if (!hotCandidates.isEmpty()) { // 批量异步处理热点文章
+
+        if (!hotCandidates.isEmpty()) {
             CompletableFuture.runAsync(() -> batchProcessHotArticles(hotCandidates), hotArticleExecutor);
         }
     }
 
-    // 批量处理热点文章
     private void batchProcessHotArticles(Set<Integer> articleIds) {
         articleIds.forEach(id -> {
-            if (needCacheUpdate(id)) {  // 检查是否需要更新缓存
-                asyncCacheHotArticle(id);  // 异步缓存热点文章
-            }
+            String cacheKey = "article:" + id;
+            // 使用多级缓存管理器预热缓存
+            cacheManager.get(cacheKey, key -> {
+                ArticleVO article = articleMapper.selectArticleHomeById(id);
+                if (article != null) {
+                    updateArticleStatsFromRedis(id, article);
+                }
+                return article;
+            }, 30); // 30 分钟过期
         });
     }
 
-    // 判断是否需要更新缓存的逻辑
-    private boolean needCacheUpdate(Integer articleId) {
-        // 获取当前文章的缓存
-        String cacheKey = HOT_ARTICLE;
-        if (!redisService.hasHashValue(cacheKey, articleId.toString())) {  // 1. 检查缓存是否存在
-            return true;
-        }
-        Long ttl = redisService.getExpire(cacheKey, TimeUnit.MINUTES);// 2. 检查缓存是否过期（TTL）
-        if (ttl != null && ttl < 5) {
-            return true;
-        }
-        Double viewCount = redisService.getZsetScore(ARTICLE_VIEW_COUNT, articleId); // 3. 检查浏览量是否变化（假设超过某个阈值就认为需要更新缓存）
-        if (viewCount != null && viewCount > 1000) {
-            return true;
-        }
-        ArticleVO article = articleMapper.selectArticleHomeById(articleId);// 4. 检查数据库中的文章内容是否有更新
-        if (article == null) {
-            return false;
-        }
-        return false;
-    }
-
-
-    // 异步缓存热点文章（保持哈希结构）
-    @Async("cacheRefreshPool")
-    protected void asyncCacheHotArticle(Integer articleId) {
-        try {
-            final String cacheKey = HOT_ARTICLE;
-            // 第一层快速检查（非原子性检查，允许少量重复）
-            if (redisService.hasHashValue(cacheKey, articleId.toString())) {
-                // 动态延长哈希整体过期时间（30±5分钟）
-                redisService.setExpire(cacheKey, 25 + (int) (Math.random() * 10), TimeUnit.MINUTES);
-                return;
-            }
-            // 使用Redis分布式锁
-            String lockKey = "article:lock:" + articleId;
-            if (redisService.setIfAbsent(lockKey, "1", 5, TimeUnit.SECONDS)) {
-                try {
-                    // 第二层精确检查
-                    if (redisService.hasHashValue(cacheKey, articleId.toString())) {
-                        return;
-                    }
-                    // 查询数据库并更新缓存
-                    ArticleVO article = articleMapper.selectArticleHomeById(articleId);
-                    if (article != null) {
-                        // 缓存数据并设置动态TTL
-                        redisService.setHash(
-                                cacheKey,
-                                articleId.toString(),
-                                JSONUtil.toJsonStr(article)
-                        );
-                        redisService.setExpire(cacheKey,
-                                getDynamicTTL(articleId),
-                                TimeUnit.MINUTES);
-                    }
-                } finally {
-                    redisService.deleteObject(lockKey);  // 释放锁
-                }
-            }
-        } catch (Exception e) {
-            log.error("异步缓存哈希结构热点文章失败", e);
-        }
-    }
-
-    // 根据文章的阅读量来计算动态TTL
-    private int getDynamicTTL(Integer articleId) {
-        int baseTTL = 30;
-        int maxTTL = 60;
-
-        // 获取文章的浏览量
-        Double viewCount = redisService.getZsetScore(ARTICLE_VIEW_COUNT, articleId);
-        if (viewCount == null) {
-            viewCount = 0D; // 如果缓存中没有浏览量，则默认值为 0
-        }
-        double logFactor = Math.log10(viewCount + 1) * 20;
-        int dynamicTTL = baseTTL + (int) Math.min(maxTTL, logFactor);
-
-        // 随机增加偏移量（避免缓存雪崩）符合正态分布的偏移量（μ=5min, σ=2min）
-        double normalOffset = new Random().nextGaussian() * 2 + 5;
-        int safeOffset = (int) Math.min(10, Math.max(0, normalOffset));
-        return dynamicTTL + safeOffset;
-    }
-
-    // 查询文章信息
+    /**
+     * 查询文章详情（使用多级缓存 + 限流）
+     */
     @Override
+    @RateLimit(key = "api:article:view:#{#articleId}", limit = 10, period = 60)
     public ArticleVO getArticleHomeById(Integer articleId) {
-        // 1. 加入本地缓存层
-        String nullCacheKey = "cache:null:article:" + articleId.toString();
-        String cachedNullValue = redisService.getObject(nullCacheKey);
-        // 如果缓存了空值，直接返回 null
-        if ("EMPTY".equals(cachedNullValue)) {
-            return null;
-        }
-        ArticleVO article = localCache.get(articleId, Id -> {
-            // 2. 使用 Redis 分布式锁来替代本地锁，提升分布式环境下的性能和安全性
-            String lockKey = "article:lock:" + articleId;
-            boolean locked = false;
-            try {
-                // 自旋尝试获取锁 (最多尝试 3 次，每次间隔 200ms)
-                for (int i = 0; i < 3; i++) {
-                    if (redisService.setIfAbsent(lockKey, "1", 5, TimeUnit.SECONDS)) {
-                        locked = true;
-                        break;
-                    }
-                    try {
-                        Thread.sleep(200);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    }
-                }
+        String cacheKey = "article:" + articleId;
 
-                // 3. 检查 Redis 缓存
-                String articleJson = redisService.getHash(HOT_ARTICLE, articleId.toString());
-                if (articleJson != null)
-                    return JSONUtil.toBean(articleJson, ArticleVO.class);
-                
-                // 如果没有获取到锁且缓存为空，则降级查库（避免死锁导致数据一直为空）
-                // 4. 从数据库查询
-                ArticleVO dbArticle = articleMapper.selectArticleHomeById(articleId);
-                if (dbArticle == null) {
-                    redisService.setObject(nullCacheKey, "EMPTY", 5, TimeUnit.MINUTES);
-                    return null;
-                }
-                // 5. 更新本地缓存和 Redis
+        // 使用多级缓存管理器（自动处理缓存穿透、击穿、雪崩）
+        ArticleVO article = cacheManager.get(cacheKey, key -> {
+            ArticleVO dbArticle = articleMapper.selectArticleHomeById(articleId);
+            if (dbArticle != null) {
                 updateArticleStatsFromRedis(articleId, dbArticle);
-                // localCache.put(articleId, dbArticle);   更新本地缓存
-                redisService.setHash(HOT_ARTICLE, articleId.toString(), JSONUtil.toJsonStr(dbArticle));  // 更新 Redis
-                return dbArticle;
-            } finally {
-                if (locked) {
-                    redisService.deleteObject(lockKey);
-                }
             }
-        });
-        return Optional.ofNullable(article)
-                .map(a -> {
-                    updateArticleStatsFromRedis(articleId, a);
-                    return a;  // 返回更新后的 article
-                })
-                .orElse(null);
+            return dbArticle;
+        }, 30); // 30 分钟过期
+
+        return article;
     }
 
     private void updateArticleStatsFromRedis(Integer articleId, ArticleVO articleVO) {
@@ -462,17 +313,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         articleVO.setLastArticle(lastArticle);
         articleVO.setNextArticle(nextArticle);
         articleVO.setViews(viewCount.intValue() + 1);
-        //异步对数据库数据更新，实现 优先更新 Redis，异步更新数据库 的策略。
+        // 异步更新数据库
         CompletableFuture.runAsync(() ->
                 articleMapper.incrementViews(Long.valueOf(articleId)), hotArticleExecutor);
-    }
-
-    private void cacheArticleDetails(String cacheKey, ArticleVO article) {
-        // 缓存文章信息（15分钟TTL）
-        if (redisService.hasHashValue(cacheKey, article.getId().toString())) {
-            redisService.setExpire(cacheKey, 15, TimeUnit.MINUTES);
-        }
-        redisService.setHash(cacheKey, article.getId().toString(), JSONUtil.toJsonStr(article), 15, TimeUnit.MINUTES);
     }
 
     @Override
