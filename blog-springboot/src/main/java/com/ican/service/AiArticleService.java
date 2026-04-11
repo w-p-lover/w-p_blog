@@ -13,4 +13,11 @@ public interface AiArticleService {
      * @param content 文章内容
      */
     void processArticle(Integer articleId, String title, String content);
+
+    /**
+     * 历史文章回填向量
+     *
+     * @return 回填成功数量
+     */
+    int reindexHistory();
 }

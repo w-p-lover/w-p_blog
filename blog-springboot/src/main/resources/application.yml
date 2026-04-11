@@ -113,7 +113,7 @@ spring:
     vectorstore:
       qdrant:
         host: 121.41.87.40
-        port: 6333
+        port: 6334
         collection-name: blog-articles
 
 # 博客链接 域名后面要加/

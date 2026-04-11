@@ -4,6 +4,7 @@ import com.ican.annotation.RateLimit;
 import com.ican.model.dto.AiChatRequestDTO;
 import com.ican.model.vo.AiChatResponseVO;
 import com.ican.model.vo.Result;
+import com.ican.service.AiArticleService;
 import com.ican.service.AiRagService;
 import com.ican.service.AiWriteAssistService;
 import lombok.RequiredArgsConstructor;
@@ -24,9 +25,16 @@ public class AiController {
 
     private final AiWriteAssistService aiWriteAssistService;
 
+    private final AiArticleService aiArticleService;
+
     @PostMapping("/api/ai/chat")
     public Result<AiChatResponseVO> chat(@Validated @RequestBody AiChatRequestDTO request) {
         return Result.success(aiRagService.chat(request.getQuestion()));
+    }
+
+    @PostMapping("/api/ai/reindex")
+    public Result<Integer> reindex() {
+        return Result.success(aiArticleService.reindexHistory());
     }
 
     @RateLimit(key = "api:ai:write:#{#action}", limit = 20, period = 3600)
