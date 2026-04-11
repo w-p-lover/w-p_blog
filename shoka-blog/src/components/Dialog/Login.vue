@@ -325,8 +325,8 @@ const showCaptcha = ref(false);
 const captchaBox = ref<HTMLElement | null>(null);
 let globalTAC: any;
 const captchaConfig = {
-  requestCaptchaDataUrl: "http://121.41.87.40:8080/gen?type=RANDOM",
-  validCaptchaUrl: "http://121.41.87.40:8080/check",
+  requestCaptchaDataUrl: "http://localhost:8080/gen?type=RANDOM",
+  validCaptchaUrl: "http://localhost:8080/check",
   bindEl: "#captcha-box",
   validSuccess: (res: any, c: any, tac: any) => {
     tac.destroyWindow();
