@@ -8,6 +8,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -30,8 +31,10 @@ class SmokeTest {
     }
 
     @Test
-    void articleListEndpointReturns200() throws Exception {
-        mockMvc.perform(get("/article/list"))
-               .andExpect(status().isOk());
+    void aiChatEndpoint_shouldReturn200() throws Exception {
+        mockMvc.perform(post("/api/ai/chat")
+                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                        .content("{\"question\":\"Redis缓存击穿怎么解决\"}"))
+                .andExpect(status().isOk());
     }
 }

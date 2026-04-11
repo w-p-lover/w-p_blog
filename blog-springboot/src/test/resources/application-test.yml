@@ -1,4 +1,3 @@
-# 测试环境配置，继承 application.yml，覆盖需要的部分
 spring:
   quartz:
     auto-startup: false  # 测试时不启动定时任务
@@ -8,3 +7,9 @@ spring:
       - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration
       - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchRepositoriesAutoConfiguration
       - cn.dev33.satoken.dao.SaTokenDaoRedisJackson
+  ai:
+    openai:
+      api-key: test-key
+      base-url: http://localhost:18080
+    dashscope:
+      api-key: test-key
