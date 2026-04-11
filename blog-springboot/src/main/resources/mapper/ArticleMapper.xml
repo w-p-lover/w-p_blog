@@ -46,6 +46,8 @@
         <result column="create_time" property="createTime"/>
         <result column="update_time" property="updateTime"/>
         <result column="views" property="views"/>
+        <result column="ai_summary" property="aiSummary"/>
+        <result column="ai_suggest_tags" property="aiSuggestTags"/>
         <association property="category" javaType="com.ican.model.vo.CategoryOptionVO">
             <id column="category_id" property="id"/>
             <result column="category_name" property="categoryName"/>
@@ -284,7 +286,10 @@
                c.category_name,
                t.id AS tag_id,
                tag_name,
-               views
+               views,
+               ai_summary,
+               ai_suggest_tags,
+               ai_indexed_at
         FROM t_article a
                  INNER JOIN t_category c ON a.category_id = c.id
                  INNER JOIN t_article_tag tat ON a.id = tat.article_id
@@ -378,5 +383,13 @@
         ORDER BY a.id DESC
         LIMIT #{limit}, #{size}
     </select>
+
+    <update id="updateArticleAiResult">
+        UPDATE t_article
+        SET ai_summary = #{aiSummary},
+            ai_suggest_tags = #{aiSuggestTags},
+            ai_indexed_at = #{aiIndexedAt}
+        WHERE id = #{articleId}
+    </update>
 
 </mapper>

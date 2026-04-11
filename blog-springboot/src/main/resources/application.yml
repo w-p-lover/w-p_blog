@@ -97,6 +97,24 @@ spring:
     uris: http://${ES_HOST:121.41.87.40}:${ES_PORT:9200}
     connection-timeout: 5s
     socket-timeout: 30s
+  ai:
+    openai:
+      api-key: ${DEEPSEEK_API_KEY:}
+      base-url: https://api.deepseek.com
+      chat:
+        options:
+          model: deepseek-chat
+          temperature: 0.7
+    dashscope:
+      api-key: ${DASHSCOPE_API_KEY:}
+      embedding:
+        options:
+          model: text-embedding-v3
+    vectorstore:
+      qdrant:
+        host: 121.41.87.40
+        port: 6333
+        collection-name: blog-articles
 
 # 博客链接 域名后面要加/
 hefeng:
@@ -225,6 +243,12 @@ management:
     metrics:
       export:
         enabled: true
+
+ai:
+  rag:
+    top-k: 5
+    segment-size: 500
+    segment-overlap: 50
 
 springdoc:
   api-docs:

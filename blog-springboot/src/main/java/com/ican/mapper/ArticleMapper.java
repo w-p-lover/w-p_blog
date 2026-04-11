@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Update;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -162,4 +163,9 @@ public interface ArticleMapper extends BaseMapper<Article> {
 
     @Update("UPDATE t_article SET views = views + #{i} WHERE id = #{articleId}")
     void incrementViewsByi(@Param("articleId") Integer id, @Param("i") Double aDouble);
+
+    void updateArticleAiResult(@Param("articleId") Integer articleId,
+                               @Param("aiSummary") String aiSummary,
+                               @Param("aiSuggestTags") String aiSuggestTags,
+                               @Param("aiIndexedAt") LocalDateTime aiIndexedAt);
 }
