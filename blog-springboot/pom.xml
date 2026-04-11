@@ -40,6 +40,7 @@
         <commons-io.version>2.11.0</commons-io.version>
         <redisson.version>3.27.2</redisson.version>
         <caffeine.version>3.1.8</caffeine.version>
+        <spring-ai.version>1.0.0</spring-ai.version>
     </properties>
 
     <dependencyManagement>
@@ -49,6 +50,13 @@
                 <groupId>cn.dev33</groupId>
                 <artifactId>sa-token-core</artifactId>
                 <version>${saToken.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.ai</groupId>
+                <artifactId>spring-ai-bom</artifactId>
+                <version>${spring-ai.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -155,6 +163,21 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-amqp</artifactId>
+        </dependency>
+        <!-- Spring AI OpenAI model starter -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-starter-model-openai</artifactId>
+        </dependency>
+        <!-- Spring AI DashScope model starter -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-starter-model-dashscope</artifactId>
+        </dependency>
+        <!-- Spring AI Qdrant vector store starter -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-starter-vector-store-qdrant</artifactId>
         </dependency>
         <!-- spring quartz -->
         <dependency>

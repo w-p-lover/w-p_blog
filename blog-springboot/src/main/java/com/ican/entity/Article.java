@@ -80,6 +80,21 @@ public class Article {
     private Integer status;
 
     /**
+     * AI 摘要
+     */
+    private String aiSummary;
+
+    /**
+     * AI 推荐标签（逗号分隔）
+     */
+    private String aiSuggestTags;
+
+    /**
+     * AI 索引时间
+     */
+    private LocalDateTime aiIndexedAt;
+
+    /**
      * 发表时间
      */
     @TableField(fill = FieldFill.INSERT)

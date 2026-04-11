@@ -74,6 +74,16 @@ public class ArticleVO {
     private LocalDateTime updateTime;
 
     /**
+     * AI 摘要
+     */
+    private String aiSummary;
+
+    /**
+     * AI 推荐标签（逗号分隔）
+     */
+    private String aiSuggestTags;
+
+    /**
      * 浏览量
      */
     private Integer views;

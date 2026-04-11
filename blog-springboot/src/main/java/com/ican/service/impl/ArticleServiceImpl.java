@@ -13,6 +13,7 @@ import com.ican.entity.*;
 import com.ican.mapper.*;
 import com.ican.metrics.BlogMetrics;
 import com.ican.model.dto.*;
+import com.ican.model.dto.ArticleAiMessage;
 import com.ican.model.vo.*;
 import com.ican.service.ArticleService;
 import com.ican.service.RedisService;
@@ -26,6 +27,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,6 +42,8 @@ import static com.ican.constant.CommonConstant.FALSE;
 import static com.ican.constant.PersonConstant.MY_MAIL;
 import static com.ican.constant.PersonConstant.MY_RED_MAIL;
 import static com.ican.constant.RedisConstant.*;
+import static com.ican.constant.MqConstant.ARTICLE_AI_EXCHANGE;
+import static com.ican.constant.MqConstant.ARTICLE_AI_KEY;
 import static com.ican.enums.ArticleStatusEnum.PUBLIC;
 import static com.ican.enums.FilePathEnum.ARTICLE;
 
@@ -82,6 +86,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     private final BlogMetrics blogMetrics;
 
     private final MultiLevelCacheManager cacheManager;
+
+    private final RabbitTemplate rabbitTemplate;
 
     @Autowired
     private ThreadPoolTaskExecutor hotArticleExecutor;
@@ -127,6 +133,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         baseMapper.insert(newArticle);
         // 保存文章标签
         saveArticleTag(article, newArticle.getId());
+        // 发送文章 AI 异步处理消息
+        sendArticleAiMessage(newArticle.getId(), newArticle.getArticleTitle(), newArticle.getArticleContent());
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -182,6 +190,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         saveArticleTag(article, newArticle.getId());
         // 清除缓存
         cacheManager.evict("article:" + newArticle.getId());
+        // 发送文章 AI 异步处理消息
+        sendArticleAiMessage(newArticle.getId(), newArticle.getArticleTitle(), newArticle.getArticleContent());
     }
 
     @Override
@@ -506,5 +516,16 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         if (!CollectionUtils.isEmpty(tags)) {
             tags.sort(Comparator.comparingInt(TagOptionVO::getId));
         }
+    }
+
+    private void sendArticleAiMessage(Integer articleId, String title, String content) {
+        if (articleId == null || StringUtils.isBlank(content)) {
+            return;
+        }
+        ArticleAiMessage message = new ArticleAiMessage();
+        message.setArticleId(articleId);
+        message.setArticleTitle(title);
+        message.setArticleContent(content);
+        rabbitTemplate.convertAndSend(ARTICLE_AI_EXCHANGE, ARTICLE_AI_KEY, message);
     }
 }
