@@ -1,5 +1,8 @@
 package com.ican.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.ican.entity.Article;
+import com.ican.enums.ArticleStatusEnum;
 import com.ican.mapper.ArticleMapper;
 import com.ican.service.AiArticleService;
 import lombok.RequiredArgsConstructor;
@@ -56,6 +59,40 @@ public class AiArticleServiceImpl implements AiArticleService {
         } catch (Exception e) {
             log.error("文章AI处理失败，articleId={}", articleId, e);
             throw new RuntimeException("文章AI处理失败", e);
+        }
+    }
+
+    @Override
+    public int reindexHistory() {
+        List<Article> articles = articleMapper.selectList(new LambdaQueryWrapper<Article>()
+                .select(Article::getId, Article::getArticleTitle, Article::getArticleContent)
+                .eq(Article::getIsDelete, 0)
+                .eq(Article::getStatus, ArticleStatusEnum.PUBLIC.getStatus())
+                .orderByAsc(Article::getId));
+        if (articles == null || articles.isEmpty()) {
+            return 0;
+        }
+
+        List<Document> docs = articles.stream()
+                .filter(article -> article.getId() != null && StringUtils.hasText(article.getArticleContent()))
+                .map(article -> new Document(article.getArticleContent(), Map.of(
+                        "articleId", article.getId(),
+                        "title", article.getArticleTitle() == null ? "" : article.getArticleTitle(),
+                        "url", "/article/" + article.getId()
+                )))
+                .toList();
+
+        if (docs.isEmpty()) {
+            return 0;
+        }
+
+        try {
+            vectorStore.add(docs);
+            log.info("历史文章向量回填完成，count={}", docs.size());
+            return docs.size();
+        } catch (Exception e) {
+            log.error("历史文章向量回填失败", e);
+            throw new RuntimeException("历史文章向量回填失败", e);
         }
     }
 }

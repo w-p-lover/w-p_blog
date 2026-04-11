@@ -32,7 +32,13 @@ public class AiRagServiceImpl implements AiRagService {
 
     @Override
     public AiChatResponseVO chat(String question) {
-        List<Document> docs = vectorStore.similaritySearch(SearchRequest.query(question).withTopK(5));
+        List<Document> docs;
+        try {
+            docs = vectorStore.similaritySearch(SearchRequest.builder().query(question).topK(5).build());
+        } catch (Exception e) {
+            log.warn("Qdrant similarity search failed, fallback to empty answer", e);
+            return new AiChatResponseVO(EMPTY_ANSWER, List.of());
+        }
         if (docs == null || docs.isEmpty()) {
             return new AiChatResponseVO(EMPTY_ANSWER, List.of());
         }

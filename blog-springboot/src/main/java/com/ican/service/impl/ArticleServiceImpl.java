@@ -242,9 +242,10 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     @Override
     public PageResult<ArticleHomeVO> listArticleHomeVO(String sort, Integer tagId, String start, String end) {
 
+        String safeSort = normalizeSort(sort);
         String email = getCurrentUserEmail();
         boolean isSpecialEmail = checkSpecialEmail(email);
-        List<ArticleHomeVO> articles = queryArticles(sort, tagId, start, end, isSpecialEmail);
+        List<ArticleHomeVO> articles = queryArticles(safeSort, tagId, start, end, isSpecialEmail);
         if (CollectionUtils.isEmpty(articles)) {
             return new PageResult<>();
         }
@@ -516,6 +517,13 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         if (!CollectionUtils.isEmpty(tags)) {
             tags.sort(Comparator.comparingInt(TagOptionVO::getId));
         }
+    }
+
+    private String normalizeSort(String sort) {
+        if ("views".equals(sort)) {
+            return "views";
+        }
+        return "create_time";
     }
 
     private void sendArticleAiMessage(Integer articleId, String title, String content) {
