@@ -12,7 +12,6 @@ import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 @Component
 @RequiredArgsConstructor
@@ -36,12 +35,13 @@ public class CaptchaResourceConfiguration {
      */
     @PostConstruct
     public void init() throws IOException {
-        Random random = new Random();
-        for (String path : loadImagePaths()) {
-            String captchaType = CAPTCHA_TYPES[random.nextInt(CAPTCHA_TYPES.length)];
-            addCaptchaResource(captchaType, path);
+        List<String> imagePaths = loadImagePaths();
+        for (String path : imagePaths) {
+            for (String captchaType : CAPTCHA_TYPES) {
+                addCaptchaResource(captchaType, path);
+            }
         }
-        log.info("图片资源[resourceStore]随机加载完毕...");
+        log.info("验证码模板加载完成: 图片数={}, 类型数={}, 总模板数={}", imagePaths.size(), CAPTCHA_TYPES.length, imagePaths.size() * CAPTCHA_TYPES.length);
     }
 
     private List<String> loadImagePaths() throws IOException {
@@ -54,6 +54,8 @@ public class CaptchaResourceConfiguration {
     }
 
     private void addCaptchaResource(String captchaType, String path) {
+        resourceStore.addResource(captchaType,
+                new Resource("classpath", "bg_images/" + path, null));
         resourceStore.addResource(captchaType,
                 new Resource("classpath", "bg_images/" + path, "default"));
     }
