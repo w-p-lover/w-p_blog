@@ -12,7 +12,7 @@ const routes: RouteRecordRaw[] = [
         path: "/message",
         component: () => import("@/views/Message/index.vue"),
         meta: {
-            title: "留言",
+            title: "留言板",
         },
     },
     {
@@ -31,6 +31,11 @@ const routes: RouteRecordRaw[] = [
                 },
             },
         ],
+    },
+    {
+        path: "/ai-chat",
+        component: () => import("@/views/AiChat/index.vue"),
+        meta: { title: "AI问答" }
     },
     {
         path: "/about",
@@ -108,14 +113,14 @@ const routes: RouteRecordRaw[] = [
         path: "/trend",
         component: () => import("@/views/Trending/index.vue"),
         meta: {
-            title: "gitee代码",
+            title: "项目",
         },
     },
     {
         path: "/steam",
         component: () => import("@/views/Steam/index.vue"),
         meta: {
-            title: "steam游戏库",
+            title: "游戏",
         },
     },
     {
@@ -129,7 +134,7 @@ const routes: RouteRecordRaw[] = [
         path: "/book",
         component: () => import("@/views/Book/index.vue"),
         meta: {
-            title: "书表",
+            title: "书目",
         },
     },
     {

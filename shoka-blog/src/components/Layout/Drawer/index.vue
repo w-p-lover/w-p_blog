@@ -123,6 +123,11 @@ const menuList = [
         icon: "qizhi",
         path: "/book"
       },
+      {
+        name: "AI问答",
+        icon: "chat",
+        path: "/ai-chat"
+      },
     ]
   },
   {
