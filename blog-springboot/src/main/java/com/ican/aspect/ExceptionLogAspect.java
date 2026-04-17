@@ -19,7 +19,10 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -83,7 +86,14 @@ public class ExceptionLogAspect {
         if (joinPoint.getArgs()[0] instanceof MultipartFile) {
             exceptionLog.setParams(((MultipartFile) joinPoint.getArgs()[0]).getOriginalFilename());
         } else {
-            exceptionLog.setParams(JSON.toJSONString(joinPoint.getArgs()));
+            List<Object> safeArgs = new ArrayList<>();
+            for (Object arg : joinPoint.getArgs()) {
+                if (arg instanceof HttpServletRequest || arg instanceof HttpServletResponse) {
+                    continue;
+                }
+                safeArgs.add(arg);
+            }
+            exceptionLog.setParams(JSON.toJSONString(safeArgs));
         }
         // 请求方式
         exceptionLog.setRequestMethod(Objects.requireNonNull(request).getMethod());

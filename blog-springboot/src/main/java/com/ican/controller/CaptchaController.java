@@ -27,6 +27,13 @@ public class CaptchaController {
     @Autowired
     private ImageCaptchaApplication imageCaptchaApplication;
 
+    private static final String[] CAPTCHA_TYPES = {
+            CaptchaTypeConstant.SLIDER,
+            CaptchaTypeConstant.CONCAT,
+            CaptchaTypeConstant.ROTATE,
+            CaptchaTypeConstant.WORD_IMAGE_CLICK
+    };
+
     /**
      * 前端返回type，获取验证码资源
      * @param request
@@ -40,20 +47,54 @@ public class CaptchaController {
             type = CaptchaTypeConstant.SLIDER;
         }
         if ("RANDOM".equals(type)) {
-            int i = ThreadLocalRandom.current().nextInt(0, 4);
-            if (i == 0) {
-                type = CaptchaTypeConstant.SLIDER;
-            } else if (i == 1) {
-                type = CaptchaTypeConstant.CONCAT;
-            } else if (i == 2) {
-                type = CaptchaTypeConstant.ROTATE;
-            } else {
-                type = CaptchaTypeConstant.WORD_IMAGE_CLICK;
-            }
-
+            return generateRandomCaptcha();
         }
-        CaptchaResponse<ImageCaptchaVO> response = imageCaptchaApplication.generateCaptcha(type);
-        return response;
+        return generateCaptchaWithFallback(type);
+    }
+
+    private CaptchaResponse<ImageCaptchaVO> generateRandomCaptcha() {
+        int startIndex = ThreadLocalRandom.current().nextInt(0, CAPTCHA_TYPES.length);
+        RuntimeException lastException = null;
+        for (int i = 0; i < CAPTCHA_TYPES.length; i++) {
+            String tryType = CAPTCHA_TYPES[(startIndex + i) % CAPTCHA_TYPES.length];
+            try {
+                return imageCaptchaApplication.generateCaptcha(tryType);
+            } catch (RuntimeException ex) {
+                lastException = ex;
+                if (!isTemplateEmptyError(ex)) {
+                    throw ex;
+                }
+            }
+        }
+        throw lastException == null ? new RuntimeException("验证码模板不可用") : lastException;
+    }
+
+    private CaptchaResponse<ImageCaptchaVO> generateCaptchaWithFallback(String preferredType) {
+        try {
+            return imageCaptchaApplication.generateCaptcha(preferredType);
+        } catch (RuntimeException ex) {
+            if (!isTemplateEmptyError(ex)) {
+                throw ex;
+            }
+            for (String tryType : CAPTCHA_TYPES) {
+                if (tryType.equals(preferredType)) {
+                    continue;
+                }
+                try {
+                    return imageCaptchaApplication.generateCaptcha(tryType);
+                } catch (RuntimeException fallbackEx) {
+                    if (!isTemplateEmptyError(fallbackEx)) {
+                        throw fallbackEx;
+                    }
+                }
+            }
+            throw ex;
+        }
+    }
+
+    private boolean isTemplateEmptyError(RuntimeException ex) {
+        String msg = ex.getMessage();
+        return msg != null && msg.contains("模板为空");
     }
 
     /**

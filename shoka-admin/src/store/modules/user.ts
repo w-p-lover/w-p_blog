@@ -40,8 +40,10 @@ const useUserStore = defineStore("useUserStore", {
                             this.avatar = data.data.avatar;
                             this.roleList = data.data.roleList;
                             this.permissionList = data.data.permissionList;
+                            resolve(data);
+                        } else {
+                            reject(data.msg);
                         }
-                        resolve(data);
                     })
                     .catch((error) => {
                         reject(error);
