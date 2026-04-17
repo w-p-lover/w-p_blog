@@ -9,34 +9,36 @@ spring:
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://121.41.87.40:3306/blog?serverTimezone=Asia/Shanghai&allowMultiQueries=true&rewriteBatchedStatements=true&useSSL=false&useUnicode=true&characterEncoding=UTF-8
+    url: jdbc:mysql://121.41.87.40:3306/blog?serverTimezone=Asia/Shanghai&allowMultiQueries=true&rewriteBatchedStatements=true&useSSL=false&useUnicode=true&characterEncoding=UTF-8&connectTimeout=5000&socketTimeout=15000&tcpKeepAlive=true&autoReconnect=true
     username: root
     password: 1224
     druid:
       # 初始连接数
       initial-size: 10
       # 最小连接池数量
-      min-idle: 10
+      min-idle: 20
       # 最大连接池数量
       max-active: 150
       # 配置获取连接等待超时的时间
       max-wait: 60000
       # 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒
-      time-between-eviction-runs-millis: 60000
+      time-between-eviction-runs-millis: 30000
       # 配置一个连接在池中最小生存的时间，单位是毫秒
-      min-evictable-idle-time-millis: 600000
+      min-evictable-idle-time-millis: 300000
       # 配置一个连接在池中最大生存的时间，单位是毫秒
-      max-evictable-idle-time-millis: 900000
+      max-evictable-idle-time-millis: 600000
       # 配置检测连接是否有效
-      validation-query: SELECT 1 FROM DUAL
-      # 配置检测连接是否有效时间
-      validation-query-timeout: 500
-      # 在获取连接后，确定是否要进行连接空间时间的检查
+      validation-query: SELECT 1
+      # 配置检测连接是否有效时间（秒）
+      validation-query-timeout: 3
+      # 在连接空闲时进行有效性检测
       test-while-idle: true
-      # 设从连接池获取连接时是否检查连接有效性，true检查，false不检查
-      test-on-borrow: false
+      # 从连接池获取连接时检查有效性
+      test-on-borrow: true
       # 设置从连接池归还连接时是否检查连接有效性，true检查，false不检查
       test-on-return: false
+      # 保活空闲连接，减少连接被服务端回收导致的断链
+      keep-alive: true
   # 文件上传限制
   servlet:
     multipart:
@@ -259,3 +261,6 @@ knife4j:
   enable: true
   setting:
     language: zh_cn
+
+captcha:
+  init-default-resource: true

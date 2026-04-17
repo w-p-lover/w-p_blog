@@ -29,12 +29,12 @@ export const constantRoutes: RouteRecordRaw[] = [
         },
     },
     {
-        path: "",
+        path: "/",
         component: Layout,
         redirect: "/index",
         children: [
             {
-                path: "/index",
+                path: "index",
                 component: () => import("@/views/home/index.vue"),
                 name: "Index",
                 meta: {title: "首页", icon: "dashboard", affix: true},

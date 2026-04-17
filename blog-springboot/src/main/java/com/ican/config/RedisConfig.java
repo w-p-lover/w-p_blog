@@ -1,6 +1,9 @@
 package com.ican.config;
 
+import cn.dev33.satoken.session.SaSession;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -48,6 +51,7 @@ public class RedisConfig {
                 ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.PROPERTY);
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        objectMapper.addMixIn(SaSession.class, SaSessionMixIn.class);
         jackson2JsonRedisSerializer.setObjectMapper(objectMapper);
         // String序列化
         StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
@@ -61,6 +65,17 @@ public class RedisConfig {
         template.setHashValueSerializer(jackson2JsonRedisSerializer);
         template.afterPropertiesSet();
         return template;
+    }
+
+    private abstract static class SaSessionMixIn {
+        @JsonIgnore
+        public abstract long getTimeout();
+
+        @JsonProperty("timeout")
+        public void setTimeoutCompat(long timeout) {
+            // 兼容旧JSON字段 timeout，映射到 SaSession 的更新方法
+            ((SaSession) (Object) this).updateTimeout(timeout);
+        }
     }
 
 }
