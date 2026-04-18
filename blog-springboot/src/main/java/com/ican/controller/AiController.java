@@ -33,8 +33,8 @@ public class AiController {
     }
 
     @PostMapping("/api/ai/reindex")
-    public Result<Integer> reindex() {
-        return Result.success(aiArticleService.reindexHistory());
+    public Result<Integer> reindex(@RequestParam(defaultValue = "5") Integer limit) {
+        return Result.success(aiArticleService.reindexHistory(limit));
     }
 
     @RateLimit(key = "api:ai:write:#{#action}", limit = 20, period = 3600)
