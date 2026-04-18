@@ -15,9 +15,17 @@ public interface AiArticleService {
     void processArticle(Integer articleId, String title, String content);
 
     /**
-     * 历史文章回填向量
+     * 历史文章回填向量（默认实验数量）
      *
      * @return 回填成功数量
      */
     int reindexHistory();
+
+    /**
+     * 历史文章回填向量（按文章数量限制）
+     *
+     * @param articleLimit 本次最多回填的文章数
+     * @return 回填成功数量
+     */
+    int reindexHistory(int articleLimit);
 }
