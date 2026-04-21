@@ -42,7 +42,7 @@ const imageList = [
     height: 100%;
     background: no-repeat 50% 50% / cover;
     opacity: 0;
-    animation: imageAnimation 36s linear infinite 0s;
+    animation: imageAnimation 38s linear infinite 0s;
     backface-visibility: hidden;
     transform-style: preserve-3d;
 
@@ -75,7 +75,8 @@ const imageList = [
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, .2);
+    background:
+      linear-gradient(150deg, rgba(6, 16, 34, 0.24), rgba(7, 20, 40, 0.14) 45%, rgba(5, 12, 24, 0.34));
     transition: all .2s ease-in-out 0s;
   }
 }
@@ -83,6 +84,7 @@ const imageList = [
 @keyframes imageAnimation {
   0% {
     opacity: 0;
+    transform: scale(1);
     animation-timing-function: ease-in;
   }
 
@@ -90,24 +92,25 @@ const imageList = [
     opacity: 1;
   }
 
-  8% {
+  10% {
     opacity: 1;
-    transform: scale(1.05);
+    transform: scale(1.03);
     animation-timing-function: ease-out;
   }
 
-  17% {
+  19% {
     opacity: 1;
-    transform: scale(1.1);
+    transform: scale(1.075);
   }
 
-  25% {
+  26% {
     opacity: 0;
-    transform: scale(1.1);
+    transform: scale(1.085);
   }
 
   100% {
     opacity: 0;
+    transform: scale(1.085);
   }
 }
 </style>

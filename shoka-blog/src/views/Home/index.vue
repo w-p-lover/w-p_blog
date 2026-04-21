@@ -31,7 +31,7 @@ const {app} = useStore();
 
 <style lang="scss" scoped>
 .mt {
-  margin-top: 1rem;
-  padding-bottom: 1.75rem;
+  margin-top: 1.2rem;
+  padding-bottom: 2rem;
 }
 </style>

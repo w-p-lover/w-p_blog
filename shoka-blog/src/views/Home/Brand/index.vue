@@ -80,29 +80,37 @@ onMounted(() => {
   .artboard {
     font-family: "Fredericka the Great", Mulish, -apple-system, "PingFang SC", "Microsoft YaHei",
     sans-serif;
-    font-size: 3.5em;
-    line-height: 1.2;
+    font-size: clamp(2.5rem, 5.2vw, 3.7rem);
+    line-height: 1.16;
+    letter-spacing: 0.02em;
+    text-shadow: 0 10px 22px rgba(4, 12, 28, 0.44);
     animation: titleScale 1s;
   }
 
   .title {
-    letter-spacing: 0.1em;
+    margin-top: 0.45rem;
+    letter-spacing: 0.08em;
+    color: rgba(246, 250, 255, 0.9);
+    text-shadow: 0 8px 20px rgba(3, 10, 23, 0.36);
   }
 }
 
 .easy-typed-cursor {
   margin-left: 0.625rem;
   opacity: 1;
-  -webkit-animation: blink 0.7s infinite;
-  -moz-animation: blink 0.7s infinite;
-  animation: blink 0.7s infinite;
+  color: rgba(255, 241, 245, 0.92);
+  -webkit-animation: blink 0.95s infinite;
+  -moz-animation: blink 0.95s infinite;
+  animation: blink 0.95s infinite;
 }
 
 .arrow-down {
   position: absolute;
   bottom: 70px;
-  -webkit-animation: arrow-shake 1.5s ease-out infinite;
-  animation: arrow-shake 1.5s ease-out infinite;
+  opacity: 0.88;
+  filter: drop-shadow(0 8px 20px rgba(2, 10, 22, 0.45));
+  -webkit-animation: arrow-shake 2.1s ease-out infinite;
+  animation: arrow-shake 2.1s ease-out infinite;
   cursor: pointer;
   z-index: 8;
 }
@@ -121,17 +129,17 @@ onMounted(() => {
 
 @keyframes arrow-shake {
   0% {
-    opacity: 1;
+    opacity: 0.9;
     transform: translateY(0);
   }
 
-  30% {
-    opacity: 0.5;
-    transform: translateY(25px);
+  35% {
+    opacity: 0.52;
+    transform: translateY(18px);
   }
 
   100% {
-    opacity: 1;
+    opacity: 0.9;
     transform: translateY(0);
   }
 }
