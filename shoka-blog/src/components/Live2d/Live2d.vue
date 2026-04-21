@@ -1,35 +1,19 @@
 <template>
-  <!-- Live2D 模型容器 -->
-  <div id="live2d-container" class="live2d-container">
-    <!-- Canvas 会自动插入或手动创建 -->
-    <canvas id="live2d-canvas"></canvas>
-
-    <!-- 自定义消息框 -->
-    <div id="live2dMessageBox" class="message-box">
-      <div
-          id="live2dMessageBox-content"
-          :class="{'message-content-visible': isMessageVisible, 'message-content-hidden': !isMessageVisible}"
-      >
-        {{ currentMessage }}
-      </div>
-    </div>
-  </div>
+  <div class="live2d-host"></div>
 </template>
 
 <script setup>
-import { onMounted, ref, watch } from 'vue';
+import { onBeforeUnmount, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
-// 兼容 import 方式
 import * as Live2DModule from 'live2d-render';
+
 const initializeLive2D = Live2DModule.initializeLive2D || Live2DModule.default;
+const setLive2DMessage = Live2DModule.setMessageBox;
 
-const isMessageVisible = ref(false);
-const currentMessage = ref('');
-const messageTimer = ref(null);
 const route = useRoute();
+let removeGlobalPointerFollow = null;
 
-// 页面消息配置
 const pageMessages = {
   '/': '愿您在此寻得片刻安宁。',
   '/message': '笔墨传情，静待您的留言。',
@@ -55,39 +39,82 @@ const pageMessages = {
   '/oauth/login/github': '正在通过Github登录，稍候片刻。'
 };
 
-const setMessageBox = (message, duration = 3000) => {
-  currentMessage.value = message;
-  isMessageVisible.value = true;
-  if (messageTimer.value) clearTimeout(messageTimer.value);
-  messageTimer.value = setTimeout(() => (isMessageVisible.value = false), duration);
+const showRouteMessage = (path, duration = 5000) => {
+  if (typeof setLive2DMessage !== 'function') return;
+  const regex = /\/(\d+)$/;
+  const message = pageMessages[path.replace(regex, '/:id')];
+  if (message) setLive2DMessage(message, duration);
 };
 
-// 监听路由变化
+const setupRuntimeLayerBehavior = () => {
+  const canvas = document.getElementById('live2d-canvas');
+  if (!canvas) return null;
+
+  canvas.style.pointerEvents = 'none';
+
+  const toolbox = document.getElementById('live2d-toolbox') || document.querySelector('.live2d-toolbox');
+  if (toolbox) toolbox.style.pointerEvents = 'auto';
+
+  const messageBox = document.getElementById('live2dMessageBox');
+  if (messageBox) messageBox.style.pointerEvents = 'auto';
+
+  const messageContent = document.getElementById('live2dMessageBox-content');
+  if (messageContent) messageContent.style.pointerEvents = 'auto';
+
+  return canvas;
+};
+
+const setupGlobalPointerFollow = (canvas) => {
+  if (!canvas) return;
+
+  const forwardPointer = (event) => {
+    const rect = canvas.getBoundingClientRect();
+    const normalizedX = Math.min(Math.max(event.clientX / window.innerWidth, 0), 1);
+    const normalizedY = Math.min(Math.max(event.clientY / window.innerHeight, 0), 1);
+    const mappedClientX = rect.left + rect.width * normalizedX;
+    const mappedClientY = rect.top + rect.height * normalizedY;
+
+    if (typeof canvas.onmousemove === 'function') {
+      canvas.onmousemove({
+        target: canvas,
+        clientX: mappedClientX,
+        clientY: mappedClientY
+      });
+      return;
+    }
+
+    canvas.dispatchEvent(new MouseEvent('mousemove', {
+      clientX: mappedClientX,
+      clientY: mappedClientY,
+      bubbles: true,
+      cancelable: true,
+      view: window
+    }));
+  };
+
+  window.addEventListener('mousemove', forwardPointer, { passive: true });
+  window.addEventListener('pointermove', forwardPointer, { passive: true });
+  removeGlobalPointerFollow = () => {
+    window.removeEventListener('mousemove', forwardPointer);
+    window.removeEventListener('pointermove', forwardPointer);
+  };
+};
+
 watch(() => route.path, (newPath) => {
-  const regex = /\/(\d+)$/;
-  const newMessage = pageMessages[newPath.replace(regex, '/:id')];
-  if (newMessage) setMessageBox(newMessage, 5000);
+  showRouteMessage(newPath, 5000);
 });
 
 onMounted(async () => {
-  const container = document.getElementById('live2d-container');
-  if (!container) {
-    console.error('Live2D 容器不存在！');
-    return;
-  }
-
   if (!initializeLive2D || typeof initializeLive2D !== 'function') {
     console.error('initializeLive2D 未导入成功，请检查 live2d-render 版本或导入方式！');
     return;
   }
 
   try {
-    // 初始化 Live2D
     await initializeLive2D({
-      Container: container,
       CanvasId: 'live2d-canvas',
       BackgroundRGBA: [0, 0, 0, 0],
-      ResourcesPath: '/whitecatfree_vts/SDwhite_cat_free.model3.json', // 注意斜杠
+      ResourcesPath: '/whitecatfree_vts/SDwhite_cat_free.model3.json',
       CanvasSize: { width: 300, height: 400 },
       ShowToolBox: true,
       LoadFromCache: true,
@@ -95,71 +122,96 @@ onMounted(async () => {
       Offset: { x: 0, y: 0 }
     });
 
-    // 当前页面显示消息
-    const regex = /\/(\d+)$/;
-    const currentPageMessage = pageMessages[route.path.replace(regex, '/:id')];
-    if (currentPageMessage) setMessageBox(currentPageMessage, 5000);
+    const canvas = setupRuntimeLayerBehavior();
+    setupGlobalPointerFollow(canvas);
+    showRouteMessage(route.path, 5000);
 
     console.log('Live2D 模型加载完成');
   } catch (err) {
     console.error('Live2D 初始化失败：', err);
   }
 });
+
+onBeforeUnmount(() => {
+  if (removeGlobalPointerFollow) removeGlobalPointerFollow();
+});
 </script>
 
-
-<style scoped>
-.live2d-container {
-  position: fixed;
-  z-index: 999;
-  pointer-events: auto;
-  right: -160px;
-  bottom: 0;
-  width: 340px;
-  height: 400px;
+<style>
+.live2d-host {
+  display: none;
 }
 
-.message-box {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  bottom: calc(100%);
-  max-width: 100%;
-  padding: 8px 0;
-  z-index: 10;
+#live2d-canvas {
+  pointer-events: none !important;
+}
+
+#live2d-toolbox,
+.live2d-toolbox,
+#live2dMessageBox,
+#live2dMessageBox-content {
+  pointer-events: auto !important;
 }
 
 #live2dMessageBox-content {
-  font-family: "新宋体", sans-serif;
+  position: relative;
+  overflow: hidden;
+  font-family: "新宋体", "STSong", serif;
   font-size: 14px;
-  font-weight: bold;
-  padding: 10px 18px;
-  border-radius: 20px;
-  width: 300px;
-  word-wrap: break-word;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.45;
+  width: 308px;
+  max-width: min(76vw, 308px);
+  padding: 11px 18px;
+  border-radius: 18px;
   display: flex;
-  justify-content: center
-}
-
-.message-content-hidden {
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  word-wrap: break-word;
+  backdrop-filter: blur(7px) saturate(1.06);
+  -webkit-backdrop-filter: blur(7px) saturate(1.06);
+  border: 1px solid rgba(226, 202, 168, 0.55);
+  box-shadow:
+    0 12px 30px rgba(128, 92, 58, 0.18),
+    inset 0 1px 0 rgba(255, 252, 245, 0.72);
   opacity: 0;
-  transform: translate(-50%, 15px);
-  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-  background-color: rgba(255, 255, 255, 0.92);
-  color: #333;
+  transform: translateY(12px) scale(0.985);
+  transition: all 0.42s cubic-bezier(0.22, 0.78, 0.26, 1);
+  background:
+    linear-gradient(145deg, rgba(255, 248, 236, 0.95), rgba(247, 233, 209, 0.82));
+  color: #6a4c32;
 }
 
-.message-content-visible {
+#live2dMessageBox-content.live2dMessageBox-content-visible {
   opacity: 1;
-  transform: translate(-50%, 0);
-  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-  background-color: rgba(202, 201, 201, 0.51);
-  color: #234161;
-  border: 1px solid rgba(220, 220, 220, 0.3);
+  transform: translateY(0) scale(1);
+  background:
+    linear-gradient(148deg, rgba(255, 244, 225, 0.94), rgba(245, 224, 187, 0.84));
+  color: #5b3f26;
+  border: 1px solid rgba(210, 172, 123, 0.62);
+}
+
+#live2dMessageBox-content.live2dMessageBox-content-hidden {
+  opacity: 0;
+  transform: translateY(12px) scale(0.985);
+}
+
+#live2dMessageBox-content::before {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: 17px;
+  pointer-events: none;
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0));
 }
 
 #live2dMessageBox-content:hover {
-  box-shadow: 0 5px 20px rgba(2, 13, 85, 0.2);
-  transition: all 0.3s ease;
+  transform: translateY(-1px) scale(1.01);
+  box-shadow:
+    0 16px 36px rgba(120, 84, 52, 0.25),
+    inset 0 1px 0 rgba(255, 252, 246, 0.8);
+  border-color: rgba(196, 151, 92, 0.74);
 }
 </style>
