@@ -31,14 +31,18 @@ onMounted(() => {
 .talk-swiper {
   @include flex;
   margin: 0 0.5rem;
-  padding: 0.6rem 1rem;
+  padding: 0.62rem 1rem;
   font-size: 0.9375rem;
-  border-radius: 0.5rem;
-  box-shadow: 0 0.625rem 1.875rem -0.9375rem var(--box-bg-shadow);
-  transition: all 0.2s ease-in-out 0s;
+  border-radius: 0.75rem;
+  border: 1px solid var(--surface-border-soft);
+  background: linear-gradient(180deg, var(--surface-soft-strong), var(--surface-soft));
+  box-shadow: var(--shadow-soft);
+  transition: transform 0.24s ease, box-shadow 0.24s ease, border-color 0.24s ease;
 
   &:hover {
-    box-shadow: 0 0 2rem var(--box-bg-shadow);
+    transform: translateY(-2px);
+    border-color: rgba(116, 146, 210, 0.32);
+    box-shadow: var(--shadow-soft-hover);
   }
 }
 
@@ -56,6 +60,7 @@ onMounted(() => {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+  color: var(--grey-7);
 }
 
 .arrow {

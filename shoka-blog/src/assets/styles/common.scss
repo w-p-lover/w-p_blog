@@ -2,27 +2,41 @@
 
 /* 背景色 */
 .bg {
-  background-color: var(--grey-0);
+  position: relative;
+  background:
+    radial-gradient(circle at 10% -10%, rgba(147, 183, 255, 0.16), transparent 34%),
+    radial-gradient(circle at 90% -5%, rgba(109, 236, 213, 0.14), transparent 32%),
+    linear-gradient(180deg, rgba(238, 245, 255, 0.78), var(--grey-0) 30%);
 }
 
 /* 页面布局 */
 .page-header {
   position: relative;
   width: 100%;
-  height: 70vh;
+  height: clamp(22rem, 68vh, 44rem);
   background: var(--color-red) no-repeat center center / cover;
-  z-index: -9;
+  z-index: 0;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(140deg, var(--hero-overlay-soft), rgba(13, 20, 37, 0.1) 45%, var(--hero-overlay-strong));
+    z-index: 0;
+  }
 
   &::after {
     content: '';
     display: block;
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, .2);
+    inset: 0;
+    background:
+      radial-gradient(circle at 22% 28%, rgba(8, 15, 28, 0.2), transparent 36%),
+      radial-gradient(circle at 78% 18%, rgba(5, 69, 59, 0.18), transparent 35%);
     transition: all .2s ease-in-out 0s;
+    z-index: 1;
+    pointer-events: none;
   }
 }
 
@@ -30,14 +44,17 @@
   @include flex;
   flex-direction: column;
   position: fixed;
+  top: 0;
+  left: 0;
   width: 100%;
-  height: 50vh;
+  height: clamp(14rem, 48vh, 28rem);
   min-height: 10rem;
-  padding: 4rem 5rem 0;
+  padding: 4.8rem 5rem 0;
   font-size: 2.25em;
   color: var(--header-text-color);
+  text-shadow: 0 8px 24px rgba(4, 12, 28, 0.45);
   animation: titleScale 1s;
-  z-index: 1;
+  z-index: 2;
 }
 
 .page-cover {
@@ -45,18 +62,26 @@
   top: 0;
   left: 0;
   width: 100%;
-  height: 70vh;
+  height: clamp(22rem, 68vh, 44rem);
   object-fit: cover;
+  filter: saturate(1.18) brightness(1.05);
 }
 
 .page-container {
   position: relative;
   width: calc(100% - 0.625rem);
-  margin: 1.5rem auto;
-  padding: 1.75rem 2.25rem;
-  border-radius: 0.75rem;
-  box-shadow: 0 0 1rem var(--box-bg-shadow);
+  margin: -3.6rem auto 1.5rem;
+  padding: 1.9rem 2.25rem;
+  border-radius: 1rem;
+  border: 1px solid var(--surface-border-soft);
+  background:
+    linear-gradient(180deg, var(--surface-soft-strong), var(--surface-soft));
+  box-shadow:
+    var(--shadow-soft),
+    0 4px 12px rgba(13, 31, 62, 0.07);
+  backdrop-filter: blur(4px);
   animation: slideUpIn 1s;
+  z-index: 3;
 }
 
 @media (min-width: 1200px) {
@@ -67,12 +92,14 @@
 
 @media (max-width: 767px) {
   .page-container {
+    margin-top: -3.1rem;
     padding: 1rem 0.875rem;
+    border-radius: 0.85rem;
   }
 
   .page-title {
     font-size: 2rem;
-    padding: 3rem 0.5rem 0;
+    padding: 3.4rem 0.9rem 0;
   }
 }
 
@@ -82,7 +109,7 @@
   justify-content: center;
   width: calc(100% - 0.625rem);
   margin: 0 auto;
-  padding-bottom: 1.75rem;
+  padding-bottom: 2rem;
   animation: slideUpIn 1s;
 }
 
