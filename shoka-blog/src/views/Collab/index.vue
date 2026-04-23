@@ -271,7 +271,7 @@ import {Doc, DocCard} from "@/api/collab/type";
 import {PageQuery} from "@/model";
 import useStore from '@/store';
 import Pagination from "@/components/Pagination/index.vue";
-import {ElLoading, ElMessage} from 'element-plus'; // 引入提示组件
+import {ElLoading, ElMessage} from 'element-plus/dist/index.full.mjs'; // 引入提示组件
 import Waves from "@/components/Waves/index.vue";
 const {user} = useStore();
 const data = reactive({

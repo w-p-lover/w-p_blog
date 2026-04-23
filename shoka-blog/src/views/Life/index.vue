@@ -243,7 +243,7 @@ import '@vue-flow/core/dist/theme-default.css';
 import {Background, Panel, PanelPosition, Controls} from '@vue-flow/additional-components';
 import {VueFlow, useVueFlow, Elements} from '@vue-flow/core';
 import {onMounted, ref, watch, nextTick} from 'vue';
-import {ElMessage} from 'element-plus';
+import {ElMessage} from 'element-plus/dist/index.full.mjs';
 import {Check, RefreshRight, Briefcase, Coffee} from "@element-plus/icons-vue"
 import type {FormInstance, FormRules} from 'element-plus';
 import {addFlowElement, getFlowList} from "@/api/life";

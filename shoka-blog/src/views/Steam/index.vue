@@ -190,7 +190,7 @@ import Pagination from '@/components/Pagination/index.vue';
 import {reactive, toRefs, onMounted, watch, ref} from 'vue';
 import {PageQuery} from '@/model';
 import {Teleport} from 'vue';
-import {ElMessage} from "element-plus";
+import {ElMessage} from "element-plus/dist/index.full.mjs";
 import {formatDateTime} from "@/utils/date";
 import steamIcon from '@/assets/icons/steam (1).svg';
 import Waves from "@/components/Waves/index.vue";

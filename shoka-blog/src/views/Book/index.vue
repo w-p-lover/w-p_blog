@@ -274,7 +274,7 @@ import {
   updateBookStatus as apiChangeBookStatus,
 } from "@/api/book";
 import {Edit} from '@element-plus/icons-vue'
-import type {TagProps} from 'element-plus'
+import type {TagProps} from 'element-plus/dist/index.full.mjs'
 import Waves from "@/components/Waves/index.vue";
 const showAddDialog = ref(false);
 const showDetailDialog = ref(false);

@@ -187,7 +187,7 @@
 
 <script setup lang="ts">
 import {onMounted, reactive, ref} from 'vue';
-import {ElMessage} from 'element-plus';
+import {ElMessage} from 'element-plus/dist/index.full.mjs';
 import {createDoc, getDoc, getDocTags, updateDoc} from '@/api/collab';
 import RichTextEditor from '@/components/Edit/index.vue';
 import useStore from '@/store';

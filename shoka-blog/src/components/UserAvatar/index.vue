@@ -27,7 +27,7 @@
 <script setup lang="ts">
 import {updateUserAvatar} from "@/api/user";
 import useStore from "@/store";
-import {UploadCustomRequestOptions} from "naive-ui";
+import type {UploadCustomRequestOptions} from "naive-ui/es/upload";
 import {VueCropper} from 'vue-cropper';
 import 'vue-cropper/dist/index.css';
 

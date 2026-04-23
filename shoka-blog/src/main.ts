@@ -11,7 +11,6 @@ import "@kangc/v-md-editor/lib/plugins/todo-list/todo-list.css";
 import VMdPreview from "@kangc/v-md-editor/lib/preview";
 import "@kangc/v-md-editor/lib/theme/style/vuepress.css";
 import vuepressTheme from "@kangc/v-md-editor/lib/theme/vuepress.js";
-import naive from "naive-ui";
 import "nprogress/nprogress.css";
 import {createPinia} from "pinia";
 import piniaPluginPersistedstate from "pinia-plugin-persistedstate";
@@ -31,7 +30,7 @@ import App from "./App.vue";
 import error from "./assets/images/404.gif";
 import loading from "./assets/images/load.gif";
 import 'element-plus/dist/index.css'
-import ElementPlus from "element-plus";
+import ElementPlus from "element-plus/dist/index.full.mjs";
 import axios from "axios";
 
 axios.defaults.withCredentials = true// Cookie跨域
@@ -48,7 +47,6 @@ VMdPreview.use(vuepressTheme, {
     .use(createKatexPlugin());
 app.use(ElementPlus);
 app.use(VMdPreview);
-app.use(naive);
 app.use(pinia);
 app.use(router);
 app.use(VueViewer);
