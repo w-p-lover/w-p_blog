@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc && vite build",
+    "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -22,7 +22,7 @@
     "dayjs": "^1.11.13",
     "easy-typer-js": "^2.1.0",
     "echarts": "^5.4.1",
-    "element-plus": "^2.8.7",
+    "element-plus": "2.8.7",
     "font-awesome": "^4.7.0",
     "global": "^4.4.0",
     "image-conversion": "^2.1.1",
@@ -57,7 +57,7 @@
     "@types/sockjs-client": "^1.5.4",
     "@vicons/ionicons5": "^0.12.0",
     "@vitejs/plugin-vue": "^3.2.0",
-    "naive-ui": "^2.34.3",
+    "naive-ui": "2.41.0",
     "sass": "^1.56.1",
     "sass-loader": "^13.2.0",
     "typescript": "^4.6.4",

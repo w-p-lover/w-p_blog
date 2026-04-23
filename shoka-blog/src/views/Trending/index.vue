@@ -89,7 +89,7 @@
 import {ref, reactive, toRefs, onMounted, watch} from 'vue'
 import axios from 'axios'
 import Pagination from '@/components/Pagination/index.vue'
-import {ElNotification} from 'element-plus'
+import {ElNotification} from 'element-plus/dist/index.full.mjs'
 import Waves from "@/components/Waves/index.vue";
 
 const showSpiderNotification = (type: 'success' | 'error' | 'warning' | 'info', message: string) => {

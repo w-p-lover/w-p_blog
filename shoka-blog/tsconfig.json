@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "target": "ESNext",
+    "allowJs": true,
     "suppressImplicitAnyIndexErrors": true,
     "useDefineForClassFields": true,
     "module": "ESNext",

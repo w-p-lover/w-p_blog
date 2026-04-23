@@ -192,7 +192,7 @@ import {
   Bell,
   Search
 } from '@element-plus/icons-vue';
-import {ElMessage} from 'element-plus';
+import {ElMessage} from 'element-plus/dist/index.full.mjs';
 import AmapDistrict from "@/components/Map/AmapDistrict.vue";
 import Waves from "@/components/Waves/index.vue";
 

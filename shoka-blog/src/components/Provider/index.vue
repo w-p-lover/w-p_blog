@@ -10,7 +10,9 @@
 </template>
 
 <script setup lang="ts">
-import {useDialog, useMessage, useNotification} from "naive-ui";
+import {useDialog} from "naive-ui/es/dialog";
+import {useMessage} from "naive-ui/es/message";
+import {useNotification} from "naive-ui/es/notification";
 import {defineComponent, h} from 'vue';
 
 const registerNaiveTools = () => {
