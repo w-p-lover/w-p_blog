@@ -2,29 +2,22 @@ package com.ican.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import java.util.Optional;
 import com.ican.entity.GiteeTrending;
 import com.ican.mapper.GiteeTrendingMapper;
 import com.ican.model.dto.ConditionDTO;
 import com.ican.model.vo.GiteeTrendingVO;
 import com.ican.model.vo.PageResult;
 import com.ican.service.GiteeTrendingService;
+import com.ican.utils.PythonScriptRunner;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.InputStreamReader;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -33,14 +26,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class GiteeTrendingServiceImpl implements GiteeTrendingService {
 
-    private final  GiteeTrendingMapper giteeTrendingMapper;
+    private final GiteeTrendingMapper giteeTrendingMapper;
+    private final PythonScriptRunner pythonScriptRunner;
 
-    /**
-     * 查看Gitee趋势列表
-     *
-     * @param condition 条件
-     * @return {@link PageResult<GiteeTrendingVO>} Gitee趋势列表
-     */
     @Override
     public PageResult<GiteeTrendingVO> listGiteeTrending(ConditionDTO condition) {
         Long count = giteeTrendingMapper.countGiteeTrending(condition);
@@ -69,43 +57,21 @@ public class GiteeTrendingServiceImpl implements GiteeTrendingService {
         return new PageResult<>(voList, count);
     }
 
-    /**
-     * 调用 Python 爬虫脚本
-     */
+    @Override
     public void runPythonSpider(String language, String category) {
-        try {
-            ClassPathResource resource = new ClassPathResource("static/gitee.py");
-            File tempFile = File.createTempFile("gitee", ".py");
-            Files.copy(resource.getInputStream(), tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-
-            String pythonCmd = "python"; // 最好改成配置项
-            ProcessBuilder pb = new ProcessBuilder(
-                    pythonCmd,
-                    tempFile.getAbsolutePath(),
-                    "--language", language != null ? language : "",
-                    "--category", category != null ? category : "");
-            pb.redirectErrorStream(true);
-            Process process = pb.start();
-
-            System.out.println("--------------------------爬虫执行--------------------------");
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    System.out.println("[爬虫日志] " + line);
-                }
-            }
-            int exitCode = process.waitFor();
-            System.out.println("-------------------爬虫执行完成，退出码：" + exitCode + "-------------------");
-        } catch (Exception e) {
-            log.error("爬虫任务发生异常：{}", e.getMessage());
+        PythonScriptRunner.PythonExecutionResult result = pythonScriptRunner.run(
+                "static/gitee.py",
+                List.of(
+                        "--language", language == null ? "" : language,
+                        "--category", category == null ? "" : category
+                ),
+                line -> log.info("[Gitee 爬虫日志] {}", line)
+        );
+        if (!result.isSuccess()) {
+            log.error("Gitee 爬虫执行失败，exitCode={}, timedOut={}", result.exitCode(), result.timedOut());
         }
     }
 
-    /**
-     * 获取项目类型
-     *
-     * @return {@link List<String>} 项目类型列表
-     */
     @Override
     public List<String> listGiteeTrendingType() {
         List<String> trendingTypes = giteeTrendingMapper.countGiteeTrendingTypes();
@@ -115,11 +81,6 @@ public class GiteeTrendingServiceImpl implements GiteeTrendingService {
         return trendingTypes;
     }
 
-    /**
-     * 获取项目语言
-     *
-     * @return {@link List<String>} 项目语言列表
-     */
     @Override
     public List<String> listGiteeTrendingLang() {
         List<String> trendingTypes = giteeTrendingMapper.countGiteeTrendingLang();

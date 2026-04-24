@@ -6,8 +6,8 @@ import com.ican.annotation.VisitLogger;
 import com.ican.model.dto.BookDTO;
 import com.ican.model.vo.BookVO;
 import com.ican.model.vo.PageResult;
-import com.ican.service.BookService;
 import com.ican.model.vo.Result;
+import com.ican.service.BookService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,44 +15,43 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static com.ican.constant.OptTypeConstant.*;
+import static com.ican.constant.OptTypeConstant.ADD;
+import static com.ican.constant.OptTypeConstant.DELETE;
+import static com.ican.constant.OptTypeConstant.UPDATE;
 
-/**
- * 书籍模块
- */
 @Slf4j
 @RestController
 public class BookController {
 
     @Autowired
     private BookService bookService;
-    private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final AtomicReference<String> spiderStatus = new AtomicReference<>("IDLE");
+    private final AtomicBoolean spiderRunning = new AtomicBoolean(false);
 
     @Value("${spider.dir}")
     private String zipDir;
 
-    /**
-     * 后台查看书籍列表
-     */
     @SaCheckPermission("book:list")
     @GetMapping("/admin/book/list")
     public Result<PageResult<BookVO>> listBookBackVO(@RequestParam(required = false, defaultValue = "newest") String sortType) {
         return Result.success(bookService.listBookBackVO(sortType));
     }
 
-    /**
-     * 后台添加书籍
-     */
     @OptLogger(value = ADD)
     @SaCheckPermission("book:add")
     @PostMapping("/admin/book/add")
@@ -61,9 +60,6 @@ public class BookController {
         return Result.success();
     }
 
-    /**
-     * 后台删除书籍
-     */
     @OptLogger(value = DELETE)
     @SaCheckPermission("book:delete")
     @DeleteMapping("/admin/book/delete")
@@ -72,9 +68,6 @@ public class BookController {
         return Result.success();
     }
 
-    /**
-     * 后台修改书籍
-     */
     @OptLogger(value = UPDATE)
     @SaCheckPermission("book:update")
     @PutMapping("/admin/book/update")
@@ -83,47 +76,30 @@ public class BookController {
         return Result.success();
     }
 
-    /**
-     * 后台编辑/查看书籍详情
-     */
     @SaCheckPermission("book:edit")
     @GetMapping("/admin/book/edit/{bookId}")
     public Result<BookVO> editBook(@PathVariable("bookId") Integer bookId) {
         return Result.success(bookService.getBookDetail(bookId));
     }
 
-    /**
-     * 前台书籍列表
-     */
     @VisitLogger(value = "书籍列表")
     @GetMapping("/book/list")
     public Result<PageResult<BookVO>> listBookVO(@RequestParam(value = "sortType", defaultValue = "newest") String sortType) {
         return Result.success(bookService.listBookVO(sortType));
     }
 
-    /**
-     * 添加书籍
-     */
     @PostMapping("/book/add")
     public Result<?> addBook(@Validated @RequestBody BookDTO bookDTO) {
         bookService.addBook(bookDTO);
         return Result.success();
     }
 
-    /**
-     * 前台查看某本书
-     */
     @VisitLogger(value = "书籍")
     @GetMapping("/book/{bookId}")
     public Result<BookVO> getBook(@PathVariable("bookId") Integer bookId) {
         return Result.success(bookService.getBookDetail(bookId));
     }
 
-    /**
-     * 更新书籍状态（前台用户操作）
-     */
-    /*    @OptLogger(value = UPDATE)*/
-    /*    @SaCheckLogin*/
     @PutMapping("/book/{bookId}/status")
     public Result<?> updateBookStatus(@PathVariable("bookId") Integer bookId,
                                       @RequestParam("status") String status) {
@@ -131,23 +107,17 @@ public class BookController {
         return Result.success();
     }
 
-    /**
-     * 搜索书籍
-     */
     @GetMapping("/book/search")
     public Result<List<BookVO>> searchBooks(@RequestParam String keyword) {
         return Result.success(bookService.searchBooks(keyword));
     }
 
-    // 删除书籍
     @PostMapping("/book/deleteResource")
     public String deleteResource(@RequestParam Integer bookId, @RequestParam int index) {
         bookService.deleteResource(bookId, index);
         return "success";
     }
 
-
-    // 更新书源字段
     @PostMapping("/book/updateResource")
     public String updateResource(@RequestParam Integer bookId, @RequestParam String resourceJson) {
         bookService.updateResource(bookId, resourceJson);
@@ -156,31 +126,32 @@ public class BookController {
 
     @PostMapping("/book/run")
     public Result<?> runSpider() {
-        // 检查爬虫运行状态
-        if ("RUNNING".equals(spiderStatus.get())) {
+        if (!spiderRunning.compareAndSet(false, true)) {
             return Result.fail("爬虫正在运行，请稍后重试");
         }
         spiderStatus.set("RUNNING");
         executor.submit(() -> {
             try {
-                // 将专辑名称传递给服务层，由服务层决定具体爬虫逻辑
                 bookService.runPythonSpider(spiderStatus);
-                spiderStatus.set("COMPLETED");
+                if (!"FAILED".equals(spiderStatus.get())) {
+                    spiderStatus.set("COMPLETED");
+                }
             } catch (Exception e) {
                 spiderStatus.set("FAILED");
-                log.error("书源爬虫任务发生异常：{}", e.getMessage());
+                log.error("Book spider task failed", e);
+            } finally {
+                spiderRunning.set(false);
             }
         });
-        return Result.success("书源的爬虫任务已启动");
+        return Result.success("书源爬虫任务已启动");
     }
-
 
     @GetMapping("/book/status")
     public Result<?> getStatus() {
         Map<String, Object> statusInfo = new HashMap<>();
         int totalCount = bookService.getTotalCount();
         double bookCount = bookService.getBookCount();
-        double spiderPercentage = Math.round(bookCount * 100 / totalCount);
+        double spiderPercentage = totalCount <= 0 ? 0 : Math.round(bookCount * 100 / totalCount);
 
         String message;
         switch (spiderStatus.get()) {
@@ -191,10 +162,11 @@ public class BookController {
                 message = "正在插入书源数据...";
                 break;
             case "COMPLETED":
-                message = "爬虫任务已完成 ✅";
+            case "COMPLETE":
+                message = "爬虫任务已完成";
                 break;
             case "FAILED":
-                message = "爬虫任务失败 ❌";
+                message = "爬虫任务失败";
                 break;
             default:
                 message = "空闲中";
@@ -213,23 +185,21 @@ public class BookController {
         File zipFile = new File(zipPath);
 
         if (!zipFile.exists()) {
-            throw new RuntimeException("文件不存在或爬虫尚未完成打包");
+            throw new RuntimeException("文件不存在或爬虫尚未打包完成");
         }
         response.setContentType("application/zip");
         response.setHeader("Content-Disposition", "attachment; filename=book_result.zip");
 
         try (InputStream inputStream = new FileInputStream(zipFile);
              OutputStream outputStream = response.getOutputStream()) {
-
             byte[] buffer = new byte[1024];
             int length;
             while ((length = inputStream.read(buffer)) > 0) {
                 outputStream.write(buffer, 0, length);
             }
             outputStream.flush();
-
         } catch (IOException e) {
-            log.error("下载书源zip文件失败", e);
+            log.error("Download book zip failed", e);
             throw new RuntimeException("下载失败");
         }
     }
