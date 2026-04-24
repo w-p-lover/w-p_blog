@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -28,6 +29,7 @@ public class GiteeTrendingController {
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     private final AtomicReference<String> spiderStatus = new AtomicReference<>("IDLE");
+    private final AtomicBoolean spiderRunning = new AtomicBoolean(false);
     /**
      * 查看Gitee趋势列表
      *
@@ -64,7 +66,7 @@ public class GiteeTrendingController {
     @PostMapping("/run")
     public Result<?> runSpider( @RequestParam String language,
                                 @RequestParam String category) {
-        if ("RUNNING".equals(spiderStatus.get())) {
+        if (!spiderRunning.compareAndSet(false, true)) {
             return Result.fail("爬虫正在运行，请稍后重试");
         }
         spiderStatus.set("RUNNING");
@@ -75,6 +77,8 @@ public class GiteeTrendingController {
             } catch (Exception e) {
                 spiderStatus.set("FAILED");
                 log.error("爬虫任务发生异常：{}", e.getMessage());
+            } finally {
+                spiderRunning.set(false);
             }
         });
         return Result.success("爬虫任务已启动");

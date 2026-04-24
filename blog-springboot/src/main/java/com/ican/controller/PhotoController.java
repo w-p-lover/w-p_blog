@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.ican.constant.OptTypeConstant.*;
@@ -39,6 +40,7 @@ public class PhotoController {
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     private final AtomicReference<String> spiderStatus = new AtomicReference<>("IDLE");
+    private final AtomicBoolean spiderRunning = new AtomicBoolean(false);
     /**
      * 查看后台照片列表
      *
@@ -154,7 +156,7 @@ public class PhotoController {
         }
 
         // 检查爬虫运行状态
-        if ("RUNNING".equals(spiderStatus.get())) {
+        if (!spiderRunning.compareAndSet(false, true)) {
             return Result.fail("爬虫正在运行，请稍后重试");
         }
 
@@ -167,6 +169,8 @@ public class PhotoController {
             } catch (Exception e) {
                 spiderStatus.set("FAILED");
                 log.error("专辑[{}]爬虫任务发生异常：{}", albumName, e.getMessage());
+            } finally {
+                spiderRunning.set(false);
             }
         });
 
