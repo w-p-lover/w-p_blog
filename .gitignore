@@ -1,3 +1,6 @@
 
 .idea
 .worktrees/
+/target/
+/blog-springboot/config/application-private.yml
+/blog-springboot/config/application-private.yaml
