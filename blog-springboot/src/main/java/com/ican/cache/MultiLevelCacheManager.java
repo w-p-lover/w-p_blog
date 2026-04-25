@@ -5,6 +5,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RBloomFilter;
+import org.redisson.api.RTopic;
 import org.redisson.api.RedissonClient;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
@@ -31,10 +32,13 @@ import java.util.function.Function;
 public class MultiLevelCacheManager {
 
     private static final String NULL_VALUE = "__NULL__";
+    private static final String EVICT_TOPIC = "cache:multilevel:evict";
 
     private final RedisTemplate<String, Object> redisTemplate;
     private final RedissonClient redissonClient;
     private final MultiLevelCacheProperties cacheProperties;
+
+    private RTopic evictTopic;
 
     /**
      * L1 本地缓存：Caffeine
@@ -69,6 +73,12 @@ public class MultiLevelCacheManager {
             );
             log.info("布隆过滤器初始化完成");
         }
+
+        evictTopic = redissonClient.getTopic(EVICT_TOPIC);
+        evictTopic.addListener(String.class, (channel, key) -> {
+            localCache.invalidate(key);
+            log.debug("收到远程缓存失效通知: {}", key);
+        });
     }
 
     /**
@@ -170,6 +180,9 @@ public class MultiLevelCacheManager {
     public void evict(String key) {
         localCache.invalidate(key);
         redisTemplate.delete(key);
+        if (evictTopic != null) {
+            evictTopic.publish(key);
+        }
         log.debug("缓存已删除: {}", key);
     }
 
