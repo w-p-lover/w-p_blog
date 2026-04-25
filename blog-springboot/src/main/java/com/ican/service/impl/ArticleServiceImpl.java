@@ -302,11 +302,14 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         ArticleVO article = cacheManager.get(cacheKey, key -> {
             ArticleVO dbArticle = articleMapper.selectArticleHomeById(articleId);
             if (dbArticle != null) {
-                updateArticleStatsFromRedis(articleId, dbArticle);
+                hydrateArticleStatsFromRedis(articleId, dbArticle);
             }
             return dbArticle;
         }, 30); // 30 分钟过期
 
+        if (article != null) {
+            updateArticleStatsFromRedis(articleId, article);
+        }
         return article;
     }
 
