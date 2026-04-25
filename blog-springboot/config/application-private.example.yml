@@ -1,0 +1,38 @@
+# 可选：本地私有覆盖（不会提交到仓库）
+jasypt:
+  encryptor:
+    password: ${JASYPT_ENCRYPTOR_PASSWORD:replace-with-your-master-password}
+
+spring:
+  datasource:
+    username: ${BLOG_DB_USERNAME:root}
+    password: ${BLOG_DB_PASSWORD:replace-me}
+
+  data:
+    redis:
+      password: ${BLOG_REDIS_PASSWORD:replace-me}
+
+  rabbitmq:
+    username: ${BLOG_RABBITMQ_USERNAME:guest}
+    password: ${BLOG_RABBITMQ_PASSWORD:replace-me}
+
+  mail:
+    username: ${BLOG_MAIL_USERNAME:replace@example.com}
+    password: ${BLOG_MAIL_PASSWORD:replace-me}
+
+  ai:
+    openai:
+      api-key: ${BLOG_OPENAI_API_KEY:replace-me}
+    dashscope:
+      api-key: ${BLOG_DASHSCOPE_API_KEY:replace-me}
+
+hefeng:
+  api-key: ${BLOG_HEFENG_API_KEY:replace-me}
+
+oauth:
+  gitee:
+    client-id: ${BLOG_GITEE_CLIENT_ID:replace-me}
+    client-secret: ${BLOG_GITEE_CLIENT_SECRET:replace-me}
+  github:
+    client-id: ${BLOG_GITHUB_CLIENT_ID:replace-me}
+    client-secret: ${BLOG_GITHUB_CLIENT_SECRET:replace-me}

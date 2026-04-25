@@ -10,17 +10,15 @@ import cn.dev33.satoken.router.SaRouter;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
 import cn.hutool.json.JSONUtil;
+import com.ican.config.BlogRuntimeProperties;
 import com.ican.interceptor.AccessLimitInterceptor;
 import com.ican.interceptor.PageableInterceptor;
 import com.ican.model.vo.Result;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
-import java.util.Arrays;
-import java.util.List;
 
 import static com.ican.enums.StatusCodeEnum.UNAUTHORIZED;
 
@@ -31,10 +29,11 @@ import static com.ican.enums.StatusCodeEnum.UNAUTHORIZED;
  * @date 2022/11/28 22:12
  **/
 @Component
+@RequiredArgsConstructor
 public class SaTokenConfig implements WebMvcConfigurer {
 
-    @Autowired
-    private AccessLimitInterceptor accessLimitInterceptor;
+    private final AccessLimitInterceptor accessLimitInterceptor;
+    private final BlogRuntimeProperties blogRuntimeProperties;
 
     private final String[] EXCLUDE_PATH_PATTERNS = {
             "/swagger-resources",
@@ -45,70 +44,44 @@ public class SaTokenConfig implements WebMvcConfigurer {
             "/oauth/*",
     };
 
-    private final long timeout = 600;
-
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        // 注册分页拦截器
         registry.addInterceptor(new PageableInterceptor());
-        // 注册Redis限流器
         registry.addInterceptor(accessLimitInterceptor);
-        // 注册 Sa-Token 的注解拦截器，打开注解式鉴权功能
         registry.addInterceptor(new SaInterceptor()).addPathPatterns("/**");
     }
-    private final List<String> ALLOWED_ORIGINS = Arrays.asList(
-            "http://localhost:5173",  // 允许的前端1
-            "http://localhost:5175",
-            "http://127.0.0.1:5173",
-            "http://127.0.0.1:5174",
-            "http://localhost:5174",  // 允许的前端2
-            "http://121.41.87.40",
-            "http://121.41.87.40:30",
-            "http://w-love-p.top/",
-            "http://w-love-p.top:30/"
-    );
+
     @Bean
     public SaServletFilter getSaServletFilter() {
         return new SaServletFilter()
-                // 拦截路径
                 .addInclude("/**")
-                // 放开路径
                 .addExclude(EXCLUDE_PATH_PATTERNS)
-                // 前置函数：在每次认证函数之前执行
                 .setBeforeAuth(obj -> {
                     SaHolder.getResponse()
-                            // 允许所有请求方式
                             .setHeader("Access-Control-Allow-Methods", "*")
                             .setHeader("Access-Control-Allow-Credentials", "true")
-                            // 有效时间
                             .setHeader("Access-Control-Max-Age", "3600")
-                            // 允许的header参数
                             .setHeader("Access-Control-Allow-Headers", "*");
-                    // 如果是预检请求，则立即返回到前端
-                    String origin = SaHolder.getRequest().getHeader("Origin");
 
-                    // 如果 Origin 在允许的域名列表中，动态设置 Access-Control-Allow-Origin
-                    if (origin != null && ALLOWED_ORIGINS.contains(origin)) {
+                    String origin = SaHolder.getRequest().getHeader("Origin");
+                    if (origin != null && blogRuntimeProperties.getSecurity().getAllowedOrigins().contains(origin)) {
                         SaHolder.getResponse().setHeader("Access-Control-Allow-Origin", origin);
                     }
+
                     SaRouter.match(SaHttpMethod.OPTIONS)
                             .free(r -> System.out.println("--------OPTIONS预检请求，不做处理"))
                             .back();
                 })
-                // 认证函数: 每次请求执行
                 .setAuth(obj -> {
-                    // 检查是否登录
                     SaRouter.match("/admin/**").check(r -> StpUtil.checkLogin());
-                    // 刷新token有效期
-                    if (StpUtil.getTokenTimeout() < timeout) {
-                        StpUtil.renewTimeout(1800);
+                    long renewThresholdSeconds = blogRuntimeProperties.getSatoken().getRenewThresholdSeconds();
+                    long renewTimeoutSeconds = blogRuntimeProperties.getSatoken().getRenewTimeoutSeconds();
+                    if (StpUtil.getTokenTimeout() < renewThresholdSeconds) {
+                        StpUtil.renewTimeout(renewTimeoutSeconds);
                     }
-                    // 输出 API 请求日志，方便调试代码
                     SaManager.getLog().debug("----- 请求path={}  提交token={}", SaHolder.getRequest().getRequestPath(), StpUtil.getTokenValue());
                 })
-                //  异常处理函数：每次认证函数发生异常时执行此函数
                 .setError(e -> {
-                    // 设置响应头
                     SaHolder.getResponse().setHeader("Content-Type", "application/json;charset=UTF-8");
                     if (e instanceof NotLoginException) {
                         return JSONUtil.toJsonStr(Result.fail(UNAUTHORIZED.getCode(), UNAUTHORIZED.getMsg()));

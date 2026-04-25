@@ -28,7 +28,10 @@ public class BlogApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(BlogApplication.class, args);
-        String port = environment.getProperty("server.port");
+        String port = environment.getProperty("server.port", "8080");
+        String apiDocUrl = environment.getProperty("blog.site.api-doc-url", "http://127.0.0.1:" + port + "/doc.html");
+        String frontendUrl = environment.getProperty("blog.site.frontend-url", "http://127.0.0.1:5173");
+        String adminUrl = environment.getProperty("blog.site.admin-url", "http://127.0.0.1:5174");
 
         // 格式化当前时间
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -40,9 +43,9 @@ public class BlogApplication {
         System.out.println("|🚪 Service Port : " + padRightDisplay(port) + "|");
         System.out.println("|📅 Start Time   : " + padRightDisplay(formattedTime) + "|");
         System.out.println("|💻 Java Version : " + padRightDisplay(System.getProperty("java.version")) + "|");
-        System.out.println("|📄 API Docs     : " + padRightDisplay("http://w-love-p.top:" + port + "/doc.html") + "|");
-        System.out.println("|🔗 Frontend URL : " + padRightDisplay("http://w-love-p.top") + "|");
-        System.out.println("|📊 Admin Panel  : " + padRightDisplay("http://w-love-p.top:30") + "|");
+        System.out.println("|📄 API Docs     : " + padRightDisplay(apiDocUrl) + "|");
+        System.out.println("|🔗 Frontend URL : " + padRightDisplay(frontendUrl) + "|");
+        System.out.println("|📊 Admin Panel  : " + padRightDisplay(adminUrl) + "|");
         System.out.println(pink + "--------------------Ciallo～(∠·ω< )⌒★------------------" + reset);
 
     }

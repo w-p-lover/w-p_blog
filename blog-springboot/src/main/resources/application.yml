@@ -1,227 +1,206 @@
 server:
-  # 端口
-  port: 8080
+  port: ${SERVER_PORT:8080}
+
 spring:
-  # 应用名称
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+  config:
+    import: optional:file:./config/application-private.yml
   application:
     name: BlogApplication
-  # mysql配置
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://121.41.87.40:3306/blog?serverTimezone=Asia/Shanghai&allowMultiQueries=true&rewriteBatchedStatements=true&useSSL=false&useUnicode=true&characterEncoding=UTF-8&connectTimeout=5000&socketTimeout=15000&tcpKeepAlive=true&autoReconnect=true
-    username: root
-    password: 1224
+    url: ${BLOG_DB_URL:jdbc:mysql://127.0.0.1:3306/blog?serverTimezone=Asia/Shanghai&allowMultiQueries=true&rewriteBatchedStatements=true&useSSL=false&useUnicode=true&characterEncoding=UTF-8&connectTimeout=5000&socketTimeout=15000&tcpKeepAlive=true&autoReconnect=true}
+    username: ${BLOG_DB_USERNAME:root}
+    password: ${BLOG_DB_PASSWORD:}
     druid:
-      # 初始连接数
       initial-size: 10
-      # 最小连接池数量
       min-idle: 20
-      # 最大连接池数量
       max-active: 150
-      # 配置获取连接等待超时的时间
       max-wait: 60000
-      # 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒
       time-between-eviction-runs-millis: 30000
-      # 配置一个连接在池中最小生存的时间，单位是毫秒
       min-evictable-idle-time-millis: 300000
-      # 配置一个连接在池中最大生存的时间，单位是毫秒
       max-evictable-idle-time-millis: 600000
-      # 配置检测连接是否有效
       validation-query: SELECT 1
-      # 配置检测连接是否有效时间（秒）
       validation-query-timeout: 3
-      # 在连接空闲时进行有效性检测
       test-while-idle: true
-      # 从连接池获取连接时检查有效性
       test-on-borrow: true
-      # 设置从连接池归还连接时是否检查连接有效性，true检查，false不检查
       test-on-return: false
-      # 保活空闲连接，减少连接被服务端回收导致的断链
       keep-alive: true
-  # 文件上传限制
   servlet:
     multipart:
       max-request-size: 100MB
       max-file-size: 100MB
-  # redis配置 (Spring Boot 3.x: spring.data.redis.*)
   data:
     redis:
-      # Redis服务器地址
-      host: 121.41.87.40
-      # Redis服务器连接端口
-      port: 6379
-      # Redis服务器连接密码（默认为空）
-      password: 1224
-      # 连接超时时间
+      host: ${BLOG_REDIS_HOST:127.0.0.1}
+      port: ${BLOG_REDIS_PORT:6379}
+      password: ${BLOG_REDIS_PASSWORD:}
       timeout: 10s
       lettuce:
         pool:
-          # 连接池最大连接数
           max-active: 150
-          # 连接池最大阻塞等待时间（使用负值表示没有限制）
           max-wait: 5000ms
-          # 连接池中的最大空闲连接
           max-idle: 100
-          # 连接池中的最小空闲连接
           min-idle: 50
-      # Redis 数据库索引（默认为0）
-      database: 0
-  # rabbitmq配置
+      database: ${BLOG_REDIS_DATABASE:0}
   rabbitmq:
-    host: 121.41.87.40
-    port: 5672
-    username: wyp
-    password: 1224
+    host: ${BLOG_RABBITMQ_HOST:127.0.0.1}
+    port: ${BLOG_RABBITMQ_PORT:5672}
+    username: ${BLOG_RABBITMQ_USERNAME:guest}
+    password: ${BLOG_RABBITMQ_PASSWORD:guest}
     listener:
       simple:
         retry:
           enabled: true
-          # 重试间隔时间
           initial-interval: 3000
-          # 最大重试次数
           max-attempts: 3
-  # 邮箱配置
   mail:
-    host: smtp.qq.com
-    # 用户名
-    username: 3169468598@qq.com
-    # 授权码
-    password: wzlhkpcerxlwddda
+    host: ${BLOG_MAIL_HOST:smtp.qq.com}
+    username: ${BLOG_MAIL_USERNAME:}
+    password: ${BLOG_MAIL_PASSWORD:}
   web:
     resources:
-      # 配置静态资源位置：优先读取源目录的图片，绕过 target
       static-locations:
-        - file:D:\\IdeaProjects\\blog\\blog-springboot\\src\\main\\resources\\static\\  # 指向 static 根目录（包含 Wallhaven）
-        - classpath:/static/  # 保留默认的 classpath 路径（可选，防止其他静态资源失效）
-  # elasticsearch配置
+        - file:${BLOG_STATIC_DIR:D:/IdeaProjects/blog/blog-springboot/src/main/resources/static/}
+        - classpath:/static/
   elasticsearch:
-    uris: http://${ES_HOST:121.41.87.40}:${ES_PORT:9200}
+    uris: ${BLOG_ES_URIS:http://127.0.0.1:9200}
     connection-timeout: 5s
     socket-timeout: 30s
   ai:
     openai:
-      api-key: sk-c99899f74bd342388669494f6f34de74
-      base-url: https://api.deepseek.com
+      api-key: ${BLOG_OPENAI_API_KEY:}
+      base-url: ${BLOG_OPENAI_BASE_URL:https://api.deepseek.com}
       chat:
         options:
-          model: deepseek-chat
-          temperature: 0.7
+          model: ${BLOG_OPENAI_CHAT_MODEL:deepseek-chat}
+          temperature: ${BLOG_OPENAI_CHAT_TEMPERATURE:0.7}
     dashscope:
-      api-key: sk-862115b320944f338c13aab22d02c259
+      api-key: ${BLOG_DASHSCOPE_API_KEY:}
       embedding:
         options:
-          model: text-embedding-v3
+          model: ${BLOG_DASHSCOPE_EMBED_MODEL:text-embedding-v3}
     vectorstore:
       qdrant:
-        host: 121.41.87.40
-        port: 6334
-        collection-name: blog-articles
+        host: ${BLOG_QDRANT_HOST:127.0.0.1}
+        port: ${BLOG_QDRANT_PORT:6334}
+        collection-name: ${BLOG_QDRANT_COLLECTION:blog-articles}
 
-# 博客链接 域名后面要加/
 hefeng:
-  api-key: cbf7917e722a406faa1e68dfcafdda56
-  base-url: https://pe7byfyfwb.re.qweatherapi.com/
+  api-key: ${BLOG_HEFENG_API_KEY:}
+  base-url: ${BLOG_HEFENG_BASE_URL:https://pe7byfyfwb.re.qweatherapi.com/}
 
 blog:
-  url: 121.41.87.40
-# 线程池配置
+  url: ${BLOG_SITE_HOST:127.0.0.1}
+  site:
+    base-url: ${BLOG_SITE_BASE_URL:http://127.0.0.1:${SERVER_PORT:8080}}
+    frontend-url: ${BLOG_SITE_URL:http://127.0.0.1:5173}
+    admin-url: ${BLOG_ADMIN_URL:http://127.0.0.1:5174}
+    api-doc-url: ${BLOG_API_DOC_URL:http://127.0.0.1:${SERVER_PORT:8080}/doc.html}
+  security:
+    allowed-origins:
+      - ${BLOG_CORS_ORIGIN_1:http://localhost:5173}
+      - ${BLOG_CORS_ORIGIN_2:http://127.0.0.1:5173}
+      - ${BLOG_CORS_ORIGIN_3:http://localhost:5174}
+      - ${BLOG_CORS_ORIGIN_4:http://127.0.0.1:5174}
+      - ${BLOG_CORS_ORIGIN_5:http://localhost:5175}
+      - ${BLOG_CORS_ORIGIN_6:http://127.0.0.1:5175}
+    websocket-allowed-origins:
+      - ${BLOG_WS_ORIGIN_1:http://localhost:5173}
+      - ${BLOG_WS_ORIGIN_2:http://127.0.0.1:5173}
+  satoken:
+    renew-threshold-seconds: ${BLOG_SATOKEN_RENEW_THRESHOLD_SECONDS:600}
+    renew-timeout-seconds: ${BLOG_SATOKEN_RENEW_TIMEOUT_SECONDS:1800}
+
 thread:
   pool:
     core-pool-size: 5
     max-pool-size: 10
     queue-capacity: 50
     keep-alive-seconds: 1000
-# 搜索模式 可选 elasticsearch、mysql
+
 search:
   mode: elasticsearch
-# 文件上传策略 local、oss、cos
+
 upload:
   strategy: local
   local:
-    # nginx映射本地文件路径
-    url: https://121.41.87.40/
-    # 本地文件存储路径
-    path: /usr/local/upload/
-  # oss存储
+    url: ${BLOG_UPLOAD_LOCAL_URL:http://127.0.0.1:${SERVER_PORT:8080}/}
+    path: ${BLOG_UPLOAD_LOCAL_PATH:/data/blog/upload/}
   oss:
-    url: https://wangyoupeng-penghong.oss-cn-beijing.aliyuncs.com/
-    endpoint: oss-cn-beijing.aliyuncs.com
-    bucketName: wangyoupeng-penghong
-    accessKeyId: ${oss.accessKeyId}
-    accesskeySecret: ${oss.accesskeySecret}
+    url: ${BLOG_OSS_URL:https://example-bucket.oss-cn-beijing.aliyuncs.com/}
+    endpoint: ${BLOG_OSS_ENDPOINT:oss-cn-beijing.aliyuncs.com}
+    bucketName: ${BLOG_OSS_BUCKET_NAME:replace-me}
+    accessKeyId: ${BLOG_OSS_ACCESS_KEY_ID:}
+    accesskeySecret: ${BLOG_OSS_ACCESS_KEY_SECRET:}
 
-# MyBatis-Plus 配置
 mybatis-plus:
-  # mapper映射地址
   mapper-locations: classpath:mapper/*.xml
-  # 实体类扫描包路径
   type-aliases-package: com.ican.entity
   configuration:
-    # sql打印
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-    # 开启驼峰命名
     map-underscore-to-camel-case: true
   global-config:
     db-config:
-      # 数据库表前缀
       table-prefix: t_
-# Sa-Token 配置 (文档: https://sa-token.cc)
+
 sa-token:
-  # token名称 (同时也是cookie名称)
   token-name: Authorization
-  # token前缀
   token-prefix: Bearer
-  # token有效期，单位s 默认30天, -1代表永不过期
   timeout: 18000
-  # token临时有效期 (指定时间内无操作就视为token过期) 单位: 秒
   active-timeout: -1
-  # 关闭自动续签
   auto-renew: false
-  # 是否允许同一账号并发登录 (为true时允许一起登录, 为false时新登录挤掉旧登录)
   is-concurrent: true
-  # token风格
   token-style: uuid
-  # 在多人登录同一账号时，是否共用一个token (为true时所有登录共用一个token, 为false时每次登录新建一个token)
   is-share: false
-  # 同一账号最大登录数量
   max-login-count: 20
-  # 是否从cookie中读取token
   is-read-cookie: true
-  # 是否从请求体里读取token
   is-read-body: true
-  # 是否从header中读取token
   is-read-header: true
-  # 是否输出操作日志
   is-log: false
 
 spider:
-  dir: ${user.dir}\src\main\resources\static\
+  dir: ${BLOG_SPIDER_DIR:${user.dir}/src/main/resources/static/}
   python:
-    cmd: python
+    cmd: ${BLOG_PYTHON_CMD:python}
   photo:
     album:
       id: 1
 
-# 第三方登录
 oauth:
   gitee:
-    client-id: 0bf9c2fed0f56f2b872a9bf42feefcb81a1d46aaacc12c9774311d681a76ee34
-    client-secret: 21fb1592278a838700936b30c0de5ab4e47c9ea74fc998709f2371f501e25d4e
+    client-id: ${BLOG_GITEE_CLIENT_ID:}
+    client-secret: ${BLOG_GITEE_CLIENT_SECRET:}
     grant-type: authorization_code
-    redirect-url: http://localhost:5173/oauth/login/gitee
+    redirect-url: ${BLOG_GITEE_REDIRECT_URL:http://localhost:5173/oauth/login/gitee}
     access-token-url: https://gitee.com/oauth/token
     user-info-url: https://gitee.com/api/v5/user?access_token={access_token}
   github:
-    client-id: Iv23li6UGS8RMCKJ5EZv
-    client-secret: 4da4bfcfb1c1a734f1f1aa70089a297b0f6996b6
-    redirect-url: http://localhost:5173/oauth/login/github
+    client-id: ${BLOG_GITHUB_CLIENT_ID:}
+    client-secret: ${BLOG_GITHUB_CLIENT_SECRET:}
+    redirect-url: ${BLOG_GITHUB_REDIRECT_URL:http://localhost:5173/oauth/login/github}
     access-token-url: https://github.com/login/oauth/access_token
     user-info-url: https://api.github.com/user
   qq:
     app-id: QQ的APPID
     check-token-url: https://graph.qq.com/oauth2.0/me?access_token={access_token}
     user-info-url: https://graph.qq.com/user/get_user_info?openid={openid}&access_token={access_token}&oauth_consumer_key={oauth_consumer_key}
+
+cache:
+  multilevel:
+    local:
+      max-size: ${BLOG_CACHE_L1_MAX_SIZE:1000}
+      expire-minutes: ${BLOG_CACHE_L1_EXPIRE_MINUTES:5}
+    bloom:
+      expected-insertions: ${BLOG_CACHE_BLOOM_EXPECTED_INSERTIONS:1000000}
+      false-probability: ${BLOG_CACHE_BLOOM_FALSE_PROBABILITY:0.01}
+    null-cache-ttl-minutes: ${BLOG_CACHE_NULL_TTL_MINUTES:5}
+    ttl-jitter-max-minutes: ${BLOG_CACHE_TTL_JITTER_MAX_MINUTES:5}
+    lock:
+      wait-seconds: ${BLOG_CACHE_LOCK_WAIT_SECONDS:3}
+      lease-seconds: ${BLOG_CACHE_LOCK_LEASE_SECONDS:10}
 
 logging:
   pattern:
@@ -257,8 +236,9 @@ springdoc:
     path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
+
 knife4j:
-  enable: true
+  enable: ${KNIFE4J_ENABLE:true}
   setting:
     language: zh_cn
 

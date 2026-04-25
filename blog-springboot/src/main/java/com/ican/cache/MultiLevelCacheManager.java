@@ -34,6 +34,7 @@ public class MultiLevelCacheManager {
 
     private final RedisTemplate<String, Object> redisTemplate;
     private final RedissonClient redissonClient;
+    private final MultiLevelCacheProperties cacheProperties;
 
     /**
      * L1 本地缓存：Caffeine
@@ -53,16 +54,19 @@ public class MultiLevelCacheManager {
     public void init() {
         // 初始化 Caffeine 本地缓存
         localCache = Caffeine.newBuilder()
-                .maximumSize(1000)
-                .expireAfterWrite(5, TimeUnit.MINUTES)
-                .recordStats() // 开启统计，便于监控
+                .maximumSize(cacheProperties.getLocal().getMaxSize())
+                .expireAfterWrite(cacheProperties.getLocal().getExpireMinutes(), TimeUnit.MINUTES)
+                .recordStats()
                 .build();
 
         // 初始化布隆过滤器
         bloomFilter = redissonClient.getBloomFilter("cache:bloom-filter");
         if (!bloomFilter.isExists()) {
             // 预期元素数量：100万，误判率：1%
-            bloomFilter.tryInit(1000000L, 0.01);
+            bloomFilter.tryInit(
+                    cacheProperties.getBloom().getExpectedInsertions(),
+                    cacheProperties.getBloom().getFalseProbability()
+            );
             log.info("布隆过滤器初始化完成");
         }
     }
@@ -105,7 +109,11 @@ public class MultiLevelCacheManager {
 
         try {
             // 尝试获取锁（等待时间 3s，锁自动释放时间 10s）
-            if (lock.tryLock(3, 10, TimeUnit.SECONDS)) {
+            if (lock.tryLock(
+                    cacheProperties.getLock().getWaitSeconds(),
+                    cacheProperties.getLock().getLeaseSeconds(),
+                    TimeUnit.SECONDS
+            )) {
                 try {
                     // 双重检查：获取锁后再次查询 Redis
                     redisValue = redisTemplate.opsForValue().get(key);
@@ -118,14 +126,19 @@ public class MultiLevelCacheManager {
                     T dbValue = dbLoader.apply(key);
                     if (dbValue == null) {
                         // 缓存空值，防止缓存穿透（短过期时间 5 分钟）
-                        redisTemplate.opsForValue().set(key, NULL_VALUE, 5, TimeUnit.MINUTES);
+                        redisTemplate.opsForValue().set(
+                                key,
+                                NULL_VALUE,
+                                cacheProperties.getNullCacheTtlMinutes(),
+                                TimeUnit.MINUTES
+                        );
                         localCache.put(key, NULL_VALUE);
                         log.debug("缓存空值: {}", key);
                         return null;
                     }
 
                     // 6. 写入 L2 Redis（随机 TTL 防止缓存雪崩）
-                    int randomTtl = ttlMinutes + (int) (Math.random() * 5);
+                    int randomTtl = ttlMinutes + (int) (Math.random() * cacheProperties.getTtlJitterMaxMinutes());
                     redisTemplate.opsForValue().set(key, dbValue, randomTtl, TimeUnit.MINUTES);
 
                     // 7. 写入 L1 本地缓存

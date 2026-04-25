@@ -1,0 +1,5 @@
+.env
+config/application-private.yml
+config/application-private.yaml
+target/
+logs/

@@ -1,0 +1,88 @@
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    url: ${BLOG_DB_URL}
+    username: ${BLOG_DB_USERNAME}
+    password: ${BLOG_DB_PASSWORD}
+  data:
+    redis:
+      host: ${BLOG_REDIS_HOST}
+      port: ${BLOG_REDIS_PORT}
+      password: ${BLOG_REDIS_PASSWORD}
+  rabbitmq:
+    host: ${BLOG_RABBITMQ_HOST}
+    port: ${BLOG_RABBITMQ_PORT}
+    username: ${BLOG_RABBITMQ_USERNAME}
+    password: ${BLOG_RABBITMQ_PASSWORD}
+  mail:
+    host: ${BLOG_MAIL_HOST}
+    username: ${BLOG_MAIL_USERNAME}
+    password: ${BLOG_MAIL_PASSWORD}
+  elasticsearch:
+    uris: ${BLOG_ES_URIS}
+  ai:
+    openai:
+      api-key: ${BLOG_OPENAI_API_KEY}
+      base-url: ${BLOG_OPENAI_BASE_URL}
+    dashscope:
+      api-key: ${BLOG_DASHSCOPE_API_KEY}
+    vectorstore:
+      qdrant:
+        host: ${BLOG_QDRANT_HOST}
+        port: ${BLOG_QDRANT_PORT}
+        collection-name: ${BLOG_QDRANT_COLLECTION}
+  web:
+    resources:
+      static-locations:
+        - file:${BLOG_STATIC_DIR:/app/static/}
+        - classpath:/static/
+
+hefeng:
+  api-key: ${BLOG_HEFENG_API_KEY}
+  base-url: ${BLOG_HEFENG_BASE_URL}
+
+blog:
+  url: ${BLOG_SITE_HOST}
+  site:
+    base-url: ${BLOG_SITE_BASE_URL}
+    frontend-url: ${BLOG_SITE_URL}
+    admin-url: ${BLOG_ADMIN_URL}
+    api-doc-url: ${BLOG_API_DOC_URL}
+  security:
+    allowed-origins:
+      - ${BLOG_CORS_ORIGIN_1}
+      - ${BLOG_CORS_ORIGIN_2}
+    websocket-allowed-origins:
+      - ${BLOG_WS_ORIGIN_1}
+      - ${BLOG_WS_ORIGIN_2}
+
+upload:
+  local:
+    url: ${BLOG_UPLOAD_LOCAL_URL}
+    path: ${BLOG_UPLOAD_LOCAL_PATH}
+  oss:
+    url: ${BLOG_OSS_URL}
+    endpoint: ${BLOG_OSS_ENDPOINT}
+    bucketName: ${BLOG_OSS_BUCKET_NAME}
+    accessKeyId: ${BLOG_OSS_ACCESS_KEY_ID}
+    accesskeySecret: ${BLOG_OSS_ACCESS_KEY_SECRET}
+
+spider:
+  dir: ${BLOG_SPIDER_DIR:/app/static/}
+  python:
+    cmd: ${BLOG_PYTHON_CMD:python3}
+
+oauth:
+  gitee:
+    client-id: ${BLOG_GITEE_CLIENT_ID}
+    client-secret: ${BLOG_GITEE_CLIENT_SECRET}
+    redirect-url: ${BLOG_GITEE_REDIRECT_URL}
+  github:
+    client-id: ${BLOG_GITHUB_CLIENT_ID}
+    client-secret: ${BLOG_GITHUB_CLIENT_SECRET}
+    redirect-url: ${BLOG_GITHUB_REDIRECT_URL}
+
+knife4j:
+  enable: ${KNIFE4J_ENABLE:false}
