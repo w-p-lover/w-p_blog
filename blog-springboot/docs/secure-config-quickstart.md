@@ -1,0 +1,97 @@
+# Secure Config Quickstart
+
+项目现在按 `dev / test / prod` 三套配置运行，并且默认通过环境变量注入敏感信息。
+
+## 配置文件结构
+
+- `src/main/resources/application.yml`: 公共配置，不放明文密钥
+- `src/main/resources/application-dev.yml`: 本地开发配置
+- `src/main/resources/application-prod.yml`: 生产部署配置
+- `src/test/resources/application-test.yml`: 测试配置
+- `config/application-private.yml`: 本地私有覆盖模板（已被 Git 忽略）
+
+## 推荐注入方式
+
+1. 开发环境：PowerShell 环境变量或系统环境变量
+2. 测试环境：`application-test.yml`
+3. 生产环境：容器环境变量、CI/CD Secret
+
+## 关键环境变量
+
+- `SPRING_PROFILES_ACTIVE`
+- `JASYPT_ENCRYPTOR_PASSWORD`
+- `BLOG_DB_URL`
+- `BLOG_DB_HOST`
+- `BLOG_DB_PORT`
+- `BLOG_DB_NAME`
+- `BLOG_DB_USERNAME`
+- `BLOG_DB_PASSWORD`
+- `BLOG_REDIS_HOST`
+- `BLOG_REDIS_PASSWORD`
+- `BLOG_RABBITMQ_HOST`
+- `BLOG_RABBITMQ_USERNAME`
+- `BLOG_RABBITMQ_PASSWORD`
+- `BLOG_MAIL_USERNAME`
+- `BLOG_MAIL_PASSWORD`
+- `BLOG_ES_URIS`
+- `BLOG_QDRANT_HOST`
+- `BLOG_QDRANT_PORT`
+- `BLOG_OPENAI_API_KEY`
+- `BLOG_DASHSCOPE_API_KEY`
+- `BLOG_HEFENG_API_KEY`
+- `BLOG_HEFENG_BASE_URL`
+- `BLOG_GITEE_CLIENT_ID`
+- `BLOG_GITEE_CLIENT_SECRET`
+- `BLOG_GITHUB_CLIENT_ID`
+- `BLOG_GITHUB_CLIENT_SECRET`
+- `BLOG_OSS_ACCESS_KEY_ID`
+- `BLOG_OSS_ACCESS_KEY_SECRET`
+- `BLOG_SITE_URL`
+- `BLOG_SITE_BASE_URL`
+- `BLOG_ADMIN_URL`
+
+## 本地开发示例
+
+参考 `docs/local-secrets-template.ps1`：
+
+```powershell
+$env:SPRING_PROFILES_ACTIVE="dev"
+$env:BLOG_DB_URL="jdbc:mysql://127.0.0.1:3306/blog?..."
+$env:BLOG_DB_HOST="127.0.0.1"
+$env:BLOG_DB_USERNAME="root"
+$env:BLOG_DB_PASSWORD="replace-with-your-db-password"
+```
+
+## 本地私有文件示例
+
+如果你希望将本机私有变量集中放在文件中，可在 `config/application-private.yml` 中覆盖：
+
+```yaml
+spring:
+  datasource:
+    password: ENC(encrypted-text)
+```
+
+主密钥只保留在部署环境中：`JASYPT_ENCRYPTOR_PASSWORD`。
+
+## 加密一个值
+
+当 Maven 可用时运行：
+
+```powershell
+mvn jasypt:encrypt-value "-Djasypt.encryptor.password=replace-with-your-master-password" "-Djasypt.plugin.value=your-secret"
+```
+
+## Docker / 部署
+
+容器部署参考：
+
+- `docker-compose.yml`
+- `Dockerfile`
+- `docs/deployment-compose.md`
+
+## 安全约束
+
+- 不要把真实密钥写进 `docs/*.ps1`、`application*.yml` 或 GitHub Workflow
+- `config/application-private.yml` 只保留在本机或服务器，不提交仓库
+- 生产环境优先使用 Secret Manager 或 CI Secret，而不是手写明文文件

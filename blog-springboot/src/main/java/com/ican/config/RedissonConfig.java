@@ -6,6 +6,7 @@ import org.redisson.config.Config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.util.StringUtils;
 
 /**
  * Redisson 配置类
@@ -22,7 +23,7 @@ public class RedissonConfig {
     @Value("${spring.data.redis.port}")
     private String port;
 
-    @Value("${spring.data.redis.password}")
+    @Value("${spring.data.redis.password:}")
     private String password;
 
     @Value("${spring.data.redis.database:0}")
@@ -33,9 +34,8 @@ public class RedissonConfig {
         Config config = new Config();
         String address = "redis://" + host + ":" + port;
 
-        config.useSingleServer()
+        var singleServerConfig = config.useSingleServer()
                 .setAddress(address)
-                .setPassword(password)
                 .setDatabase(database)
                 .setConnectionPoolSize(64)
                 .setConnectionMinimumIdleSize(10)
@@ -44,6 +44,10 @@ public class RedissonConfig {
                 .setTimeout(3000)
                 .setRetryAttempts(3)
                 .setRetryInterval(1500);
+
+        if (StringUtils.hasText(password)) {
+            singleServerConfig.setPassword(password);
+        }
 
         return Redisson.create(config);
     }

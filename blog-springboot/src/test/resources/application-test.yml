@@ -1,6 +1,6 @@
 spring:
   quartz:
-    auto-startup: false  # 测试时不启动定时任务
+    auto-startup: false
   autoconfigure:
     exclude:
       - org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchClientAutoConfiguration
@@ -13,3 +13,10 @@ spring:
       base-url: http://localhost:18080
     dashscope:
       api-key: test-key
+
+blog:
+  security:
+    allowed-origins:
+      - http://localhost:5173
+    websocket-allowed-origins:
+      - http://localhost:5173
