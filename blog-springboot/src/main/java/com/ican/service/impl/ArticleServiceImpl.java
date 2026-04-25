@@ -283,7 +283,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             cacheManager.get(cacheKey, key -> {
                 ArticleVO article = articleMapper.selectArticleHomeById(id);
                 if (article != null) {
-                    updateArticleStatsFromRedis(id, article);
+                    hydrateArticleStatsFromRedis(id, article);
                 }
                 return article;
             }, 30); // 30 分钟过期
@@ -316,6 +316,19 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 .getZsetScore(ARTICLE_VIEW_COUNT, articleId)).orElse((double) 0);
         // 缓存中浏览量+1
         redisService.incrZet(ARTICLE_VIEW_COUNT, articleId, 1D);
+        hydrateArticleStatsFromRedis(articleId, articleVO, viewCount.intValue() + 1);
+        // 异步更新数据库
+        CompletableFuture.runAsync(() ->
+                articleMapper.incrementViews(Long.valueOf(articleId)), hotArticleExecutor);
+    }
+
+    private void hydrateArticleStatsFromRedis(Integer articleId, ArticleVO articleVO) {
+        Double viewCount = Optional.ofNullable(redisService
+                .getZsetScore(ARTICLE_VIEW_COUNT, articleId)).orElse((double) 0);
+        hydrateArticleStatsFromRedis(articleId, articleVO, viewCount.intValue());
+    }
+
+    private void hydrateArticleStatsFromRedis(Integer articleId, ArticleVO articleVO, Integer views) {
         Integer likeCount = redisService.getHash(ARTICLE_LIKE_COUNT, articleId.toString());
         // 查询下一篇文章
         ArticlePaginationVO lastArticle = articleMapper.selectLastArticle(articleId);
@@ -323,10 +336,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         articleVO.setLikeCount(Optional.ofNullable(likeCount).orElse(0));
         articleVO.setLastArticle(lastArticle);
         articleVO.setNextArticle(nextArticle);
-        articleVO.setViews(viewCount.intValue() + 1);
-        // 异步更新数据库
-        CompletableFuture.runAsync(() ->
-                articleMapper.incrementViews(Long.valueOf(articleId)), hotArticleExecutor);
+        articleVO.setViews(views);
     }
 
     @Override

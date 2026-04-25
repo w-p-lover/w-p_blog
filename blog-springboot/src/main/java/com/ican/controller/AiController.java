@@ -1,5 +1,6 @@
 package com.ican.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.ican.annotation.RateLimit;
 import com.ican.model.dto.AiChatRequestDTO;
 import com.ican.model.vo.AiChatResponseVO;
@@ -32,6 +33,7 @@ public class AiController {
         return Result.success(aiRagService.chat(request.getQuestion()));
     }
 
+    @SaCheckPermission("blog:article:update")
     @PostMapping("/api/ai/reindex")
     public Result<Integer> reindex(@RequestParam(defaultValue = "5") Integer limit) {
         return Result.success(aiArticleService.reindexHistory(limit));
