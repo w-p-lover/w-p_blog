@@ -21,6 +21,8 @@
 
 在项目根目录准备 `.env`，内容可参考 `.env.example`。
 
+> 说明：Compose 部署建议使用 `SPRING_PROFILES_ACTIVE=prod`。本地 IDEA 直启建议使用 `dev`。
+
 最少需要确认这些值：
 
 - `SPRING_PROFILES_ACTIVE=prod`

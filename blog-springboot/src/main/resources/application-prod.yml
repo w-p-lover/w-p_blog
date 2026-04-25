@@ -41,22 +41,22 @@ spring:
 
 hefeng:
   api-key: ${BLOG_HEFENG_API_KEY}
-  base-url: ${BLOG_HEFENG_BASE_URL}
+  base-url: ${BLOG_HEFENG_BASE_URL:https://pe7byfyfwb.re.qweatherapi.com/}
 
 blog:
-  url: ${BLOG_SITE_HOST}
+  url: ${BLOG_SITE_HOST:127.0.0.1}
   site:
-    base-url: ${BLOG_SITE_BASE_URL}
-    frontend-url: ${BLOG_SITE_URL}
-    admin-url: ${BLOG_ADMIN_URL}
-    api-doc-url: ${BLOG_API_DOC_URL}
+    base-url: ${BLOG_SITE_BASE_URL:http://127.0.0.1:8080}
+    frontend-url: ${BLOG_SITE_URL:http://127.0.0.1:5173}
+    admin-url: ${BLOG_ADMIN_URL:http://127.0.0.1:5174}
+    api-doc-url: ${BLOG_API_DOC_URL:http://127.0.0.1:8080/doc.html}
   security:
     allowed-origins:
-      - ${BLOG_CORS_ORIGIN_1}
-      - ${BLOG_CORS_ORIGIN_2}
+      - ${BLOG_CORS_ORIGIN_1:${BLOG_SITE_URL:http://127.0.0.1:5173}}
+      - ${BLOG_CORS_ORIGIN_2:${BLOG_ADMIN_URL:http://127.0.0.1:5174}}
     websocket-allowed-origins:
-      - ${BLOG_WS_ORIGIN_1}
-      - ${BLOG_WS_ORIGIN_2}
+      - ${BLOG_WS_ORIGIN_1:${BLOG_SITE_URL:http://127.0.0.1:5173}}
+      - ${BLOG_WS_ORIGIN_2:${BLOG_ADMIN_URL:http://127.0.0.1:5174}}
 
 upload:
   local:

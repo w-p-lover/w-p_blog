@@ -9,10 +9,11 @@
 - `src/main/resources/application-prod.yml`: 生产部署配置
 - `src/test/resources/application-test.yml`: 测试配置
 - `config/application-private.yml`: 本地私有覆盖模板（已被 Git 忽略）
+- `.env`: 本地环境变量文件（已被 Git 忽略，可直接被 Spring 读取）
 
 ## 推荐注入方式
 
-1. 开发环境：PowerShell 环境变量或系统环境变量
+1. 开发环境：PowerShell 环境变量、`.env` 或系统环境变量
 2. 测试环境：`application-test.yml`
 3. 生产环境：容器环境变量、CI/CD Secret
 
@@ -50,9 +51,27 @@
 - `BLOG_SITE_BASE_URL`
 - `BLOG_ADMIN_URL`
 
-## 本地开发示例
+## 本地 IDEA 一键启动（推荐）
 
-参考 `docs/local-secrets-template.ps1`：
+1. 在项目根目录准备 `.env`（可直接复制 `.env.example` 后按本机情况改值）
+2. 确保 `SPRING_PROFILES_ACTIVE=dev`
+3. 直接在 IDEA 点击运行 `BlogApplication`
+
+说明：`application.yml` 已配置 `spring.config.import` 自动读取 `.env` 与 `config/application-private.yml`，无需每次手动导出环境变量。
+
+## 常见报错排查
+
+### Could not resolve placeholder 'XXX'
+
+表示当前 profile 需要的变量未提供。
+
+- 本地开发优先使用 `dev`：`SPRING_PROFILES_ACTIVE=dev`
+- 检查 `.env` 是否包含对应变量
+- 若你使用 `prod`，需补齐生产变量（站点、跨域、第三方密钥等）
+
+## 本地开发示例（可选）
+
+如果你不想使用 `.env`，也可以临时用 PowerShell 环境变量：
 
 ```powershell
 $env:SPRING_PROFILES_ACTIVE="dev"
