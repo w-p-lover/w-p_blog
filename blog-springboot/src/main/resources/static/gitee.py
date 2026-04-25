@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import sqlite3
 import redis
 import json
+import os
 from datetime import datetime
 import time
 from urllib.parse import urljoin, parse_qs, urlparse, urlencode
@@ -17,16 +18,17 @@ import sys
 
 sys.stdout.reconfigure(encoding='utf-8')  # Python 3.7+ 支持
 # MySQL 配置
-DB_HOST = "121.41.87.40"
-DB_PORT = 3306
-DB_USER = "root"
-DB_PASS = "1224"
-DB_NAME = "blog"
+DB_HOST = os.getenv("BLOG_DB_HOST", "127.0.0.1")
+DB_PORT = int(os.getenv("BLOG_DB_PORT", "3306"))
+DB_USER = os.getenv("BLOG_DB_USERNAME", "root")
+DB_PASS = os.getenv("BLOG_DB_PASSWORD", "")
+DB_NAME = os.getenv("BLOG_DB_NAME", "blog")
 
 # Redis 配置（可选）
-REDIS_HOST = "localhost"
-REDIS_PORT = 6379
-REDIS_DB = 0
+REDIS_HOST = os.getenv("BLOG_REDIS_HOST", "127.0.0.1")
+REDIS_PORT = int(os.getenv("BLOG_REDIS_PORT", "6379"))
+REDIS_PASSWORD = os.getenv("BLOG_REDIS_PASSWORD", "")
+REDIS_DB = int(os.getenv("BLOG_REDIS_DATABASE", "0"))
 
 # 基础URL
 BASE_URL = "https://gitee.com"
