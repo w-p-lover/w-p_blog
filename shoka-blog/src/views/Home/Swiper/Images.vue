@@ -71,12 +71,10 @@ const imageList = [
     content: '';
     display: block;
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    inset: 0;
     background:
-      linear-gradient(150deg, rgba(6, 16, 34, 0.24), rgba(7, 20, 40, 0.14) 45%, rgba(5, 12, 24, 0.34));
+      linear-gradient(155deg, rgba(5, 12, 28, 0.42), rgba(8, 18, 38, 0.2) 42%, rgba(5, 12, 24, 0.44)),
+      radial-gradient(circle at 50% 38%, rgba(255, 255, 255, 0.08), transparent 34%);
     transition: all .2s ease-in-out 0s;
   }
 }

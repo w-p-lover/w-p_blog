@@ -6,7 +6,7 @@
       </router-link>
     </div>
     <template v-for="menu of menuList" :key="menu.name">
-      <div v-if="!menu.children" class="menu-item" :class="{ active: route.meta.title === menu.name }">
+      <div v-if="!menu.children" class="menu-item" :class="{ active: isMenuGroupActive(menu, route.path, route.meta.title) }">
         <router-link :to="menu.path" class="menu-btn">
           <svg-icon :icon-class="menu.icon"></svg-icon>
           {{ menu.name }}
@@ -18,7 +18,7 @@
           {{ menu.name }} </a>
         <ul class="submenu">
           <li class="subitem" v-for="submenu of menu.children" :key="submenu.name"
-              :class="{ active: route.meta.title === submenu.name }">
+              :class="{ active: isMenuItemActive(submenu, route.path, route.meta.title) }">
             <router-link class="link" :to="submenu.path">
               <svg-icon :icon-class="submenu.icon"></svg-icon>
               {{ submenu.name }}
@@ -53,116 +53,12 @@
 </template>
 
 <script setup lang="ts">
+import {isMenuGroupActive, isMenuItemActive, menuList} from "@/router/menu";
 import useStore from "@/store";
 
 const {user, app, blog} = useStore();
 const router = useRouter();
 const route = useRoute();
-const menuList = [
-  {
-    name: "首页",
-    icon: "home",
-    path: "/"
-  },
-  {
-    name: "文章",
-    icon: "article",
-    children: [
-      {
-        name: "归档",
-        icon: "archives",
-        path: "/archive"
-      },
-      {
-        name: "分类",
-        icon: "category",
-        path: "/category"
-      },
-      {
-        name: "标签",
-        icon: "tag",
-        path: "/tag"
-      },
-    ]
-  },
-  {
-    name: "娱乐",
-    icon: "fun",
-    children: [
-      {
-        name: "说说",
-        icon: "talk",
-        path: "/talk"
-      },
-      {
-        name: "相册",
-        icon: "album",
-        path: "/album"
-      },
-      {
-        name: "聊天",
-        icon: "friend",
-        path: "/chat"
-      }
-    ]
-  },
-  {
-    name: "工具",
-    icon: "flower",
-    children: [
-      {
-        name: "天气",
-        icon: "edit",
-        path: "/weather"
-      },
-        {
-        name: "项目",
-        icon: "search",
-        path: "/trend"
-      },
-      {
-        name: "游戏",
-        icon: "steam",
-        path: "/steam"
-      },
-      {
-        name: "共享",
-        icon: "trumpet",
-        path: "/collab"
-      },
-      {
-        name: "路线",
-        icon: "fun",
-        path: "/life"
-      },
-      {
-        name: "书目",
-        icon: "qizhi",
-        path: "/book"
-      },
-      {
-        name: "AI问答",
-        icon: "chat",
-        path: "/ai-chat"
-      },
-    ]
-  },
-  {
-    name: "友链",
-    icon: "friend",
-    path: "/friend"
-  },
-  {
-    name: "留言板",
-    icon: "message",
-    path: "/message"
-  },
-  {
-    name: "关于",
-    icon: "plane",
-    path: "/about"
-  },
-];
 const logout = () => {
   if (route.path == "/user") {
     router.go(-1);
