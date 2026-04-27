@@ -38,6 +38,11 @@ const routes: RouteRecordRaw[] = [
         meta: { title: "AI问答" }
     },
     {
+        path: "/lab",
+        component: () => import("@/views/Lab/index.vue"),
+        meta: { title: "实验室" }
+    },
+    {
         path: "/about",
         component: () => import("@/views/About/index.vue"),
         meta: {

@@ -1,18 +1,23 @@
 <template>
-  <n-dialog-provider>
-    <n-notification-provider>
-      <n-message-provider>
+  <NDialogProvider>
+    <NNotificationProvider>
+      <NMessageProvider>
         <slot></slot>
-        <naive-provider-content/>
-      </n-message-provider>
-    </n-notification-provider>
-  </n-dialog-provider>
+        <NaiveProviderContent/>
+      </NMessageProvider>
+    </NNotificationProvider>
+  </NDialogProvider>
 </template>
 
 <script setup lang="ts">
-import {useDialog} from "naive-ui/es/dialog";
-import {useMessage} from "naive-ui/es/message";
-import {useNotification} from "naive-ui/es/notification";
+import {
+  NDialogProvider,
+  NMessageProvider,
+  NNotificationProvider,
+  useDialog,
+  useMessage,
+  useNotification,
+} from "naive-ui";
 import {defineComponent, h} from 'vue';
 
 const registerNaiveTools = () => {

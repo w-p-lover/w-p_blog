@@ -253,7 +253,7 @@ const { pause, resume } = useIntervalFn(() => {
 
 // 社交登录配置
 const showLogin = computed(
-    () => (type: string) => blog.blogInfo.siteConfig.loginList.includes(type)
+    () => (type: string) => (blog.blogInfo.siteConfig.loginList ?? []).includes(type)
 );
 
 // 弹窗显隐（关联登录/注册Flag）

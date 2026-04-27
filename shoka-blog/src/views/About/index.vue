@@ -1,97 +1,85 @@
 <template>
   <div class="page-header">
-    <h1 class="page-title">关于</h1>
-    <img
-      class="page-cover"
-      src="https://wangyoupeng-penghong.oss-cn-beijing.aliyuncs.com/avatar/wallhaven-q21drl_2560x1440.png"
-      alt=""
-    />
+    <div class="page-title">
+      <h1>关于</h1>
+      <p class="page-subtitle">{{ siteConfig.siteIntro || "写代码，也写下生活里值得保存的部分。" }}</p>
+    </div>
+    <img class="page-cover" src="@/assets/images/bg.jpg" alt="">
     <Waves></Waves>
   </div>
+
   <div class="bg">
-    <div class="page-container">
-      <section class="about-shell">
-        <div class="hero-card aurora-border">
-          <div class="avatar-box">
-            <span class="avatar-glow"></span>
-            <img class="author-avatar" :src="authorAvatar" alt="author avatar" />
-          </div>
-
-          <div class="hero-copy">
-            <p class="hero-kicker">HELLO, I'M</p>
-            <h2 class="hero-name">{{ siteConfig.siteName || "Shoka Blog" }}</h2>
-            <p class="hero-subtitle">把热爱写成故事，把灵感变成作品。</p>
-
-            <div class="tag-list">
-              <span v-for="tag in profileTags" :key="tag" class="tag-item">{{ tag }}</span>
+    <div class="page-container about-container">
+      <section class="about-identity">
+        <div class="identity-mark">W&P</div>
+        <img class="identity-avatar" :src="authorAvatar" alt="">
+        <div class="identity-copy">
+          <span>ABOUT</span>
+          <h2>{{ siteConfig.siteAuthor || siteConfig.siteName || "W&P" }}</h2>
+          <p>{{ siteConfig.siteIntro || "在长期记录里，把技术、热爱和生活慢慢串起来。" }}</p>
+        </div>
+        <div class="mood-gallery" aria-label="喜欢的片段">
+          <div
+              v-for="(item, index) in favoriteFrames"
+              :key="item.quote"
+              class="mood-frame"
+              :style="{
+                '--mood-image': `url(${item.image})`,
+                animationDelay: `${index * 4}s`
+              }"
+          >
+            <div class="mood-image-stage">
+              <img :src="item.image" alt="">
+            </div>
+            <div class="mood-copy">
+              <span>{{ item.label }}</span>
+              <p>{{ item.quote }}</p>
             </div>
           </div>
+        </div>
+      </section>
 
-          <div class="hero-meta">
-            <div class="meta-card">
-              <span class="meta-label">定位</span>
-              <p>创作者 / 开发者 / 记录者</p>
+      <section class="about-body">
+        <article class="about-main">
+          <div class="section-title">
+            <span>INTRODUCTION</span>
+            <h3>一些关于我的事</h3>
+          </div>
+          <v-md-preview
+              v-if="siteConfig.aboutMe"
+              class="md about-md"
+              :text="siteConfig.aboutMe"
+          ></v-md-preview>
+          <p v-else class="empty-text">这里还没有填写关于我的内容。</p>
+        </article>
+
+        <aside class="about-aside">
+          <div class="aside-block">
+            <span class="aside-label">SITE</span>
+            <div class="site-stats">
+              <div v-for="item in stats" :key="item.label">
+                <strong>{{ item.value }}</strong>
+                <span>{{ item.label }}</span>
+              </div>
             </div>
-            <div class="meta-card">
-              <span class="meta-label">更新节奏</span>
-              <p>持续更新 · 长期主义</p>
-            </div>
-            <div class="meta-card" v-if="contactLinks.length">
-              <span class="meta-label">社交</span>
-              <div class="contact-links">
-                <a
+          </div>
+
+          <div class="aside-block" v-if="contactLinks.length">
+            <span class="aside-label">ELSEWHERE</span>
+            <div class="link-list">
+              <a
                   v-for="item in contactLinks"
                   :key="item.label"
-                  class="contact-link"
                   :href="item.href"
                   target="_blank"
                   rel="noopener noreferrer"
-                >
-                  {{ item.label }}
-                </a>
-              </div>
+              >
+                <svg-icon :icon-class="item.icon" size="1rem"></svg-icon>
+                {{ item.label }}
+              </a>
             </div>
           </div>
-        </div>
-
-        <div class="about-grid">
-          <article class="glass-card intro-card">
-            <div class="card-head">
-              <h3>关于我</h3>
-              <span>About</span>
-            </div>
-            <v-md-preview class="md" :text="siteConfig.aboutMe || ''"></v-md-preview>
-          </article>
-
-          <article class="glass-card timeline-card">
-            <div class="card-head">
-              <h3>成长轨迹</h3>
-              <span>Timeline</span>
-            </div>
-            <ul class="timeline-list">
-              <li v-for="item in milestones" :key="item.title" class="timeline-item">
-                <span class="timeline-dot"></span>
-                <div class="timeline-content">
-                  <p class="timeline-title">{{ item.title }}</p>
-                  <p class="timeline-desc">{{ item.desc }}</p>
-                </div>
-              </li>
-            </ul>
-          </article>
-
-          <article class="glass-card values-card">
-            <div class="card-head">
-              <h3>创作理念</h3>
-              <span>Principles</span>
-            </div>
-            <div class="value-list">
-              <div v-for="value in values" :key="value.title" class="value-item">
-                <p class="value-title">{{ value.title }}</p>
-                <p class="value-desc">{{ value.desc }}</p>
-              </div>
-            </div>
-          </article>
-        </div>
+        </aside>
       </section>
     </div>
   </div>
@@ -101,405 +89,430 @@
 import { computed } from "vue";
 import useStore from "@/store";
 import Waves from "@/components/Waves/index.vue";
+import fallbackAvatar from "@/assets/img/head_portrait.jpg";
+import portraitOne from "@/assets/img/head_portrait1.jpg";
+import portraitTwo from "@/assets/img/head_portrait2.jpg";
+import portraitThree from "@/assets/img/head_portrait3.jpg";
 
 const { blog } = useStore();
 
-const siteConfig = computed(() => blog.blogInfo?.siteConfig ?? ({} as Record<string, string>));
+const siteConfig = computed(() => blog.blogInfo.siteConfig);
 
-const authorAvatar = computed(() => siteConfig.value.authorAvatar || siteConfig.value.touristAvatar || "");
+const authorAvatar = computed(() =>
+    siteConfig.value.authorAvatar ||
+    siteConfig.value.userAvatar ||
+    siteConfig.value.touristAvatar ||
+    fallbackAvatar
+);
 
-const profileTags = ["全栈开发", "技术写作", "设计审美", "终身学习"];
-
-const milestones = [
+const stats = computed(() => [
   {
-    title: "从好奇到热爱",
-    desc: "在持续实践中打磨技术，逐渐建立自己的表达方式与创作风格。"
+    label: "文章",
+    value: blog.blogInfo.articleCount ?? 0,
   },
   {
-    title: "从输入到输出",
-    desc: "把日常学习沉淀为文章和项目，让知识真正可复用、可传播。"
+    label: "分类",
+    value: blog.blogInfo.categoryCount ?? 0,
   },
   {
-    title: "从个人到共创",
-    desc: "乐于交流与协作，用技术连接更多有趣的人和想法。"
-  }
-];
+    label: "标签",
+    value: blog.blogInfo.tagCount ?? 0,
+  },
+  {
+    label: "访问",
+    value: blog.blogInfo.viewCount ?? 0,
+  },
+]);
 
-const values = [
+const favoriteFrames = [
   {
-    title: "长期主义",
-    desc: "相信微小但持续的积累，会在未来形成复利。"
+    image: portraitOne,
+    label: "IMAGE",
+    quote: "把喜欢的东西，慢慢变成自己的秩序。",
   },
   {
-    title: "真实表达",
-    desc: "记录真实问题、真实思考与真实成长。"
+    image: portraitTwo,
+    label: "QUOTE",
+    quote: "保持热爱，也保持一点清醒的距离。",
   },
   {
-    title: "美感与工程并重",
-    desc: "既关注代码质量，也重视页面体验与视觉细节。"
-  }
+    image: portraitThree,
+    label: "MOMENT",
+    quote: "生活不是素材库，但值得被认真收藏。",
+  },
 ];
 
 const contactLinks = computed(() => {
   const links = [
-    { label: "GitHub", href: siteConfig.value.github },
-    { label: "Gitee", href: siteConfig.value.gitee },
     {
-      label: "QQ空间",
-      href: siteConfig.value.qq ? `https://user.qzone.qq.com/${siteConfig.value.qq}/main` : ""
-    }
+      label: "GitHub",
+      icon: "github",
+      href: siteConfig.value.github,
+    },
+    {
+      label: "Gitee",
+      icon: "gitee",
+      href: siteConfig.value.gitee,
+    },
+    {
+      label: "Bilibili",
+      icon: "bilibili",
+      href: siteConfig.value.bilibili,
+    },
+    {
+      label: "QQ",
+      icon: "qq",
+      href: siteConfig.value.qq ? `https://user.qzone.qq.com/${siteConfig.value.qq}/main` : "",
+    },
   ];
+
   return links.filter((item) => item.href);
 });
 </script>
 
-<style scoped>
-.about-shell {
-  position: relative;
-  z-index: 1;
-  padding: 44px 0 72px;
-  color: #eef3ff;
+<style lang="scss" scoped>
+.page-subtitle {
+  margin: 0.35rem 0 0;
+  max-width: 38rem;
+  text-align: center;
+  font-size: 1rem;
+  letter-spacing: 0;
 }
 
-.about-shell::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(circle at 10% 20%, rgba(140, 175, 255, 0.2), transparent 38%),
-    radial-gradient(circle at 90% 4%, rgba(111, 233, 211, 0.16), transparent 35%);
-  pointer-events: none;
-}
-
-.hero-card,
-.glass-card {
-  position: relative;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  background: linear-gradient(145deg, rgba(19, 29, 52, 0.74), rgba(14, 22, 40, 0.5));
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  box-shadow: 0 18px 45px rgba(3, 8, 20, 0.3);
-}
-
-.hero-card {
-  display: grid;
-  grid-template-columns: 180px 1fr 320px;
-  gap: 28px;
-  padding: 34px;
-  border-radius: 28px;
+.about-container {
+  width: min(62rem, calc(100% - 0.625rem));
   overflow: hidden;
 }
 
-.aurora-border::after {
-  content: "";
+.about-identity {
+  position: relative;
+  display: grid;
+  grid-template-columns: 7.5rem minmax(0, 1fr) 16rem;
+  gap: 1.35rem;
+  align-items: center;
+  min-height: 14.25rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--surface-border-soft);
+}
+
+.identity-mark {
   position: absolute;
-  inset: -1px;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(120deg, rgba(157, 193, 255, 0.45), rgba(104, 245, 200, 0.25), rgba(157, 193, 255, 0.4));
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
+  right: -0.25rem;
+  top: -1.85rem;
+  color: var(--color-pink-a1);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(5.75rem, 12vw, 8rem);
+  line-height: 1;
   pointer-events: none;
 }
 
-.avatar-box {
+.identity-avatar {
+  position: relative;
+  z-index: 1;
+  width: 7.5rem;
+  height: 7.5rem;
+  border-radius: 50%;
+  object-fit: cover;
+  padding: 0.18rem;
+  border: 1px solid var(--surface-border-soft);
+  box-shadow: 0 0.55rem 1.35rem rgba(13, 31, 62, 0.12);
+}
+
+.identity-copy {
+  position: relative;
+  z-index: 1;
+  padding-left: 0.95rem;
+  border-left: 0.18rem solid var(--color-pink-a3);
+
+  span {
+    color: var(--color-pink);
+  }
+
+  h2 {
+    margin: 0.2rem 0 0.45rem;
+    color: var(--grey-7);
+  }
+
+  p {
+    max-width: 34rem;
+    margin: 0;
+    color: var(--grey-5);
+  }
+}
+
+.mood-gallery {
+  position: relative;
+  z-index: 1;
+  height: 12.75rem;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  border: 1px solid var(--surface-border-soft);
+  background: var(--surface-soft);
+  box-shadow: 0 0.7rem 1.5rem rgba(13, 31, 62, 0.1);
+
+  &::before {
+    content: "";
+    position: absolute;
+    right: 0.75rem;
+    top: 0.75rem;
+    z-index: 3;
+    width: 2.4rem;
+    height: 0.18rem;
+    border-radius: 999px;
+    background: var(--color-pink);
+    box-shadow: 0 0.45rem 0 var(--color-orange);
+  }
+}
+
+.mood-frame {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-rows: 7.4rem 1fr;
+  opacity: 0;
+  transform: translateX(0.35rem);
+  animation: moodFrameFade 12s infinite ease-in-out;
+}
+
+.mood-image-stage {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 18% 20%, rgba(233, 84, 107, 0.14), transparent 34%),
+    radial-gradient(circle at 82% 12%, rgba(83, 178, 210, 0.12), transparent 36%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.74), rgba(246, 248, 255, 0.52)),
+    var(--mood-image) center / cover;
+  border-top: 1px solid var(--surface-border-soft);
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -1.4rem;
+    background: var(--mood-image) center / cover;
+    filter: blur(1.8rem) saturate(0.56) contrast(0.9);
+    opacity: 0.24;
+    transform: scale(1.12);
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.66)),
+      linear-gradient(135deg, rgba(233, 84, 107, 0.08), rgba(83, 178, 210, 0.08));
+    pointer-events: none;
+  }
+
+  img {
+    position: relative;
+    z-index: 2;
+    width: calc(100% - 1.2rem);
+    height: calc(100% - 1rem);
+    object-fit: contain;
+    filter: saturate(0.98) contrast(1.02);
+    transform: scale(1.02);
+    animation: moodImage 12s infinite;
+  }
 }
 
-.avatar-glow {
-  position: absolute;
-  width: 148px;
-  height: 148px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(147, 176, 255, 0.5), rgba(111, 233, 211, 0.16) 55%, transparent 72%);
-  filter: blur(2px);
-}
-
-.author-avatar {
+.mood-copy {
   position: relative;
-  z-index: 1;
-  width: 124px;
-  height: 124px;
-  border-radius: 50%;
-  border: 3px solid rgba(255, 255, 255, 0.66);
-  object-fit: cover;
-  box-shadow: 0 12px 32px rgba(9, 14, 28, 0.45);
-  transition: transform 0.5s ease;
+  min-height: 5.35rem;
+  padding: 0 0.85rem 0 1.25rem;
+  color: var(--grey-7);
+  background:
+    linear-gradient(90deg, rgba(233, 84, 107, 0.08), transparent 54%),
+    rgba(255, 255, 255, 0.78);
+  border-top: 1px solid var(--surface-border-soft);
+
+  span {
+    color: var(--color-pink);
+    font-size: 0.7rem;
+    letter-spacing: 0.12rem;
+  }
+
+  p {
+    color: var(--grey-7);
+    font-size: 0.86rem;
+    word-break: break-all;
+    line-height: 1.45;
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+  }
 }
 
-.author-avatar:hover {
-  transform: translateY(-6px) rotate(4deg);
-}
-
-.hero-copy {
-  position: relative;
-  z-index: 1;
-}
-
-.hero-kicker {
-  margin: 0;
-  color: rgba(223, 232, 255, 0.76);
-  font-size: 12px;
-  letter-spacing: 0.34em;
-}
-
-.hero-name {
-  margin: 14px 0 12px;
-  font-family: "Noto Serif SC", "STZhongsong", serif;
-  font-size: 42px;
-  font-weight: 700;
-  line-height: 1.12;
-  color: #f7fbff;
-  text-shadow: 0 8px 22px rgba(13, 22, 44, 0.35);
-}
-
-.hero-subtitle {
-  margin: 0;
-  font-size: 16px;
-  line-height: 1.8;
-  color: rgba(236, 244, 255, 0.86);
-}
-
-.tag-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 20px;
-}
-
-.tag-item {
-  padding: 6px 12px;
-  border-radius: 999px;
-  border: 1px solid rgba(191, 213, 255, 0.5);
-  background: rgba(103, 140, 227, 0.16);
-  font-size: 12px;
-  letter-spacing: 0.04em;
-  color: #e8f2ff;
-}
-
-.hero-meta {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.meta-card {
-  padding: 14px 16px;
-  border-radius: 16px;
-  border: 1px solid rgba(187, 206, 245, 0.26);
-  background: rgba(20, 33, 59, 0.5);
-}
-
-.meta-label {
-  display: block;
-  margin-bottom: 6px;
-  color: rgba(201, 217, 247, 0.8);
-  font-size: 12px;
-  letter-spacing: 0.2em;
-}
-
-.meta-card p {
-  margin: 0;
-  color: #f4f7ff;
-  line-height: 1.7;
-}
-
-.contact-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.contact-link {
-  padding: 4px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(194, 220, 255, 0.42);
-  color: #f2f8ff;
-  font-size: 12px;
-  text-decoration: none;
-  transition: all 0.25s ease;
-}
-
-.contact-link:hover {
-  color: #0f1d39;
-  background: rgba(231, 244, 255, 0.95);
-  box-shadow: 0 6px 20px rgba(176, 214, 255, 0.34);
-}
-
-.about-grid {
+.about-body {
   display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-  gap: 20px;
-  margin-top: 22px;
+  grid-template-columns: minmax(0, 1fr) 14rem;
+  gap: 1.8rem;
+  padding-top: 1.35rem;
 }
 
-.glass-card {
-  border-radius: 24px;
-  padding: 24px;
+.section-title,
+.aside-label {
+  color: var(--color-pink);
 }
 
-.card-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  margin-bottom: 16px;
+.section-title {
+  margin-bottom: 0.8rem;
+
+  h3 {
+    margin: 0.15rem 0 0;
+    color: var(--grey-7);
+  }
 }
 
-.card-head h3 {
-  margin: 0;
-  font-family: "Noto Serif SC", "STZhongsong", serif;
-  font-size: 24px;
-  color: #f8fcff;
+.about-md {
+  overflow: hidden;
 }
 
-.card-head span {
-  color: rgba(212, 226, 249, 0.72);
-  font-size: 12px;
-  letter-spacing: 0.16em;
-}
-
-.intro-card {
-  grid-row: span 2;
-}
-
-.intro-card :deep(.md) {
-  margin-top: 4px;
-  border-radius: 14px;
-  background: rgba(12, 20, 36, 0.24) !important;
-}
-
-.intro-card :deep(.v-md-editor-preview) {
+.about-md :deep(.v-md-editor-preview) {
   padding: 0 !important;
   background: transparent !important;
 }
 
-.intro-card :deep(.v-md-editor-preview pre),
-.intro-card :deep(.v-md-editor-preview code) {
-  border-radius: 10px;
-}
-
-.timeline-list {
-  list-style: none;
-  padding: 0;
-  margin: 4px 0 0;
+.about-aside {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 1.25rem;
+  border-left: 1px solid var(--surface-border-soft);
+  padding-left: 1.25rem;
 }
 
-.timeline-item {
-  display: flex;
-  gap: 12px;
-}
-
-.timeline-dot {
-  width: 10px;
-  height: 10px;
-  margin-top: 9px;
-  border-radius: 50%;
-  background: linear-gradient(140deg, #7fc3ff, #78f0ca);
-  box-shadow: 0 0 0 4px rgba(121, 221, 203, 0.18);
-  flex-shrink: 0;
-}
-
-.timeline-title {
-  margin: 0;
-  font-size: 16px;
-  color: #f2f6ff;
-}
-
-.timeline-desc {
-  margin: 6px 0 0;
-  color: rgba(219, 232, 255, 0.82);
-  line-height: 1.75;
-}
-
-.value-list {
+.aside-block {
   display: grid;
-  gap: 12px;
+  gap: 0.75rem;
 }
 
-.value-item {
-  padding: 13px 14px;
-  border-radius: 14px;
-  border: 1px solid rgba(186, 208, 245, 0.24);
-  background: rgba(17, 28, 50, 0.46);
+.site-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.7rem;
+
+  div {
+    display: flex;
+    flex-direction: column;
+    color: var(--grey-5);
+    line-height: 1.35;
+  }
+
+  strong {
+    color: var(--grey-7);
+    font-size: 1.25rem;
+  }
 }
 
-.value-title {
+.link-list {
+  display: grid;
+  gap: 0.45rem;
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    color: var(--grey-6);
+
+    &:hover {
+      color: var(--color-pink);
+      transform: translateX(0.15rem);
+    }
+  }
+}
+
+.empty-text {
   margin: 0;
-  color: #f3f8ff;
-  font-weight: 600;
+  color: var(--grey-5);
 }
 
-.value-desc {
-  margin: 8px 0 0;
-  color: rgba(215, 229, 252, 0.84);
-  line-height: 1.74;
-}
-
-@media (max-width: 1180px) {
-  .hero-card {
-    grid-template-columns: 140px 1fr;
+@media (max-width: 820px) {
+  .about-identity {
+    grid-template-columns: 7.5rem minmax(0, 1fr);
   }
 
-  .hero-meta {
+  .mood-gallery {
     grid-column: 1 / -1;
-    flex-direction: row;
-    flex-wrap: wrap;
+    height: 17rem;
   }
 
-  .meta-card {
-    flex: 1 1 220px;
-  }
-}
-
-@media (max-width: 900px) {
-  .about-shell {
-    padding-top: 28px;
+  .mood-frame {
+    grid-template-rows: 11.6rem 1fr;
   }
 
-  .hero-card {
-    grid-template-columns: 1fr;
-    gap: 20px;
-    padding: 24px;
-  }
-
-  .avatar-box {
-    justify-content: flex-start;
-  }
-
-  .hero-name {
-    font-size: 34px;
-  }
-
-  .about-grid {
+  .about-body {
     grid-template-columns: 1fr;
   }
 
-  .intro-card {
-    grid-row: auto;
+  .about-aside {
+    border-left: 0;
+    border-top: 1px solid var(--surface-border-soft);
+    padding: 1.25rem 0 0;
   }
 }
 
-@media (max-width: 640px) {
-  .hero-name {
-    font-size: 30px;
+@media (max-width: 575px) {
+  .about-identity {
+    grid-template-columns: 1fr;
+    text-align: center;
   }
 
-  .glass-card,
-  .hero-card {
-    border-radius: 18px;
+  .identity-avatar {
+    margin: 0 auto;
   }
 
-  .glass-card {
-    padding: 18px;
+  .identity-copy p {
+    margin: 0 auto;
+  }
+
+  .identity-copy {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .mood-gallery {
+    height: 14.5rem;
+  }
+
+  .mood-frame {
+    grid-template-rows: 8.6rem 1fr;
+  }
+}
+
+@keyframes moodFrameFade {
+  0% {
+    opacity: 0;
+    transform: translateX(0.35rem);
+  }
+
+  7%,
+  31% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  38%,
+  100% {
+    opacity: 0;
+    transform: translateX(-0.35rem);
+  }
+}
+
+@keyframes moodImage {
+  0% {
+    transform: scale(1.02) translateX(0);
+  }
+
+  32% {
+    transform: scale(1.06) translateX(-0.2rem);
+  }
+
+  100% {
+    transform: scale(1.02) translateX(0);
   }
 }
 </style>

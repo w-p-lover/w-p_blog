@@ -1,3 +1,4 @@
+import "@/polyfills";
 import "@/assets/fonts/font.css";
 import "@/assets/styles/index.scss";
 import SvgIcon from "@/components/SvgIcon/index.vue";
@@ -25,6 +26,7 @@ import "viewerjs/dist/viewer.css";
 import "virtual:svg-icons-register";
 import {createApp, Directive} from "vue";
 import lazyPlugin from "vue3-lazy";
+import naive from "naive-ui";
 
 import App from "./App.vue";
 import error from "./assets/images/404.gif";
@@ -46,6 +48,7 @@ VMdPreview.use(vuepressTheme, {
     .use(createTodoListPlugin())
     .use(createKatexPlugin());
 app.use(ElementPlus);
+app.use(naive);
 app.use(VMdPreview);
 app.use(pinia);
 app.use(router);

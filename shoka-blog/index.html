@@ -22,11 +22,19 @@
             padding: 0;
             box-sizing: border-box;
         }
+        #app {
+            position: relative;
+            z-index: 2;
+            min-height: 100vh;
+        }
         .fireworks-container {
             position: fixed;
+            inset: 0;
             width: 100%;
             height: 100%;
             background: #000;
+            z-index: 0;
+            pointer-events: none;
         }
     </style>
 </head>
