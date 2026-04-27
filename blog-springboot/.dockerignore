@@ -7,3 +7,10 @@ logs
 config/application-private.yml
 config/application-private.yaml
 .env
+state.db
+hs_err_pid*.log
+src/main/resources/static/Wallhaven
+src/main/resources/static/pixiv
+src/main/resources/static/book
+src/main/resources/static/book_result.zip
+src/main/resources/static/__pycache__
