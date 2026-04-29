@@ -3,9 +3,9 @@
   <Images></Images>
   <!-- 品牌 -->
   <Brand></Brand>
-  <div class="bg">
-    <div class="main-container mt">
-      <div class="left-container" :class="app.sideFlag ? 'test' : ''">
+  <div class="bg home-bg">
+    <div class="main-container home-main mt">
+      <div class="left-container home-feed" :class="app.sideFlag ? 'test' : ''">
         <!-- 说说 -->
         <TalkSwiper></TalkSwiper>
         <!-- 推荐文章 -->
@@ -13,7 +13,7 @@
         <!-- 文章列表 -->
         <ArticleItem></ArticleItem>
       </div>
-      <SideBar class="right-container" :class="app.sideFlag ? 'temp' : ''"></SideBar>
+      <SideBar class="right-container home-sidebar" :class="app.sideFlag ? 'temp' : ''"></SideBar>
     </div>
   </div>
 </template>
@@ -31,7 +31,13 @@ const {app} = useStore();
 
 <style lang="scss" scoped>
 .mt {
-  margin-top: 1.2rem;
-  padding-bottom: 2rem;
+  margin-top: 1.15rem;
+  padding-bottom: 2.5rem;
+}
+
+.home-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 </style>

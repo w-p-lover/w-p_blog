@@ -76,22 +76,24 @@ onMounted(() => {
   flex-direction: column;
   position: fixed;
   z-index: -1;
+  width: min(92vw, 62rem);
+  text-align: center;
 
   .artboard {
     font-family: "Fredericka the Great", Mulish, -apple-system, "PingFang SC", "Microsoft YaHei",
     sans-serif;
-    font-size: clamp(2.5rem, 5.2vw, 3.7rem);
-    line-height: 1.16;
-    letter-spacing: 0.02em;
-    text-shadow: 0 10px 22px rgba(4, 12, 28, 0.44);
+    font-size: clamp(2.7rem, 5vw, 3.8rem);
+    line-height: 1.14;
+    text-shadow: 0 12px 28px rgba(4, 12, 28, 0.38);
     animation: titleScale 1s;
   }
 
   .title {
-    margin-top: 0.45rem;
-    letter-spacing: 0.08em;
-    color: rgba(246, 250, 255, 0.9);
-    text-shadow: 0 8px 20px rgba(3, 10, 23, 0.36);
+    max-width: min(86vw, 48rem);
+    margin-top: 0.55rem;
+    color: rgba(249, 251, 255, 0.9);
+    line-height: 1.7;
+    text-shadow: 0 8px 22px rgba(3, 10, 23, 0.3);
   }
 }
 
@@ -107,10 +109,10 @@ onMounted(() => {
 .arrow-down {
   position: absolute;
   bottom: 70px;
-  opacity: 0.88;
-  filter: drop-shadow(0 8px 20px rgba(2, 10, 22, 0.45));
-  -webkit-animation: arrow-shake 2.1s ease-out infinite;
-  animation: arrow-shake 2.1s ease-out infinite;
+  opacity: 0.78;
+  filter: drop-shadow(0 8px 18px rgba(2, 10, 22, 0.36));
+  -webkit-animation: arrow-shake 2.2s ease-out infinite;
+  animation: arrow-shake 2.2s ease-out infinite;
   cursor: pointer;
   z-index: 8;
 }

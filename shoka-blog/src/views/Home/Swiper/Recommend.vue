@@ -32,27 +32,29 @@ onMounted(() => {
 @import "@/assets/styles/mixin.scss";
 
 .swiper-container {
-  height: 13.875rem;
-  margin: 1rem 0.5rem;
-  border-radius: 0.9rem;
-  border: 1px solid var(--surface-border-soft);
-  box-shadow: var(--shadow-soft);
+  height: 13.25rem;
+  margin: 0 0.5rem;
+  border-radius: 0.85rem;
+  border: 1px solid var(--home-border);
+  box-shadow: var(--home-shadow), var(--home-glow);
+  overflow: hidden;
 
   &::before {
     content: '推荐';
     position: absolute;
     z-index: 2;
-    color: var(--grey-0);
-    background: linear-gradient(90deg, rgba(231, 172, 60, 0.94), rgba(232, 131, 96, 0.96));
-    top: 0;
-    letter-spacing: 0.1875rem;
-    left: 0.625rem;
-    font-size: 0.9375rem;
-    width: 4.0625rem;
+    top: 0.65rem;
+    left: 0.75rem;
     display: flex;
     justify-content: center;
-    border-radius: 0 0 0.75rem 0.75rem;
-    box-shadow: 0 8px 16px rgba(210, 132, 62, 0.28);
+    min-width: 3.7rem;
+    padding: 0.1rem 0.6rem;
+    border-radius: 99px;
+    color: var(--grey-0);
+    background: rgba(233, 113, 146, 0.86);
+    font-size: 0.82rem;
+    line-height: 1.5;
+    box-shadow: 0 8px 16px rgba(210, 113, 146, 0.22);
   }
 }
 
@@ -66,19 +68,17 @@ onMounted(() => {
   background-size: cover !important;
 
   .slide-title {
-    font-size: 1.9rem;
+    font-size: clamp(1.35rem, 2.6vw, 1.8rem);
+    font-weight: 700;
     text-shadow: 0 8px 20px rgba(5, 10, 20, 0.34);
   }
 
   &::after {
     content: '';
     position: absolute;
-    width: 100%;
-    height: 100%;
+    inset: 0;
     background:
-      linear-gradient(145deg, rgba(6, 12, 26, 0.34), rgba(8, 14, 28, 0.16) 46%, rgba(5, 10, 19, 0.4));
-    left: 0;
-    top: 0;
+      linear-gradient(145deg, rgba(6, 12, 26, 0.46), rgba(8, 14, 28, 0.2) 48%, rgba(5, 10, 19, 0.46));
   }
 }
 
@@ -93,24 +93,26 @@ onMounted(() => {
 
 :deep(.swiper-pagination) .swiper-pagination-bullet {
   display: inline-block;
-  width: 0.6875rem;
-  height: 0.6875rem;
-  margin: 0 0.25rem;
+  width: 0.55rem;
+  height: 0.55rem;
+  margin: 0 0.22rem;
   border-radius: 6.1875rem;
-  background: rgba(255, 255, 255, 0.92);
-  opacity: 0.78;
+  background: rgba(255, 255, 255, 0.88);
+  opacity: 0.72;
   transition: all 0.3s;
 }
 
 :deep(.swiper-pagination) .swiper-pagination-bullet.swiper-pagination-bullet-active {
   opacity: 1;
-  background-color: var(--color-blue);
-  width: 1.875rem;
+  background-color: var(--home-accent-cool);
+  width: 1.55rem;
 }
 
 :deep(.swiper-button-next),
 :deep(.swiper-button-prev) {
-  width: 2.75rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  color: rgba(255, 255, 255, 0.86);
   transition: all 0.3s;
 }
 

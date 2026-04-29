@@ -30,19 +30,21 @@ onMounted(() => {
 
 .talk-swiper {
   @include flex;
+  min-height: 2.9rem;
   margin: 0 0.5rem;
-  padding: 0.62rem 1rem;
-  font-size: 0.9375rem;
+  padding: 0.58rem 0.95rem;
+  gap: 0.65rem;
+  font-size: 0.92rem;
   border-radius: 0.75rem;
-  border: 1px solid var(--surface-border-soft);
-  background: linear-gradient(180deg, var(--surface-soft-strong), var(--surface-soft));
-  box-shadow: var(--shadow-soft);
-  transition: transform 0.24s ease, box-shadow 0.24s ease, border-color 0.24s ease;
+  border: 1px solid var(--home-border);
+  background: linear-gradient(180deg, var(--home-surface-strong), var(--home-surface));
+  box-shadow: 0 10px 24px rgba(22, 35, 66, 0.08), var(--home-glow);
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
 
   &:hover {
-    transform: translateY(-2px);
-    border-color: rgba(116, 146, 210, 0.32);
-    box-shadow: var(--shadow-soft-hover);
+    transform: translateY(-1px);
+    border-color: var(--home-border-strong);
+    box-shadow: 0 14px 28px rgba(22, 35, 66, 0.11), var(--home-glow);
   }
 }
 
@@ -56,14 +58,16 @@ onMounted(() => {
 .slide-content {
   width: 100%;
   height: 100%;
-  text-align: center;
+  text-align: left;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  color: var(--grey-7);
+  color: var(--home-muted);
 }
 
 .arrow {
+  color: var(--home-accent);
+  opacity: 0.72;
   animation: 1.5s passing infinite;
 }
 
