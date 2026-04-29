@@ -632,6 +632,8 @@ const cityNameSafe = (city) => city?.name || city?.value || '未知城市';
 }
 .weather-bg{
   background-color: #6782a0;
+  min-height: 45rem;
+  padding-bottom: 9.5rem;
 }
 .weather-card {
   width: 610px;
