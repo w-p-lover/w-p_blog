@@ -9,14 +9,21 @@ const {user} = useStore();
 export default class WebSocketService {
     private stompClient: Client | null = null;
     private userId: UnwrapRef<UserState["id"]> | undefined;
-    constructor(userId: string) {
+    private statusCallback?: (connected: boolean) => void;
+
+    constructor() {
         this.userId = user.id
+    }
+
+    isConnected(): boolean {
+        return Boolean(this.stompClient?.connected);
     }
     /**
      * 初始化 WebSocket 连接
      * @param onMessageCallback 消息接收回调函数
      */
-    connect(onMessageCallback: (message: ChatMessage) => void): void {
+    connect(onMessageCallback: (message: ChatMessage) => void, onStatusChange?: (connected: boolean) => void): void {
+        this.statusCallback = onStatusChange;
         const socket = new SockJS('http://localhost:8080/chat');
         this.stompClient = new Client({
             webSocketFactory: () => socket as WebSocket,
@@ -25,18 +32,26 @@ export default class WebSocketService {
 
         // 订阅服务端消息
         this.stompClient.onConnect = () => {
-            console.log('WebSocket connected');
+            this.statusCallback?.(true);
             if (this.stompClient && this.userId) {
                 this.stompClient.subscribe("/queue/messages/" + this.userId, (message) => {
-                    console.log("websocket1:"+this.userId)
                     const parsedMessage: ChatMessage = JSON.parse(message.body);
                     onMessageCallback(parsedMessage);
                 });
             }
         };
 
+        this.stompClient.onDisconnect = () => {
+            this.statusCallback?.(false);
+        };
+
+        this.stompClient.onWebSocketClose = () => {
+            this.statusCallback?.(false);
+        };
+
         // 错误处理
         this.stompClient.onStompError = (frame) => {
+            this.statusCallback?.(false);
             console.error('Broker reported error:', frame.headers['message']);
             console.error('Additional details:', frame.body);
         };
@@ -48,14 +63,16 @@ export default class WebSocketService {
      * 发送消息
      * @param message 消息内容
      */
-    sendMessage(message: ChatMessage): void {
+    sendMessage(message: ChatMessage): boolean {
         if (this.stompClient && this.stompClient.connected) {
             this.stompClient.publish({
                 destination: '/app/send',
                 body: JSON.stringify(message),
             });
+            return true;
         } else {
             console.error('WebSocket is not connected');
+            return false;
         }
     }
 
@@ -65,7 +82,7 @@ export default class WebSocketService {
     disconnect(): void {
         if (this.stompClient) {
             this.stompClient.deactivate().then(() => {
-                console.log('WebSocket disconnected');
+                this.statusCallback?.(false);
             }).catch((error) => {
                 console.error('Error while disconnecting:', error);
             });

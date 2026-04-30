@@ -76,30 +76,41 @@ export default {
 
 .nav {
   width: 100%;
-  height: 88vh;
+  height: 100%;
   position: relative;
-  border-radius: 20px 0 0 20px;
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(13, 16, 22, 0.32);
+  backdrop-filter: blur(14px);
 
   .nav-menu-wrapper {
     position: absolute;
-    top: 40%;
+    top: 42%;
     transform: translate(0, -50%);
+    width: 100%;
 
     .menu-list {
-      margin-left: 10px;
+      margin: 0;
+      padding: 0;
 
       li {
-        margin: 40px 0 0 30px;
+        width: 44px;
+        height: 44px;
+        margin: 24px auto 0;
         list-style: none;
         cursor: pointer;
         position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 14px;
+        transition: 0.22s ease;
 
         .block {
-          background-color: rgb(29, 144, 245);
+          background-color: #b6c7c0;
           position: absolute;
-          left: -40px;
-          width: 6px;
-          height: 25px;
+          left: -28px;
+          width: 4px;
+          height: 22px;
           transition: 0.5s;
           border-top-right-radius: 4px;
           border-bottom-right-radius: 4px;
@@ -107,8 +118,10 @@ export default {
         }
 
         &:hover {
+          background: rgba(255, 255, 255, 0.06);
+
           span {
-            color: rgb(29, 144, 245);
+            color: #dbe7e2;
           }
 
           .block {
@@ -121,14 +134,17 @@ export default {
 
   .own-pic {
     position: absolute;
-    bottom: 10%;
-    margin-left: 25px;
+    left: 50%;
+    bottom: 28px;
+    transform: translateX(-50%);
   }
 }
 
 .activeNav {
+  background: rgba(182, 199, 192, 0.12);
+
   span {
-    color: rgb(29, 144, 245);
+    color: #dbe7e2;
   }
 
   .block {

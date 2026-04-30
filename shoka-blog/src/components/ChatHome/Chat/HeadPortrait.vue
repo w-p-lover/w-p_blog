@@ -23,24 +23,28 @@ export default {
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  border: 2px solid rgb(255, 255, 255);
+  border: 1px solid rgba(238, 242, 236, 0.68);
   position: relative;
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.22);
 
   &::before {
     content: '';
-    width: 15px;
-    height: 15px;
+    width: 12px;
+    height: 12px;
     z-index: 1;
     display: block;
     border-radius: 50%;
-    background-color: rgb(144, 225, 80);
+    background-color: #9fd3a7;
+    border: 2px solid #20242e;
     position: absolute;
-    right: 0;
+    right: 1px;
+    bottom: 2px;
   }
 
   img {
-    width: 45px;
-    height: 45px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     box-sizing: border-box;
     position: absolute;

@@ -60,18 +60,21 @@ export default defineComponent({
 <style lang="scss" scoped>
 .file-card {
   width: 250px;
-  height: 100px;
-  background-color: rgb(45, 48, 63);
-  border-radius: 20px;
+  min-height: 92px;
+  background: rgba(255, 255, 255, 0.075);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
   display: flex;
   justify-content: center;
   align-items: center;
   padding: 10px;
   box-sizing: border-box;
   cursor: pointer;
+  transition: 0.2s ease;
 
   &:hover {
-    background-color: rgb(33, 36, 54);
+    background: rgba(255, 255, 255, 0.105);
+    transform: translateY(-1px);
   }
 
   img {
@@ -87,7 +90,7 @@ export default defineComponent({
     span {
       width: 90%;
       display: inline-block;
-      color: #fff;
+      color: #f2f0ea;
     }
 
     span:first-child {
@@ -99,7 +102,7 @@ export default defineComponent({
 
     span:last-child {
       font-size: 12px;
-      color: rgb(180, 180, 180);
+      color: rgba(220, 224, 218, 0.58);
     }
   }
 }
