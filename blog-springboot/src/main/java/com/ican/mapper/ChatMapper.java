@@ -29,5 +29,9 @@ public interface ChatMapper extends BaseMapper<Chat> {
 
     Long countByCouple(@Param("send") Integer send, @Param("receive") Integer receive);
 
+    Long countUnreadByCouple(@Param("senderId") Integer senderId, @Param("receiverId") Integer receiverId);
+
+    void markReadByCouple(@Param("senderId") Integer senderId, @Param("receiverId") Integer receiverId);
+
     void deleteChatRecord(@Param("endTime") DateTime endTime);
 }

@@ -42,3 +42,8 @@ export interface ChatMessagePage {
     pageSize: number;
     hasMore: boolean;
 }
+
+export interface ChatReadRequest {
+    userId: string | number;
+    friendId: string | number;
+}

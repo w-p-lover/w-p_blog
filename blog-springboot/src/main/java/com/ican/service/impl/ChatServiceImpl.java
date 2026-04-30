@@ -88,6 +88,13 @@ public class ChatServiceImpl implements ChatService {
                 .build();
     }
 
+    @Override
+    public void markChatRecordRead(String userId, String friendId) {
+        int currentUserId = Integer.parseInt(userId);
+        int friendUserId = Integer.parseInt(friendId);
+        chatRecordMapper.markReadByCouple(friendUserId, currentUserId);
+    }
+
     private ChatRecordVO buildChatRecordVO(Chat chatRecord) {
         ChatRecordVO chatRecordVO = new ChatRecordVO();
         BeanUtil.copyProperties(chatRecord, chatRecordVO);
@@ -130,6 +137,7 @@ public class ChatServiceImpl implements ChatService {
                     .content(message.getContent())
                     .messageType(message.getMessageType())
                     .senderName(message.getSenderName())
+                    .isRead(0)
                     .fileId(-1)
                     .build();
             if (message.getMessageType().equals("file")) {
@@ -148,14 +156,13 @@ public class ChatServiceImpl implements ChatService {
         List<Integer> friendIdList = friendshipsMapper.selectFriendshipVOList(userId);
         List<FriendshipVO> friendshipList = new ArrayList<>();
         for (Integer integer : friendIdList) {
-            User user = userMapper.selectOne(new LambdaQueryWrapper<User>()
-                    .select(User::getId, User::getAvatar, User::getNickname, User::getIntro)
-                    .eq(User::getId, integer));
+            User user = userMapper.selectById(integer);
             FriendshipVO friendshipVO = new FriendshipVO();
             friendshipVO.setId(user.getId().toString());
             friendshipVO.setName(user.getNickname());
             friendshipVO.setDetail(user.getIntro());
             friendshipVO.setHeadImg(user.getAvatar());
+            friendshipVO.setUnreadCount(chatRecordMapper.countUnreadByCouple(integer, userId).intValue());
             friendshipList.add(friendshipVO);
         }
         return friendshipList;
