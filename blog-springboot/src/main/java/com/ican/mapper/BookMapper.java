@@ -24,4 +24,12 @@ public interface BookMapper extends BaseMapper<Book> {
      * @return 书籍列表
      */
     List<BookVO> selectBookVOList(@Param("limit") Long limit, @Param("size") Long size, @Param("keyword") String keyword, @Param("sortType") String sortType );
+
+    /**
+     * 统计书籍数量
+     *
+     * @param keyword 关键字
+     * @return 匹配数量
+     */
+    Long countBookVOList(@Param("keyword") String keyword);
 }

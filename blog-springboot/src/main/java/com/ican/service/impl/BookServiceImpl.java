@@ -28,9 +28,11 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.zip.ZipEntry;
@@ -42,6 +44,7 @@ import java.util.zip.ZipOutputStream;
 public class BookServiceImpl extends ServiceImpl<BookMapper, Book> implements BookService {
 
     private static final String BOOK_DIR_NAME = "book";
+    private static final Set<String> VALID_STATUS_SET = Set.of("wish", "reading", "read");
 
     private final BookMapper bookMapper;
     private final PythonScriptRunner pythonScriptRunner;
@@ -53,7 +56,7 @@ public class BookServiceImpl extends ServiceImpl<BookMapper, Book> implements Bo
     @Override
     public PageResult<BookVO> listBookBackVO(String sortType) {
         List<BookVO> bookList = bookMapper.selectBookVOList(PageUtils.getLimit(), PageUtils.getSize(), null, sortType);
-        long count = bookList.size();
+        long count = countBooks(null);
         if (count == 0) {
             return new PageResult<>();
         }
@@ -62,16 +65,13 @@ public class BookServiceImpl extends ServiceImpl<BookMapper, Book> implements Bo
 
     @Override
     public void addBook(BookDTO bookDTO) {
-        Book existBook = bookMapper.selectOne(new LambdaQueryWrapper<Book>()
-                .select(Book::getId)
-                .eq(Book::getTitle, bookDTO.getTitle())
-                .eq(Book::getAuthor, bookDTO.getAuthor()));
-        Assert.isNull(existBook, bookDTO.getTitle() + " already exists");
+        Assert.isNull(findDuplicateBook(bookDTO), bookDTO.getTitle() + " already exists");
+        ensureStatus(bookDTO);
 
         Book newBook = BeanCopyUtils.copyBean(bookDTO, Book.class);
         newBook.setAddTime(LocalDateTime.now());
         if (bookDTO.getResource() != null) {
-            newBook.setResource(bookDTO.getResource());
+            newBook.setResource(serializeResources(parseResources(bookDTO.getResource())));
         }
         baseMapper.insert(newBook);
     }
@@ -84,17 +84,15 @@ public class BookServiceImpl extends ServiceImpl<BookMapper, Book> implements Bo
 
     @Override
     public void updateBook(BookDTO bookDTO) {
-        Book existBook = bookMapper.selectOne(new LambdaQueryWrapper<Book>()
-                .select(Book::getId)
-                .eq(Book::getTitle, bookDTO.getTitle())
-                .eq(Book::getAuthor, bookDTO.getAuthor()));
+        Book existBook = findDuplicateBook(bookDTO);
         Assert.isFalse(Objects.nonNull(existBook) && !existBook.getId().equals(bookDTO.getId()),
                 bookDTO.getTitle() + " already exists");
+        ensureStatus(bookDTO);
 
         Book newBook = BeanCopyUtils.copyBean(bookDTO, Book.class);
         newBook.setUpdateTime(LocalDateTime.now());
         if (bookDTO.getResource() != null) {
-            newBook.setResource(bookDTO.getResource());
+            newBook.setResource(serializeResources(parseResources(bookDTO.getResource())));
         }
         bookMapper.updateById(newBook);
     }
@@ -108,6 +106,7 @@ public class BookServiceImpl extends ServiceImpl<BookMapper, Book> implements Bo
 
     @Override
     public void updateBookStatus(Integer bookId, String status) {
+        validateStatus(status);
         Book book = bookMapper.selectById(bookId);
         Assert.notNull(book, "Book not found");
         book.setStatus(status);
@@ -126,26 +125,26 @@ public class BookServiceImpl extends ServiceImpl<BookMapper, Book> implements Bo
 
     @Override
     public void updateResource(Integer bookId, String resourceJson) {
+        Assert.notNull(bookMapper.selectById(bookId), "Book not found");
         Book book = new Book();
         book.setId(bookId);
-        book.setResource(resourceJson);
+        book.setResource(serializeResources(parseResources(resourceJson)));
         bookMapper.updateById(book);
     }
 
     @Override
     public void deleteResource(Integer bookId, int index) {
         Book book = bookMapper.selectById(bookId);
-        if (book == null || book.getResource() == null) {
-            return;
-        }
+        Assert.notNull(book, "Book not found");
+        Assert.isFalse(book.getResource() == null || book.getResource().isBlank(), "Book resources not found");
 
         try {
-            List<ResourceDTO> resources = JSONUtil.toList(book.getResource(), ResourceDTO.class);
+            List<ResourceDTO> resources = parseResources(book.getResource());
             if (index < 0 || index >= resources.size()) {
                 throw new IllegalArgumentException("Resource index out of range");
             }
             resources.remove(index);
-            book.setResource(JSON.toJSONString(resources));
+            book.setResource(serializeResources(resources));
             bookMapper.updateById(book);
         } catch (Exception e) {
             throw new RuntimeException("Failed to delete resource", e);
@@ -155,10 +154,10 @@ public class BookServiceImpl extends ServiceImpl<BookMapper, Book> implements Bo
     @Override
     public PageResult<BookVO> listBookVO(String sortType) {
         List<BookVO> bookList = bookMapper.selectBookVOList(PageUtils.getLimit(), PageUtils.getSize(), null, sortType);
-        if (CollectionUtils.isEmpty(bookList)) {
+        long count = countBooks(null);
+        if (count == 0) {
             return new PageResult<>();
         }
-        long count = bookList.size();
         return new PageResult<>(bookList, count);
     }
 
@@ -284,5 +283,45 @@ public class BookServiceImpl extends ServiceImpl<BookMapper, Book> implements Bo
 
     private File resolveBookDir() {
         return new File(spiderDir, BOOK_DIR_NAME);
+    }
+
+    private long countBooks(String keyword) {
+        Long count = bookMapper.countBookVOList(keyword);
+        return count == null ? 0 : count;
+    }
+
+    private Book findDuplicateBook(BookDTO bookDTO) {
+        return bookMapper.selectOne(new LambdaQueryWrapper<Book>()
+                .select(Book::getId)
+                .eq(Book::getTitle, bookDTO.getTitle())
+                .eq(Book::getAuthor, bookDTO.getAuthor()));
+    }
+
+    private void ensureStatus(BookDTO bookDTO) {
+        if (bookDTO.getStatus() == null || bookDTO.getStatus().isBlank()) {
+            bookDTO.setStatus("wish");
+            return;
+        }
+        validateStatus(bookDTO.getStatus());
+    }
+
+    private void validateStatus(String status) {
+        Assert.isTrue(VALID_STATUS_SET.contains(status), "Invalid book status: " + status);
+    }
+
+    private List<ResourceDTO> parseResources(String resourceJson) {
+        if (resourceJson == null || resourceJson.isBlank()) {
+            return Collections.emptyList();
+        }
+        try {
+            return JSONUtil.toList(resourceJson, ResourceDTO.class);
+        } catch (Exception ignored) {
+            ResourceDTO resource = JSONUtil.toBean(resourceJson, ResourceDTO.class);
+            return Arrays.asList(resource);
+        }
+    }
+
+    private String serializeResources(List<ResourceDTO> resources) {
+        return JSON.toJSONString(resources == null ? Collections.emptyList() : resources);
     }
 }
