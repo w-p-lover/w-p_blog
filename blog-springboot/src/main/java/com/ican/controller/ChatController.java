@@ -3,6 +3,7 @@ package com.ican.controller;
 import com.ican.annotation.OptLogger;
 import com.ican.model.dto.ChatMesDTO;
 import com.ican.model.dto.ChatPageDTO;
+import com.ican.model.dto.ChatReadDTO;
 import com.ican.model.vo.ChatMessagePageVO;
 import com.ican.model.vo.FriendshipVO;
 import com.ican.model.vo.ChatRecordVO;
@@ -60,6 +61,12 @@ public class ChatController {
                 chatPageDTO.getPageNum(),
                 chatPageDTO.getPageSize()
         );
+    }
+
+    @PostMapping("/chatMsg/read")
+    public Boolean markChatMessageRead(@RequestBody ChatReadDTO chatReadDTO) {
+        chatService.markChatRecordRead(chatReadDTO.getUserId(), chatReadDTO.getFriendId());
+        return true;
     }
 
     @GetMapping("/getUserUid")

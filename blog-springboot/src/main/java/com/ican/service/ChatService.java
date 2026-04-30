@@ -20,6 +20,8 @@ public interface ChatService {
 
     ChatMessagePageVO getChatRecordPageByCouple(String send, String receive, Integer pageNum, Integer pageSize);
 
+    void markChatRecordRead(String userId, String friendId);
+
     String getUserUid();
 
     void addChat(ChatMesDTO message);

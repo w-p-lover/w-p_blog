@@ -143,7 +143,7 @@
 import {computed, nextTick, onMounted, onUnmounted, reactive, ref, watch} from "vue";
 import HeadPortrait from "@/components/ChatHome/Chat/HeadPortrait.vue";
 import FileCard from "@/components/ChatHome/Chat/FileCard.vue";
-import {getChatMessagePage} from "@/api/chat/index.ts";
+import {getChatMessagePage, markChatRead} from "@/api/chat/index.ts";
 import WebSocketService from "@/api/chat/config.ts"
 import {formatDateTime} from "@/utils/date.ts";
 import emojiList from "@/utils/emoji";
@@ -226,6 +226,17 @@ export default {
       };
     };
 
+    const markCurrentConversationRead = async () => {
+      try {
+        await markChatRead({
+          userId: props.friendInfo[0],
+          friendId: props.friendInfo[1],
+        });
+      } catch (error) {
+        console.error("Failed to mark chat messages as read:", error);
+      }
+    };
+
     const getFriendChatMsg = async () => {
       historyLoading.value = true;
       historyError.value = "";
@@ -235,6 +246,7 @@ export default {
         chatList.splice(0, chatList.length, ...page.records); // 更新 chatList 数据
         historyHasMore.value = page.hasMore;
         srcImgList.splice(0, srcImgList.length); // 清空 srcImgList
+        markCurrentConversationRead();
         scrollBottom(); // 滚动到底部
       } catch (error) {
         console.error("Failed to fetch chat messages:", error);
@@ -283,6 +295,7 @@ export default {
         };
         chatList.push(receivedMessage);
         emitConversationUpdate(receivedMessage);
+        markCurrentConversationRead();
         scrollBottom(); // 滚动到底部
       }
     };

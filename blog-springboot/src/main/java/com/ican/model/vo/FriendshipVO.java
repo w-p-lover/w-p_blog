@@ -18,4 +18,5 @@ public class FriendshipVO {
 
     private String headImg;
 
+    private Integer unreadCount;
 }
