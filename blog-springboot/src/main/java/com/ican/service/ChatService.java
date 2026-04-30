@@ -1,6 +1,7 @@
 package com.ican.service;
 
 import com.ican.model.dto.ChatMesDTO;
+import com.ican.model.vo.ChatMessagePageVO;
 import com.ican.model.vo.FriendshipVO;
 import com.ican.model.vo.ChatRecordVO;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,6 +17,8 @@ import java.util.List;
  */
 public interface ChatService {
     List<ChatRecordVO> getChatRecordByCouple(String s, String s1);
+
+    ChatMessagePageVO getChatRecordPageByCouple(String send, String receive, Integer pageNum, Integer pageSize);
 
     String getUserUid();
 

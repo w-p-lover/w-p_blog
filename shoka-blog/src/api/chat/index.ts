@@ -1,4 +1,4 @@
-import {ChatMessage,Friend} from "@/api/chat/type";
+import {ChatMessage, ChatMessagePage, ChatMessagePageRequest, Friend} from "@/api/chat/type";
 import { Result } from "@/model";
 import request from "@/utils/request";
 import { AxiosPromise } from "axios";
@@ -30,6 +30,14 @@ export function getCurrentUserUid(): AxiosPromise<any> {
 export function getChatMessage(params: Record<any, any>): AxiosPromise<Result<ChatMessage[]>> {
     return request({
         url: "/chat/chatMsg",
+        method: "post",
+        data: params,
+    });
+}
+
+export function getChatMessagePage(params: ChatMessagePageRequest): AxiosPromise<Result<ChatMessagePage> | ChatMessagePage> {
+    return request({
+        url: "/chat/chatMsg/page",
         method: "post",
         data: params,
     });

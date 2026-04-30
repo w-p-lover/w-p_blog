@@ -14,6 +14,7 @@ import com.ican.mapper.ChatMapper;
 import com.ican.mapper.FriendshipMapper;
 import com.ican.mapper.UserMapper;
 import com.ican.model.dto.ChatMesDTO;
+import com.ican.model.vo.ChatMessagePageVO;
 import com.ican.model.vo.ChatRecordVO;
 import com.ican.model.vo.FriendshipVO;
 import com.ican.service.ChatService;
@@ -27,6 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -58,13 +60,43 @@ public class ChatServiceImpl implements ChatService {
         List<Chat> chatRecords = chatRecordMapper.selectByCouple(senderId, receiverId);
 
         for (Chat chatRecord : chatRecords) {
-            ChatRecordVO chatRecordVO = new ChatRecordVO();
-            BeanUtil.copyProperties(chatRecord, chatRecordVO);
+            chatMessages.add(buildChatRecordVO(chatRecord));
+        }
+        return chatMessages;
+    }
 
-            if (Objects.equals(chatRecord.getMessageType(), "file")) {
-                BlogFile blogFile = blogFileMapper.selectOne(new LambdaQueryWrapper<BlogFile>()
-                        .eq(BlogFile::getFileUrl, chatRecord.getContent()));
+    @Override
+    public ChatMessagePageVO getChatRecordPageByCouple(String send, String receive, Integer pageNum, Integer pageSize) {
+        int safePageNum = pageNum == null || pageNum < 1 ? 1 : pageNum;
+        int safePageSize = pageSize == null || pageSize < 1 ? 20 : Math.min(pageSize, 50);
+        int senderId = Integer.parseInt(send);
+        int receiverId = Integer.parseInt(receive);
+        int offset = (safePageNum - 1) * safePageSize;
+        Long total = chatRecordMapper.countByCouple(senderId, receiverId);
+        List<Chat> chatRecords = new ArrayList<>(chatRecordMapper.selectPageByCouple(senderId, receiverId, offset, safePageSize));
+        Collections.reverse(chatRecords);
+        List<ChatRecordVO> records = new ArrayList<>();
+        for (Chat chatRecord : chatRecords) {
+            records.add(buildChatRecordVO(chatRecord));
+        }
+        return ChatMessagePageVO.builder()
+                .records(records)
+                .total(total)
+                .pageNum(safePageNum)
+                .pageSize(safePageSize)
+                .hasMore((long) safePageNum * safePageSize < total)
+                .build();
+    }
 
+    private ChatRecordVO buildChatRecordVO(Chat chatRecord) {
+        ChatRecordVO chatRecordVO = new ChatRecordVO();
+        BeanUtil.copyProperties(chatRecord, chatRecordVO);
+        chatRecordVO.setMessageId(chatRecord.getId() == null ? null : chatRecord.getId().longValue());
+
+        if (Objects.equals(chatRecord.getMessageType(), "file")) {
+            BlogFile blogFile = blogFileMapper.selectOne(new LambdaQueryWrapper<BlogFile>()
+                    .eq(BlogFile::getFileUrl, chatRecord.getContent()));
+            if (blogFile != null) {
                 double fileSize = blogFile.getFileSize() / 1024.0;
                 ChatRecordVO.FileInfo fileInfo = ChatRecordVO.FileInfo.builder()
                         .fileType(FileUtils.getFileTypeByExtension(blogFile.getFileUrl()))
@@ -73,9 +105,8 @@ public class ChatServiceImpl implements ChatService {
                         .build();
                 chatRecordVO.setFileInfo(fileInfo);
             }
-            chatMessages.add(chatRecordVO);
         }
-        return chatMessages;
+        return chatRecordVO;
     }
 
     @Override

@@ -20,5 +20,14 @@ public interface ChatMapper extends BaseMapper<Chat> {
 
     List<Chat> selectByCouple(@Param("send") Integer s, @Param("receive") Integer s1);
 
+    List<Chat> selectPageByCouple(
+            @Param("send") Integer send,
+            @Param("receive") Integer receive,
+            @Param("offset") Integer offset,
+            @Param("pageSize") Integer pageSize
+    );
+
+    Long countByCouple(@Param("send") Integer send, @Param("receive") Integer receive);
+
     void deleteChatRecord(@Param("endTime") DateTime endTime);
 }

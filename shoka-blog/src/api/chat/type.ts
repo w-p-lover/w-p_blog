@@ -27,3 +27,18 @@ export interface ChatMessage {
         fileSize: string;
     };
 }
+
+export interface ChatMessagePageRequest {
+    senderId: string | number;
+    receiveId: string | number;
+    pageNum: number;
+    pageSize: number;
+}
+
+export interface ChatMessagePage {
+    records: ChatMessage[];
+    total: number;
+    pageNum: number;
+    pageSize: number;
+    hasMore: boolean;
+}

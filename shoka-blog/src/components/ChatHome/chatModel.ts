@@ -214,3 +214,34 @@ export const updateConversationState = <T extends ConversationModel>(
   nextConversations.unshift(target);
   return nextConversations;
 };
+
+interface MergeableMessage {
+  id?: string | number;
+  localId?: string;
+  createTime?: string | Date;
+  content?: string;
+}
+
+const getMessageKey = (message: MergeableMessage) => {
+  if (message.id != null) {
+    return `id:${message.id}`;
+  }
+  if (message.localId) {
+    return `local:${message.localId}`;
+  }
+  return `fallback:${message.createTime || ""}:${message.content || ""}`;
+};
+
+const getMessageTime = (message: MergeableMessage) => {
+  if (!message.createTime) {
+    return 0;
+  }
+  const timestamp = new Date(message.createTime).getTime();
+  return Number.isNaN(timestamp) ? 0 : timestamp;
+};
+
+export const mergeOlderMessages = <T extends MergeableMessage>(currentMessages: T[], olderMessages: T[]) => {
+  const currentKeys = new Set(currentMessages.map(getMessageKey));
+  const uniqueOlderMessages = olderMessages.filter((message) => !currentKeys.has(getMessageKey(message)));
+  return [...uniqueOlderMessages, ...currentMessages].sort((a, b) => getMessageTime(a) - getMessageTime(b));
+};
