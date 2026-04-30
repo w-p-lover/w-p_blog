@@ -9,11 +9,21 @@ export interface Friend {
 
 // 聊天消息
 export interface ChatMessage {
+    id?: string | number;
+    localId?: string;
     senderAvatar: string;       // 发送者头像
     senderName: string;   // 发送者名字
     senderId: string;   // 发送者名字
-    time: string;         // 消息时间
+    time?: string;         // 消息时间
     content: string;      // 消息内容
-    status: number;       // 消息状态 (0 表示正常)
+    status?: number;       // 消息状态 (0 表示正常)
+    clientStatus?: "sending" | "sent" | "failed";
+    messageType?: "text" | "image" | "file";
     receiveId: string;     // 好友 ID
+    createTime?: string | Date;
+    fileInfo?: {
+        fileType: number;
+        fileName: string;
+        fileSize: string;
+    };
 }

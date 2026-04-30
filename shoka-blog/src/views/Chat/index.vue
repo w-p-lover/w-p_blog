@@ -37,18 +37,46 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-:deep(.el-container ) {
+:deep(.el-container) {
   height: 100%;
 }
 
+:deep(.el-aside) {
+  overflow: visible;
+}
+
+:deep(.el-main) {
+  min-width: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
 .home {
-  width: 90vw;
-  height: 90vh;
-  background-color: rgb(39, 42, 55);
-  border-radius: 15px;
+  width: min(1180px, 92vw);
+  height: min(820px, 90vh);
+  overflow: hidden;
+  background:
+    linear-gradient(145deg, rgba(43, 48, 61, 0.96), rgba(18, 21, 29, 0.98)),
+    radial-gradient(circle at 12% 12%, rgba(116, 142, 150, 0.16), transparent 30%),
+    radial-gradient(circle at 92% 88%, rgba(138, 112, 116, 0.14), transparent 34%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 22px;
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.42);
   position: absolute;
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
+}
+
+@media (max-width: 760px) {
+  .home {
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+  }
+
+  :deep(.el-aside) {
+    width: 72px !important;
+  }
 }
 </style>
