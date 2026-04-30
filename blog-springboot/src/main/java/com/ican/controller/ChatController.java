@@ -2,6 +2,8 @@ package com.ican.controller;
 
 import com.ican.annotation.OptLogger;
 import com.ican.model.dto.ChatMesDTO;
+import com.ican.model.dto.ChatPageDTO;
+import com.ican.model.vo.ChatMessagePageVO;
 import com.ican.model.vo.FriendshipVO;
 import com.ican.model.vo.ChatRecordVO;
 import com.ican.service.ChatService;
@@ -48,6 +50,16 @@ public class ChatController {
     @PostMapping("/chatMsg")
     public List<ChatRecordVO> getChatMessages(@RequestBody ArrayList<String> friendInfo) {
         return chatService.getChatRecordByCouple(friendInfo.get(0), friendInfo.get(1));
+    }
+
+    @PostMapping("/chatMsg/page")
+    public ChatMessagePageVO getChatMessagePage(@RequestBody ChatPageDTO chatPageDTO) {
+        return chatService.getChatRecordPageByCouple(
+                chatPageDTO.getSenderId(),
+                chatPageDTO.getReceiveId(),
+                chatPageDTO.getPageNum(),
+                chatPageDTO.getPageSize()
+        );
     }
 
     @GetMapping("/getUserUid")

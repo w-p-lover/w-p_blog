@@ -23,6 +23,7 @@ const {
   formatFileSize,
   getFileTypeByMime,
   getMessagePreview,
+  mergeOlderMessages,
   updateConversationState,
   renderEmojiContent,
   shouldCompressUpload,
@@ -117,3 +118,18 @@ const updatedActive = updateConversationState(conversations, {
 
 assert.equal(updatedActive[0].unreadCount, 0);
 assert.equal(updatedActive[0].lastMsg, "当前会话消息");
+
+const mergedMessages = mergeOlderMessages(
+  [
+    { id: "3", content: "third", createTime: "2026-04-30T12:03:00" },
+    { id: "4", content: "fourth", createTime: "2026-04-30T12:04:00" },
+  ],
+  [
+    { id: "1", content: "first", createTime: "2026-04-30T12:01:00" },
+    { id: "2", content: "second", createTime: "2026-04-30T12:02:00" },
+    { id: "3", content: "third duplicate", createTime: "2026-04-30T12:03:00" },
+  ]
+);
+
+assert.deepEqual(mergedMessages.map((item) => item.id), ["1", "2", "3", "4"]);
+assert.equal(mergedMessages[2].content, "third");

@@ -52,6 +52,17 @@
     </div>
     <div class="botoom">
       <div class="chat-content" ref="chatContent">
+        <div class="history-loader">
+          <button
+              v-if="historyHasMore"
+              class="history-button"
+              type="button"
+              :disabled="historyLoading"
+              @click="loadOlderMessages"
+          >{{ historyLoading ? "加载中..." : "加载更早消息" }}</button>
+          <span v-else-if="chatList.length" class="history-end">已到达最早消息</span>
+          <span v-if="historyError" class="history-error">{{ historyError }}</span>
+        </div>
         <div class="chat-wrapper" v-for="item in chatList" :key="item.id">
           <!-- 聊天内容 -->
           <div class="chat-friend" v-if="item.senderId != friendInfo[0]">
@@ -129,10 +140,10 @@
 </template>
 
 <script>
-import {ref, reactive, onMounted} from "vue";
+import {computed, nextTick, onMounted, onUnmounted, reactive, ref, watch} from "vue";
 import HeadPortrait from "@/components/ChatHome/Chat/HeadPortrait.vue";
 import FileCard from "@/components/ChatHome/Chat/FileCard.vue";
-import {getChatMessage} from "@/api/chat/index.ts";
+import {getChatMessagePage} from "@/api/chat/index.ts";
 import WebSocketService from "@/api/chat/config.ts"
 import {formatDateTime} from "@/utils/date.ts";
 import emojiList from "@/utils/emoji";
@@ -142,6 +153,7 @@ import {
   formatFileSize,
   getFileTypeByMime,
   getMessagePreview,
+  mergeOlderMessages,
   renderEmojiContent,
   shouldCompressUpload
 } from "@/components/ChatHome/chatModel";
@@ -183,19 +195,81 @@ export default {
     const isConnected = ref(false);
     const uploadFileInfo = ref(null);
     const connectionText = computed(() => isConnected.value ? "在线" : "离线");
+    const historyPage = ref(1);
+    const historyPageSize = 20;
+    const historyHasMore = ref(false);
+    const historyLoading = ref(false);
+    const historyError = ref("");
+
+    const normalizeHistoryResponse = (data) => {
+      return data?.records ? data : data?.data;
+    };
+
+    const normalizeHistoryMessage = (item) => ({
+      ...item,
+      id: item.id || item.messageId || `${item.senderId}-${item.createTime}-${item.content}`,
+      receiveId: item.receiveId || item.receiverId,
+      clientStatus: "sent",
+    });
+
+    const fetchHistoryPage = async (pageNum) => {
+      const {data} = await getChatMessagePage({
+        senderId: props.friendInfo[0],
+        receiveId: props.friendInfo[1],
+        pageNum,
+        pageSize: historyPageSize,
+      });
+      const page = normalizeHistoryResponse(data);
+      return {
+        records: (page?.records || []).map(normalizeHistoryMessage),
+        hasMore: Boolean(page?.hasMore),
+      };
+    };
 
     const getFriendChatMsg = async () => {
+      historyLoading.value = true;
+      historyError.value = "";
       try {
-        const {data} = await getChatMessage(props.friendInfo); // 调用接口获取数据
-        chatList.splice(0, chatList.length, ...data.map((item) => ({
-          ...item,
-          id: item.id || item.messageId || `${item.senderId}-${item.createTime}-${item.content}`,
-          clientStatus: "sent",
-        }))); // 更新 chatList 数据
+        historyPage.value = 1;
+        const page = await fetchHistoryPage(historyPage.value);
+        chatList.splice(0, chatList.length, ...page.records); // 更新 chatList 数据
+        historyHasMore.value = page.hasMore;
         srcImgList.splice(0, srcImgList.length); // 清空 srcImgList
         scrollBottom(); // 滚动到底部
       } catch (error) {
         console.error("Failed to fetch chat messages:", error);
+        historyError.value = "聊天记录加载失败";
+      } finally {
+        historyLoading.value = false;
+      }
+    };
+
+    const loadOlderMessages = async () => {
+      if (historyLoading.value || !historyHasMore.value) {
+        return;
+      }
+      const container = chatContent.value;
+      const previousScrollHeight = container?.scrollHeight || 0;
+      const previousScrollTop = container?.scrollTop || 0;
+      historyLoading.value = true;
+      historyError.value = "";
+      try {
+        const nextPage = historyPage.value + 1;
+        const page = await fetchHistoryPage(nextPage);
+        const mergedMessages = mergeOlderMessages(chatList, page.records);
+        chatList.splice(0, chatList.length, ...mergedMessages);
+        historyPage.value = nextPage;
+        historyHasMore.value = page.hasMore;
+        nextTick(() => {
+          if (chatContent.value) {
+            chatContent.value.scrollTop = chatContent.value.scrollHeight - previousScrollHeight + previousScrollTop;
+          }
+        });
+      } catch (error) {
+        console.error("Failed to fetch older chat messages:", error);
+        historyError.value = "更早消息加载失败";
+      } finally {
+        historyLoading.value = false;
       }
     };
 
@@ -386,7 +460,6 @@ export default {
       webSocketService.connect(onMessageReceived, (connected) => {
         isConnected.value = connected;
       });
-      getFriendChatMsg();
     });
 
     onUnmounted(() => {
@@ -399,6 +472,10 @@ export default {
       chatContent,
       srcImgList,
       connectionText,
+      historyHasMore,
+      historyLoading,
+      historyError,
+      loadOlderMessages,
       sendText,
       sendImg,
       sendFile,
@@ -539,6 +616,47 @@ export default {
 
       &::-webkit-scrollbar-track {
         background: transparent;
+      }
+
+      .history-loader {
+        min-height: 34px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin: -8px 0 14px;
+        color: rgba(221, 225, 218, 0.44);
+        font-size: 12px;
+
+        .history-button {
+          height: 28px;
+          padding: 0 14px;
+          border: 1px solid rgba(222, 229, 218, 0.12);
+          border-radius: 8px;
+          background: rgba(255, 255, 255, 0.045);
+          color: rgba(236, 235, 228, 0.78);
+          cursor: pointer;
+          transition: .2s ease;
+
+          &:hover:not(:disabled) {
+            background: rgba(195, 207, 190, 0.13);
+            border-color: rgba(222, 229, 218, 0.22);
+            color: #f2f0ea;
+          }
+
+          &:disabled {
+            cursor: default;
+            opacity: .55;
+          }
+        }
+
+        .history-end {
+          color: rgba(221, 225, 218, 0.34);
+        }
+
+        .history-error {
+          color: rgba(246, 143, 123, 0.86);
+        }
       }
 
       .chat-wrapper {

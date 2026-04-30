@@ -19,4 +19,36 @@
           AND receiver_id = #{send}
         order by create_time
     </select>
+
+    <select id="selectPageByCouple" resultType="com.ican.entity.Chat">
+        SELECT *
+        FROM (
+            SELECT *
+            FROM t_chat
+            WHERE sender_id = #{send}
+              AND receiver_id = #{receive}
+            UNION ALL
+            SELECT *
+            FROM t_chat
+            WHERE sender_id = #{receive}
+              AND receiver_id = #{send}
+        ) chat_records
+        ORDER BY create_time DESC
+        LIMIT #{pageSize} OFFSET #{offset}
+    </select>
+
+    <select id="countByCouple" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM (
+            SELECT id
+            FROM t_chat
+            WHERE sender_id = #{send}
+              AND receiver_id = #{receive}
+            UNION ALL
+            SELECT id
+            FROM t_chat
+            WHERE sender_id = #{receive}
+              AND receiver_id = #{send}
+        ) chat_records
+    </select>
 </mapper>
