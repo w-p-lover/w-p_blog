@@ -766,13 +766,21 @@ onMounted(() => {
 }
 
 .writing-board {
+  position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 300px;
-  align-items: start;
-  gap: 14px;
+  grid-template-columns: minmax(0, 1fr) 306px;
+  align-items: stretch;
+  gap: 0;
   max-width: none;
   min-height: 0;
   margin: 0 auto;
+  padding: 10px 0 10px 10px;
+  border: 1px solid rgba(126, 111, 88, 0.12);
+  border-radius: 10px;
+  background:
+      linear-gradient(90deg, rgba(255, 253, 248, 0.72), rgba(247, 241, 230, 0.48)),
+      rgba(255, 253, 248, 0.48);
+  box-shadow: 0 18px 46px rgba(77, 65, 48, 0.07);
 }
 
 .writing-main {
@@ -781,14 +789,14 @@ onMounted(() => {
   min-width: 0;
   min-height: 0;
   gap: 14px;
+  padding-right: 12px;
 }
 
 .title-card,
-.editor-shell,
-.publish-panel {
+.editor-shell {
   border: 1px solid var(--writer-line);
   background: rgba(255, 253, 248, 0.86);
-  box-shadow: 0 18px 45px rgba(77, 65, 48, 0.08);
+  box-shadow: 0 10px 28px rgba(77, 65, 48, 0.035);
 }
 
 .title-card {
@@ -983,11 +991,20 @@ onMounted(() => {
 }
 
 .publish-panel {
+  position: sticky;
+  top: 10px;
   display: flex;
   min-height: 0;
+  align-self: stretch;
   flex-direction: column;
   overflow: visible;
-  border-radius: 8px;
+  border: 0;
+  border-left: 1px solid rgba(126, 111, 88, 0.13);
+  border-radius: 0;
+  background:
+      linear-gradient(90deg, rgba(126, 111, 88, 0.05), transparent 24px),
+      linear-gradient(180deg, rgba(255, 253, 248, 0.18), rgba(247, 241, 230, 0.16));
+  box-shadow: none;
 }
 
 .panel-header {
@@ -995,31 +1012,32 @@ onMounted(() => {
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-  padding: 18px 18px 14px;
-  border-bottom: 1px solid var(--writer-line);
+  padding: 8px 14px 16px 20px;
+  border-bottom: 1px solid rgba(126, 111, 88, 0.1);
 }
 
 .panel-header h3 {
   margin: 2px 0 0;
   color: var(--writer-text);
-  font-size: 18px;
+  font-size: 16px;
 }
 
 .status-tag {
   border-color: rgba(95, 143, 134, 0.28);
+  background: rgba(255, 253, 248, 0.34);
   color: var(--writer-primary-deep);
 }
 
 .article-form {
   flex: 1;
   min-height: 0;
-  padding: 0 18px 18px;
+  padding: 0 14px 12px 20px;
   overflow: visible;
 }
 
 .panel-section {
   padding: 16px 0;
-  border-bottom: 1px solid rgba(126, 111, 88, 0.12);
+  border-bottom: 1px solid rgba(126, 111, 88, 0.1);
 }
 
 .panel-section:last-child {
@@ -1031,7 +1049,7 @@ onMounted(() => {
   align-items: center;
   gap: 7px;
   margin-bottom: 12px;
-  color: var(--writer-text);
+  color: rgba(64, 56, 46, 0.88);
   font-size: 14px;
   font-weight: 700;
 }
@@ -1064,11 +1082,12 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 156px;
+  height: 138px;
   overflow: hidden;
-  border-color: rgba(95, 143, 134, 0.28);
+  border-color: rgba(95, 143, 134, 0.22);
   border-radius: 8px;
-  background: rgba(247, 241, 230, 0.46);
+  background:
+      linear-gradient(135deg, rgba(255, 253, 248, 0.5), rgba(247, 241, 230, 0.36));
 }
 
 .cover-empty {
@@ -1087,7 +1106,7 @@ onMounted(() => {
 
 .preview-image {
   width: 100%;
-  height: 156px;
+  height: 138px;
   object-fit: cover;
 }
 
@@ -1112,8 +1131,8 @@ onMounted(() => {
 
 .add-btn {
   width: 100%;
-  border-color: rgba(95, 143, 134, 0.24);
-  background: rgba(255, 253, 248, 0.6);
+  border-color: rgba(95, 143, 134, 0.2);
+  background: rgba(255, 253, 248, 0.26);
   color: var(--writer-primary-deep);
 }
 
@@ -1133,9 +1152,9 @@ onMounted(() => {
   justify-content: space-between;
   min-height: 42px;
   padding: 0 12px;
-  border: 1px solid rgba(126, 111, 88, 0.13);
+  border: 1px solid rgba(126, 111, 88, 0.09);
   border-radius: 8px;
-  background: rgba(255, 253, 248, 0.58);
+  background: rgba(255, 253, 248, 0.24);
   color: var(--writer-muted);
   font-size: 13px;
   font-weight: 500;
@@ -1156,9 +1175,9 @@ onMounted(() => {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
-  padding: 14px 18px 18px;
-  border-top: 1px solid var(--writer-line);
-  background: rgba(255, 253, 248, 0.82);
+  padding: 14px 14px 2px 20px;
+  border-top: 1px solid rgba(126, 111, 88, 0.1);
+  background: transparent;
 }
 
 .panel-actions .draft-btn,
@@ -1255,10 +1274,40 @@ onMounted(() => {
     height: auto;
     min-height: 0;
     grid-template-columns: 1fr;
+    gap: 14px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .writing-main {
+    padding-right: 0;
   }
 
   .editor-shell {
     height: 860px;
+  }
+
+  .publish-panel {
+    position: static;
+    border: 1px solid var(--writer-line);
+    border-radius: 8px;
+    background: rgba(255, 253, 248, 0.76);
+    box-shadow: 0 18px 45px rgba(77, 65, 48, 0.06);
+  }
+
+  .panel-header,
+  .article-form,
+  .panel-actions {
+    padding-right: 18px;
+    padding-left: 18px;
+  }
+
+  .panel-actions {
+    padding-top: 14px;
+    padding-bottom: 18px;
+    background: rgba(255, 253, 248, 0.62);
   }
 }
 
