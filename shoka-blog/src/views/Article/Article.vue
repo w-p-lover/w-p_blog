@@ -1,42 +1,43 @@
 <template>
-  <div class="page-header" v-if="article">
-    <div class="page-title">
-      <h1 class="article-title">{{ article.articleTitle }}</h1>
-      <div class="article-meta">
-        <div class="first-meta">
-          <span><svg-icon icon-class="calendar" style="margin-right:0.15rem;"></svg-icon>
-            <span class="text">发表于 </span>{{ formatDate(article.createTime) }}
-          </span>
-          <span class="item" v-if="article.updateTime"><svg-icon icon-class="update"
-                                                                 style="margin-right:0.15rem;"></svg-icon>
-            <span class="text">更新于 </span>{{ formatDate(article.updateTime) }}
-          </span>
-          <span class="item"><svg-icon icon-class="eye" style="margin-right:0.15rem;"></svg-icon>
-            <span class="text">阅读量 </span>{{ article.viewCount }}</span>
-        </div>
-        <div class="second-meta">
-          <span><svg-icon icon-class="edit" size="0.9rem" style="margin-right:0.15rem;"></svg-icon>
-            <span class="text">字数统计 </span>{{ count(wordNum) }} 字
-          </span>
-          <span class="item"><svg-icon icon-class="clock" style="margin-right:0.15rem;"></svg-icon>
-            <span class="text">阅读时长 </span>{{ readTime }} 分钟
-          </span>
-          <span class="item">
-            <svg-icon icon-class="category" style="margin-right:0.15rem;"></svg-icon>{{
-              article.category.categoryName
-            }}
-          </span>
-        </div>
-      </div>
-    </div>
-    <img class="page-cover" :src="article.articleCover" alt="">
-    <!-- 波浪 -->
-    <Waves></Waves>
-  </div>
-  <div class="bg">
-    <div class="main-container" v-if="article">
+  <div class="bg article-page">
+    <div class="main-container article-layout" v-if="article">
       <div class="left-container" :class="app.sideFlag ? 'test' : ''">
         <div class="article-container">
+          <header class="article-head">
+            <h1 class="article-title">{{ article.articleTitle }}</h1>
+            <div class="article-byline">
+              <div class="author-block">
+                <img
+                    class="article-avatar"
+                    v-if="blog.blogInfo.siteConfig.authorAvatar"
+                    :src="blog.blogInfo.siteConfig.authorAvatar"
+                    alt=""
+                >
+                <span class="article-avatar article-avatar--text" v-else>{{ blog.blogInfo.siteConfig.siteAuthor?.slice(0, 1) || "博" }}</span>
+                <div class="author-copy">
+                  <span class="author-name">{{ blog.blogInfo.siteConfig.siteAuthor }}</span>
+                  <span class="publish-date">{{ formatDate(article.createTime) }}</span>
+                </div>
+              </div>
+              <div class="article-stats">
+                <span class="meta-item" v-if="article.updateTime"><svg-icon icon-class="update" size="0.85rem"></svg-icon>更新 {{ formatDate(article.updateTime) }}</span>
+                <span class="meta-item"><svg-icon icon-class="edit" size="0.85rem"></svg-icon>本文字数 {{ count(wordNum) }}</span>
+                <span class="meta-item"><svg-icon icon-class="clock" size="0.85rem"></svg-icon>阅读时间约为 {{ readTime }} 分钟</span>
+                <span class="meta-item"><svg-icon icon-class="eye" size="0.85rem"></svg-icon>浏览量 {{ article.views }}</span>
+              </div>
+            </div>
+            <div class="article-actions">
+              <button class="action-pill" :class="isLike(article.id)" @click="like">
+                <svg-icon icon-class="like" size="0.9rem"></svg-icon>
+                {{ article.likeCount }}
+              </button>
+              <span class="action-pill">
+                <svg-icon icon-class="category" size="0.9rem"></svg-icon>
+                {{ article.category.categoryName }}
+              </span>
+            </div>
+          </header>
+          <img class="article-cover-image" v-if="article.articleCover" :src="article.articleCover" alt="">
           <v-md-preview ref="articleRef" class="md" v-viewer :text="article.articleContent" :anchor-heading="{ enable: true }"></v-md-preview>
           <div class="article-post">
             <div class="tag-share">
@@ -130,7 +131,6 @@ import useStore from "@/store";
 import {formatDate} from "@/utils/date";
 import {Share} from 'vue3-social-share';
 import 'vue3-social-share/lib/index.css';
-import Waves from "@/components/Waves/index.vue";
 const {app, blog, user} = useStore();
 const articleRef = ref();
 const route = useRoute();
@@ -146,7 +146,7 @@ const data = reactive({
     articleTitle: "",
     articleContent: "",
     articleType: 0,
-    viewCount: 0,
+    views: 0,
     likeCount: 0,
     category: {} as CategoryVO,
     tagVOList: [],
@@ -204,31 +204,142 @@ onMounted(() => {
 @import "@/assets/styles/mixin.scss";
 
 .article-container {
-  border-radius: 0.5rem;
+  border: 1px solid var(--home-border);
+  border-radius: 0.65rem;
   overflow: hidden;
-  box-shadow: 0 0 1rem var(--box-bg-shadow);
+  background: var(--home-surface-strong);
+  box-shadow: var(--home-shadow), var(--home-glow);
 }
 
 .article-post {
-  margin: 0 2rem;
+  margin: 0 2.25rem 2rem;
+}
+
+.article-page {
+  min-height: 100vh;
+  padding-top: 5.2rem;
+}
+
+.article-layout {
+  align-items: flex-start;
+}
+
+.article-head {
+  padding: 2.35rem 2.45rem 1rem;
+  border-bottom: 1px solid var(--home-border);
+  background:
+      radial-gradient(circle at 8% 0, rgba(85, 162, 160, 0.08), transparent 18rem),
+      linear-gradient(180deg, #fffefa 0, #fdfbf7 100%);
 }
 
 .article-title {
-  font-weight: 500;
-  font-size: 2.5rem;
-  letter-spacing: 0.125rem;
-  text-align: center;
-  color: var(--header-text-color);
+  max-width: 48rem;
+  margin: 0 0 1.2rem;
+  font-weight: 800;
+  font-size: clamp(1.65rem, 2.8vw, 2.2rem);
+  letter-spacing: 0;
+  text-align: left;
+  color: #333;
+  line-height: 1.32;
 }
 
-.article-meta {
-  @include flex;
-  flex-direction: column;
-  font-size: 0.875rem;
+.article-byline {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.2rem;
+  color: var(--home-muted);
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
 
-  .item {
-    margin-left: 0.625rem;
+.author-block {
+  display: inline-flex;
+  align-items: center;
+  min-width: 12rem;
+  gap: 0.75rem;
+}
+
+.article-avatar {
+  @include flex;
+  width: 2.55rem;
+  height: 2.55rem;
+  border: 1px solid rgba(85, 162, 160, 0.35);
+  border-radius: 50%;
+  background: var(--home-accent-soft);
+  color: var(--home-accent);
+  font-weight: 800;
+  object-fit: cover;
+}
+
+.article-avatar--text {
+  flex-shrink: 0;
+}
+
+.author-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+}
+
+.author-name {
+  margin: 0;
+  color: var(--grey-7);
+  font-weight: 700;
+}
+
+.publish-date {
+  color: var(--home-muted);
+  font-size: 0.82rem;
+}
+
+.article-stats {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.8rem;
+  max-width: 36rem;
+
+  .meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: var(--home-muted);
+    white-space: nowrap;
   }
+}
+
+.article-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin-top: 1rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--home-border);
+}
+
+.action-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 1.9rem;
+  padding: 0 0.85rem;
+  border: 1px solid var(--home-border-strong);
+  border-radius: 999px;
+  color: var(--grey-6);
+  background: rgba(255, 255, 255, 0.42);
+  font: inherit;
+  font-size: 0.86rem;
+}
+
+.article-cover-image {
+  display: block;
+  max-width: min(34rem, calc(100% - 3rem));
+  max-height: 32rem;
+  margin: 2.2rem auto 1.2rem;
+  border-radius: 0.3rem;
+  object-fit: contain;
+  box-shadow: 0 8px 22px rgba(89, 78, 56, 0.12);
 }
 
 .tag-share {
@@ -246,19 +357,19 @@ onMounted(() => {
   text-align: center;
 
   .btn {
-    border-radius: 0.3125rem;
+    border-radius: 999px;
     color: var(--grey-0);
     cursor: pointer !important;
-    padding: 0 0.9375rem;
+    padding: 0.12rem 0.9375rem;
     font: inherit;
   }
 
   .like-btn-active {
-    background: var(--primary-color);
+    background: var(--home-accent-warm);
   }
 
   .like-btn {
-    background: #999;
+    background: var(--home-accent);
   }
 
   .reward-btn {
@@ -295,7 +406,8 @@ onMounted(() => {
   font-size: 0.75em;
   padding: 1rem 2rem;
   margin-bottom: 2.5rem;
-  border-radius: 0.625rem;
+  border: 1px solid var(--home-border);
+  border-radius: 0.55rem;
   background: var(--grey-2);
   color: var(--grey-6);
 }
@@ -303,8 +415,9 @@ onMounted(() => {
 .post-nav {
   display: flex;
   margin-bottom: 2.5rem;
-  border-radius: 0.625rem;
+  border-radius: 0.55rem;
   overflow: hidden;
+  border: 1px solid var(--home-border);
 
   .item {
     width: 50%;
@@ -342,16 +455,36 @@ onMounted(() => {
 }
 
 @media (max-width: 767px) {
-  .article-title {
-    font-size: 1.5rem;
+  .article-page {
+    padding-top: 4.3rem;
   }
 
-  .article-meta .text {
-    display: none;
+  .article-head {
+    padding: 1.35rem 1rem 0.85rem;
+  }
+
+  .article-title {
+    font-size: 1.45rem;
+  }
+
+  .article-byline {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  .article-stats {
+    justify-content: flex-start;
+    gap: 0.35rem 0.65rem;
   }
 
   .article-post {
-    margin: 0 0.5rem;
+    margin: 0 0.85rem 1.5rem;
+  }
+
+  .article-cover-image {
+    max-width: calc(100% - 1.5rem);
+    margin-top: 1.2rem;
   }
 
   .post-nav {

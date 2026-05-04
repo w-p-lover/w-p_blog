@@ -52,9 +52,12 @@ watch(y, (newValue, oldValue) => {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  height: 3.125rem;
-  padding: 0 1rem;
-  text-shadow: 0 0.2rem 0.3rem rgb(0 0 0 / 50%);
+  height: 3.75rem;
+  padding: 0 1.9rem;
+  border-bottom: 1px solid rgba(227, 223, 212, 0.72);
+  background: rgba(253, 251, 247, 0.88);
+  backdrop-filter: blur(12px);
+  text-shadow: none;
   color: var(--header-text-color);
   transition: all 0.2s ease-in-out 0s;
   z-index: 9;
@@ -62,8 +65,8 @@ watch(y, (newValue, oldValue) => {
 
 .show {
   background: var(--nav-bg);
-  box-shadow: 0.1rem 0.1rem 0.2rem var(--grey-9-a1);
-  text-shadow: 0 0 0.625rem var(--grey-9-a1);
+  box-shadow: 0 8px 24px rgba(89, 78, 56, 0.07);
+  text-shadow: none;
   color: var(--text-color);
 }
 
@@ -83,7 +86,12 @@ watch(y, (newValue, oldValue) => {
 
   .item {
     padding: 0.625rem 0.5rem;
+    color: var(--grey-6);
+    transition: color 0.2s ease;
 
+    &:hover {
+      color: var(--home-accent);
+    }
   }
 }
 

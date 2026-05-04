@@ -3,9 +3,16 @@
           navigation mousewheel :autoplay="{ delay: 5000, disableOnInteraction: false, }"
           :pagination="{ clickable: true }">
     <swiper-slide v-for="article in articleList" :key="article.id">
-      <div class="slide-content" :style="articleCover(article.articleCover)">
-        <router-link :to="`/article/${article.id}`" class="slide-title">{{ article.articleTitle }}</router-link>
-        <span class="slide-time">发布时间：{{ formatDate(article.createTime) }}</span>
+      <div class="slide-content">
+        <div class="recommend-badge">荐</div>
+        <div class="slide-copy">
+          <span class="slide-kicker">推荐阅读</span>
+          <router-link :to="`/article/${article.id}`" class="slide-title">{{ article.articleTitle }}</router-link>
+          <span class="slide-time">{{ formatDate(article.createTime) }}</span>
+        </div>
+        <router-link :to="`/article/${article.id}`" class="slide-thumb">
+          <img :src="article.articleCover" alt="">
+        </router-link>
       </div>
     </swiper-slide>
   </swiper>
@@ -20,7 +27,6 @@ import {Swiper, SwiperSlide} from 'swiper/vue';
 // 自定义模块
 const modules = [Pagination, Navigation, Mousewheel, Autoplay];
 const articleList = ref<ArticleRecommend[]>([]);
-const articleCover = computed(() => (cover: string) => 'background:url(' + cover + ')');
 onMounted(() => {
   getArticleRecommend().then(({data}) => {
     articleList.value = data.data;
@@ -32,72 +38,103 @@ onMounted(() => {
 @import "@/assets/styles/mixin.scss";
 
 .swiper-container {
-  height: 13.25rem;
-  margin: 0 0.5rem;
-  border-radius: 0.85rem;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  height: 6.4rem;
+  border-radius: 0.65rem;
   border: 1px solid var(--home-border);
-  box-shadow: var(--home-shadow), var(--home-glow);
+  border-left: 4px solid rgba(200, 85, 64, 0.58);
+  background:
+    linear-gradient(90deg, rgba(255, 254, 250, 0.98), rgba(250, 248, 242, 0.9));
+  box-shadow: 0 7px 18px rgba(89, 78, 56, 0.055), var(--home-glow);
   overflow: hidden;
-
-  &::before {
-    content: '推荐';
-    position: absolute;
-    z-index: 2;
-    top: 0.65rem;
-    left: 0.75rem;
-    display: flex;
-    justify-content: center;
-    min-width: 3.7rem;
-    padding: 0.1rem 0.6rem;
-    border-radius: 99px;
-    color: var(--grey-0);
-    background: rgba(233, 113, 146, 0.86);
-    font-size: 0.82rem;
-    line-height: 1.5;
-    box-shadow: 0 8px 16px rgba(210, 113, 146, 0.22);
-  }
 }
 
 .slide-content {
-  @include flex;
-  flex-direction: column;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
   width: 100%;
   height: 100%;
-  padding: 0 3.125rem 1.25rem;
-  background-position: center !important;
-  background-size: cover !important;
-
-  .slide-title {
-    font-size: clamp(1.35rem, 2.6vw, 1.8rem);
-    font-weight: 700;
-    text-shadow: 0 8px 20px rgba(5, 10, 20, 0.34);
-  }
-
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background:
-      linear-gradient(145deg, rgba(6, 12, 26, 0.46), rgba(8, 14, 28, 0.2) 48%, rgba(5, 10, 19, 0.46));
-  }
+  padding: 0.85rem 3.25rem 0.85rem 1rem;
 }
 
-.slide-title,
+.recommend-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 2.15rem;
+  width: 2.15rem;
+  height: 2.15rem;
+  border: 1px solid rgba(200, 85, 64, 0.22);
+  border-radius: 50%;
+  background: rgba(200, 85, 64, 0.09);
+  color: var(--home-accent-warm);
+  font-weight: 800;
+  line-height: 1;
+}
+
+.slide-copy {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.slide-kicker {
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: 0.15rem;
+  color: var(--home-accent-warm);
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.slide-title {
+  display: block;
+  max-width: min(100%, 34rem);
+  overflow: hidden;
+  color: var(--home-title);
+  font-size: clamp(1rem, 1.6vw, 1.16rem);
+  font-weight: 800;
+  line-height: 1.42;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .slide-time {
-  text-align: center;
-  line-height: 1.5;
-  margin: 0.125rem 0;
-  color: var(--grey-0);
-  z-index: 1;
+  margin-top: 0.12rem;
+  color: var(--home-muted);
+  font-size: 0.82rem;
+}
+
+.slide-thumb {
+  display: block;
+  flex: 0 0 4.6rem;
+  width: 4.6rem;
+  height: 3.2rem;
+  border: 1px solid var(--home-border);
+  border-radius: 0.42rem;
+  overflow: hidden;
+  background: var(--grey-2);
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 }
 
 :deep(.swiper-pagination) .swiper-pagination-bullet {
-  display: inline-block;
-  width: 0.55rem;
-  height: 0.55rem;
+  width: 0.42rem;
+  height: 0.42rem;
   margin: 0 0.22rem;
   border-radius: 6.1875rem;
-  background: rgba(255, 255, 255, 0.88);
+  background: rgba(85, 162, 160, 0.38);
   opacity: 0.72;
   transition: all 0.3s;
 }
@@ -105,25 +142,54 @@ onMounted(() => {
 :deep(.swiper-pagination) .swiper-pagination-bullet.swiper-pagination-bullet-active {
   opacity: 1;
   background-color: var(--home-accent-cool);
-  width: 1.55rem;
+  width: 1.15rem;
 }
 
 :deep(.swiper-button-next),
 :deep(.swiper-button-prev) {
-  width: 2.5rem;
-  height: 2.5rem;
-  color: rgba(255, 255, 255, 0.86);
+  width: 1.85rem;
+  height: 1.85rem;
+  color: var(--home-accent);
   transition: all 0.3s;
 }
 
 :deep(.swiper-button-next):after,
 :deep(.swiper-button-prev):after {
-  font-size: 1.5rem !important;
+  font-size: 1rem !important;
 }
 
 :deep(.swiper-button-next):hover,
 :deep(.swiper-button-prev):hover {
-  background: rgba(255, 255, 255, .3);
+  background: var(--home-accent-soft);
   border-radius: 100%;
+}
+
+@media (max-width: 767px) {
+  .swiper-container {
+    height: 6.7rem;
+  }
+
+  .slide-content {
+    gap: 0.65rem;
+    padding: 0.75rem 2.45rem 0.8rem 0.8rem;
+  }
+
+  .slide-title {
+    font-size: 0.95rem;
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .recommend-badge {
+    display: none;
+  }
+
+  .slide-thumb {
+    flex-basis: 3.8rem;
+    width: 3.8rem;
+    height: 3rem;
+  }
 }
 </style>

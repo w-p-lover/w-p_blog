@@ -1,14 +1,8 @@
 <template>
-  <!--背景轮播-->
-  <Images></Images>
-  <!-- 品牌 -->
-  <Brand></Brand>
   <div class="bg home-bg">
     <div class="main-container home-main mt">
       <div class="left-container home-feed" :class="app.sideFlag ? 'test' : ''">
-        <!-- 说说 -->
-        <TalkSwiper></TalkSwiper>
-        <!-- 推荐文章 -->
+        <Images></Images>
         <Recommend></Recommend>
         <!-- 文章列表 -->
         <ArticleItem></ArticleItem>
@@ -21,17 +15,15 @@
 <script setup lang="ts">
 import useStore from "@/store";
 import ArticleItem from "@/views/Article/ArticleItem.vue";
-import Brand from "./Brand/index.vue";
 import Images from "./Swiper/Images.vue";
 import Recommend from "./Swiper/Recommend.vue";
-import TalkSwiper from "./Swiper/TalkSwiper.vue";
 
 const {app} = useStore();
 </script>
 
 <style lang="scss" scoped>
 .mt {
-  margin-top: 1.15rem;
+  padding-top: 5.3rem;
   padding-bottom: 2.5rem;
 }
 
@@ -39,5 +31,6 @@ const {app} = useStore();
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  min-width: 0;
 }
 </style>

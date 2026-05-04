@@ -85,7 +85,7 @@ export interface ArticleInfo {
     /**
      * 浏览量
      */
-    viewCount: number;
+    views: number;
     /**
      * 点赞量
      */

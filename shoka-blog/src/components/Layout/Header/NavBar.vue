@@ -88,22 +88,14 @@ const logout = () => {
 .menu-item {
   position: relative;
   display: inline-block;
-  padding: 0 0.625rem;
-  letter-spacing: 0.0625rem;
-  font-size: 17px;
+  padding: 0 0.35rem;
+  letter-spacing: 0;
+  font-size: 0.95rem;
   text-align: center;
+  color: var(--grey-7);
 
   &:not(.title) .menu-btn::before {
-    content: "";
-    position: absolute;
-    width: 0;
-    height: 0.1875rem;
-    bottom: 0;
-    border-radius: 0.125rem;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: currentColor;
-    transition: all 0.4s ease-in-out 0s;
+    content: none;
   }
 
   &:hover .submenu {
@@ -111,9 +103,32 @@ const logout = () => {
   }
 }
 
+.menu-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-height: 2.25rem;
+  padding: 0 0.68rem;
+  border-radius: 999px;
+  transition: color 0.2s ease, background 0.2s ease;
+}
+
+.title .menu-btn {
+  padding-left: 0;
+  color: var(--grey-8);
+  font-size: 1.18rem;
+  font-weight: 700;
+}
+
+.menu-item:not(.title):hover .menu-btn,
+.menu-item.active:not(.dropdown) .menu-btn {
+  color: var(--home-accent);
+  background: var(--home-accent-soft);
+}
+
 .menu-item.active:not(.dropdown) .menu-btn::before,
 .menu-item:not(.dropdown):hover .menu-btn::before {
-  width: 70%;
+  width: 0;
 }
 
 .submenu {
@@ -122,10 +137,11 @@ const logout = () => {
   left: 7px;
   width: max-content;
   margin-top: 0.5rem;
-  padding: 0;
-  background: var(--grey-9-a5);
-  box-shadow: 0 0.3125rem 1.25rem -0.25rem var(--grey-9-a1);
-  border-radius: 0.625rem 0;
+  padding: 0.35rem;
+  border: 1px solid var(--home-border);
+  background: var(--home-surface-strong);
+  box-shadow: var(--home-shadow);
+  border-radius: 0.65rem;
   animation: slideUpIn 0.3s;
 
   &::before {
@@ -151,10 +167,13 @@ const logout = () => {
   }
 
   .link {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
     padding: 0.3rem 0.7rem;
     width: 100%;
     text-shadow: none;
+    border-radius: 0.45rem;
   }
 
   &:hover .link {
@@ -165,8 +184,8 @@ const logout = () => {
 .submenu .subitem.active,
 .submenu .subitem:hover {
   color: var(--grey-0);
-  background-image: linear-gradient(to right, var(--color-pink) 0, var(--color-orange) 100%);
-  box-shadow: 0 0 0.75rem var(--color-pink-a3);
+  background: var(--home-accent);
+  box-shadow: none;
 }
 
 .sub.menu .submenu {

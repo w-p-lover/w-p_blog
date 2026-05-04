@@ -214,4 +214,20 @@ onBeforeUnmount(() => {
     inset 0 1px 0 rgba(255, 252, 246, 0.8);
   border-color: rgba(196, 151, 92, 0.74);
 }
+
+@media (max-width: 768px) {
+  #live2d-canvas,
+  #live2d-toolbox,
+  .live2d-toolbox,
+  .__live2d-toolbox-item,
+  .__live2d-toolbox-item.button-item,
+  .__live2d-toolbox-item.expression-item,
+  #live2dMessageBox {
+    display: none !important;
+  }
+
+  body > div[style*="right: 265px"][style*="z-index: 10000"] {
+    display: none !important;
+  }
+}
 </style>

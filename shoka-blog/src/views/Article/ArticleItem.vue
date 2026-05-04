@@ -27,8 +27,8 @@
         size="large"
         class="selectWidth"
         @change="filterByTag"
-    >
-      <el-option
+      >
+        <el-option
           v-for="tag in tagList"
           :key="tag.id"
           :label="tag.tagName"
@@ -51,11 +51,13 @@
 
   <div
       class="article-item"
-      :class="{ 'article-item--reverse': index % 2 === 1 }"
       v-animate="['slideUpBigIn']"
       v-for="(article, index) of articleList"
       :key="article.id"
   >
+    <div class="article-mark">
+      <svg-icon icon-class="qizhi" size="1.25rem"></svg-icon>
+    </div>
     <!-- 文章缩略图 -->
     <div class="article-cover">
       <router-link :to="`/article/${article.id}`" href="">
@@ -75,7 +77,7 @@
           }}
         </span>
         <!-- 文章标签 -->
-        <router-link class="meta-item ml" :to="`/tag/${tag.id}`" v-for="tag in article.tagVOList" :key="tag.id">
+        <router-link class="meta-item ml" :to="`/tag/${tag.id}`" v-for="tag in article.tagVOList.slice(0, 2)" :key="tag.id">
           <svg-icon icon-class="tag" size="0.9rem" style="margin-right: 0.15rem"></svg-icon>
           {{ tag.tagName }}
         </router-link>
@@ -88,16 +90,18 @@
       </h3>
       <!-- 文章内容 -->
         <div class="article-content" v-html="renderMarkdown(article.articleContent)"></div>
-      <!-- 文章分类 -->
-      <div class="article-category">
-        <svg-icon icon-class="qizhi" size="0.85rem" style="margin-right: 0.15rem"></svg-icon>
-        <router-link :to="`/category/${article.category.id}`">{{
-            article.category.categoryName
-          }}
-        </router-link>
+      <div class="article-footer">
+        <!-- 文章分类 -->
+        <div class="article-category">
+          <svg-icon icon-class="qizhi" size="0.85rem" style="margin-right: 0.15rem"></svg-icon>
+          <router-link :to="`/category/${article.category.id}`">{{
+              article.category.categoryName
+            }}
+          </router-link>
+        </div>
+        <!-- 阅读按钮 -->
+        <router-link class="article-btn" :to="`/article/${article.id}`">阅读全文</router-link>
       </div>
-      <!-- 阅读按钮 -->
-      <router-link class="article-btn" :to="`/article/${article.id}`">阅读全文</router-link>
     </div>
   </div>
   <Pagination v-if="count > 5" v-model:current="queryParams.current" :total="Math.ceil(count / 5)"></Pagination>
@@ -205,12 +209,12 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  margin: 0 0.5rem 0.25rem;
+  margin: 0 0 0.25rem;
   padding: 0.72rem;
   border: 1px solid var(--home-border);
-  border-radius: 0.85rem;
-  background: linear-gradient(180deg, var(--home-surface-strong), var(--home-surface));
-  box-shadow: 0 10px 24px rgba(22, 35, 66, 0.08), var(--home-glow);
+  border-radius: 0.65rem;
+  background: var(--home-surface-strong);
+  box-shadow: var(--home-shadow), var(--home-glow);
 }
 
 .sortList {
@@ -226,8 +230,8 @@ onMounted(() => {
   gap: 0.35rem;
   min-height: 2.5rem;
   padding: 0 0.9rem;
-  border: 1px solid transparent;
-  border-radius: 0.65rem;
+  border: 1px solid var(--home-border);
+  border-radius: 999px;
   background: var(--home-surface-muted);
   color: var(--home-muted);
   cursor: pointer;
@@ -235,14 +239,14 @@ onMounted(() => {
 
   &.active {
     color: var(--home-accent);
-    border-color: rgba(233, 113, 146, 0.34);
+    border-color: var(--home-border-strong);
     background: var(--home-accent-soft);
   }
 
   &:hover {
     transform: translateY(-1px);
     color: var(--home-accent);
-    border-color: rgba(233, 113, 146, 0.28);
+    border-color: var(--home-border-strong);
   }
 }
 
@@ -264,12 +268,15 @@ onMounted(() => {
 }
 
 .article-item {
+  position: relative;
   display: flex;
-  min-height: 15rem;
-  margin: 0.25rem 0.5rem 0;
-  border-radius: 0.95rem;
+  min-height: 10.2rem;
+  margin: 0.25rem 0 0;
+  padding: 1.25rem 1.05rem 1.05rem 1.45rem;
+  border-radius: 0.65rem;
   border: 1px solid var(--home-border);
-  background: linear-gradient(180deg, var(--home-surface-strong), var(--home-surface));
+  border-left: 4px solid rgba(85, 162, 160, 0.6);
+  background: var(--home-surface-strong);
   box-shadow: var(--home-shadow), var(--home-glow);
   animation-duration: 0.5s;
   transition: transform 0.24s ease, box-shadow 0.24s ease, border-color 0.24s ease;
@@ -277,53 +284,33 @@ onMounted(() => {
   visibility: hidden;
 
   &:hover {
-    transform: translateY(-3px);
+    transform: translateY(-2px);
     border-color: var(--home-border-strong);
+    border-left-color: var(--home-accent);
     box-shadow: var(--home-shadow-hover), var(--home-glow);
 
     .cover {
-      transform: scale(1.045);
-    }
-  }
-
-  &.article-item--reverse {
-    flex-direction: row-reverse;
-
-    .article-cover {
-      margin-right: auto;
-      margin-left: 1.15rem;
-      -webkit-clip-path: polygon(4% 0, 100% 0, 100% 100%, 0 100%);
-      clip-path: polygon(4% 0, 100% 0, 100% 100%, 0 100%);
-      border-radius: 0 0.95rem 0.95rem 0;
-    }
-
-    .article-info {
-      padding: 1.15rem 0 3.15rem 1.35rem;
-
-      .article-meta {
-        justify-content: flex-start;
-      }
-    }
-
-    .article-btn {
-      left: 1.35rem;
-      right: auto;
-    }
-
-    .article-category {
-      right: 1.35rem;
-      justify-content: flex-start;
+      transform: scale(1.035);
     }
   }
 }
 
+.article-mark {
+  flex: 0 0 2.2rem;
+  padding-top: 1rem;
+  color: var(--home-accent-warm);
+}
+
 .article-cover {
-  width: 48%;
-  margin-right: 1.15rem;
-  -webkit-clip-path: polygon(0 0, 96% 0, 100% 100%, 0 100%);
-  clip-path: polygon(0 0, 96% 0, 100% 100%, 0 100%);
-  border-radius: 0.95rem 0 0 0.95rem;
+  order: 3;
+  flex: 0 0 10.8rem;
+  height: 6.7rem;
+  align-self: center;
+  margin-left: 1rem;
+  border: 1px solid var(--home-border);
+  border-radius: 0.45rem;
   overflow: hidden;
+  background: var(--grey-2);
 
   .cover {
     width: 100%;
@@ -335,14 +322,17 @@ onMounted(() => {
 
 .article-info {
   position: relative;
-  width: 52%;
-  padding: 1.15rem 1.35rem 3.15rem 0;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
 
   .article-meta {
     display: flex;
-    justify-content: flex-end;
+    justify-content: flex-start;
     flex-wrap: wrap;
-    gap: 0.35rem 0.55rem;
+    gap: 0.35rem 0.7rem;
     font-size: 0.78rem;
     line-height: 1.4;
     color: var(--home-muted);
@@ -350,6 +340,7 @@ onMounted(() => {
 
   .top {
     color: var(--home-accent-warm);
+    font-weight: 700;
   }
 
   .meta-item {
@@ -362,47 +353,86 @@ onMounted(() => {
   }
 
   .article-title {
-    margin: 0.7rem 0 0.45rem;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    margin: 0.5rem 0 0.4rem;
     color: var(--home-title);
-    font-size: clamp(1.15rem, 2vw, 1.45rem);
+    font-size: clamp(1.2rem, 2vw, 1.55rem);
     line-height: 1.45;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
+
+    a {
+      color: inherit;
+    }
+
+    &:hover {
+      color: var(--home-accent-cool);
+    }
   }
 
   .article-content {
     display: -webkit-box;
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
-    max-height: 5.3rem;
+    -webkit-line-clamp: 2;
+    max-height: 3.5rem;
     font-family: Mulish, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
-    font-size: 0.9rem;
-    line-height: 1.7;
+    font-size: 0.95rem;
+    line-height: 1.75;
     color: var(--home-muted);
     overflow: hidden;
 
     :deep(p) {
+      display: inline;
       margin: 0;
+    }
+
+    :deep(h1),
+    :deep(h2),
+    :deep(h3),
+    :deep(h4),
+    :deep(h5),
+    :deep(h6),
+    :deep(blockquote),
+    :deep(ul),
+    :deep(ol),
+    :deep(pre) {
+      display: inline;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+    }
+
+    :deep(img) {
+      display: none;
     }
   }
 }
 
 .article-category {
-  position: absolute;
   display: flex;
   align-items: center;
-  bottom: 1rem;
   font-size: 0.8rem;
   color: var(--home-muted);
 }
 
+.article-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  margin-top: auto;
+  padding-top: 0.9rem;
+}
+
 .article-btn {
-  position: absolute;
-  right: 1.35rem;
-  bottom: 0.85rem;
-  padding: 0.24rem 0.8rem;
-  border: 1px solid rgba(233, 113, 146, 0.32);
+  flex-shrink: 0;
+  padding: 0.18rem 0.7rem;
+  border: 1px solid var(--home-border-strong);
   border-radius: 99px;
   color: var(--home-accent);
   font-size: 0.82rem;
@@ -414,7 +444,7 @@ onMounted(() => {
   .article-toolbar {
     align-items: stretch;
     flex-direction: column;
-    margin: 0 0.5rem 0.25rem;
+    margin: 0 0 0.25rem;
   }
 
   .sortList {
@@ -439,20 +469,21 @@ onMounted(() => {
   .article-item {
     flex-direction: column;
     min-height: 0;
+    padding: 1rem;
 
     .article-cover {
+      order: 0;
       width: 100%;
-      height: 13.5rem;
-      margin: 0;
-      -webkit-clip-path: polygon(0 0, 100% 0, 100% 96%, 0 100%);
-      clip-path: polygon(0 0, 100% 0, 100% 96%, 0 100%);
-      border-radius: 0.95rem 0.95rem 0 0;
+      height: 9.3rem;
+      flex: none;
+      margin: 0 0 0.75rem;
+      border-radius: 0.45rem;
     }
 
     .article-info {
       width: 100%;
-      min-height: 13rem;
-      padding: 0.95rem 1rem 3.4rem;
+      min-height: 0;
+      padding: 0;
 
       .article-meta {
         justify-content: flex-start;
@@ -460,40 +491,16 @@ onMounted(() => {
     }
 
     .article-category {
-      left: 1rem;
-      right: auto;
+      min-width: 0;
     }
 
-    .article-btn {
-      right: 1rem;
-      left: auto;
+    .article-footer {
+      padding-top: 0.85rem;
     }
+  }
 
-    &.article-item--reverse {
-      flex-direction: column;
-
-      .article-cover {
-        width: 100%;
-        margin: 0;
-        -webkit-clip-path: polygon(0 0, 100% 0, 100% 100%, 0 96%);
-        clip-path: polygon(0 0, 100% 0, 100% 100%, 0 96%);
-        border-radius: 0.95rem 0.95rem 0 0;
-      }
-
-      .article-info {
-        padding: 0.95rem 1rem 3.4rem;
-      }
-
-      .article-category {
-        left: 1rem;
-        right: auto;
-      }
-
-      .article-btn {
-        right: 1rem;
-        left: auto;
-      }
-    }
+  .article-mark {
+    display: none;
   }
 }
 </style>
