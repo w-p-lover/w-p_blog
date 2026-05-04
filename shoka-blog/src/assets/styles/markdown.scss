@@ -14,6 +14,12 @@
   font-family: Mulish, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
   overflow-wrap: break-word;
   word-wrap: break-word;
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 1.2rem 2.35rem 0 !important;
+  color: #333;
+  font-size: 1rem;
+  line-height: 2.05;
 }
 
 .md .links:last-child,
@@ -28,7 +34,7 @@
 }
 
 .md p {
-  margin: 0 0 0.8rem;
+  margin: 0 0 1.15rem;
 }
 
 .md a {
@@ -36,17 +42,18 @@
 }
 
 .md a:hover {
-  color: var(--color-blue) !important;
+  color: var(--home-accent-warm) !important;
 }
 
 .md blockquote {
-  padding: 10px 1rem !important;
+  padding: 0.85rem 1rem !important;
   font-size: 90% !important;
-  border-left: 0.2rem solid var(--grey-4) !important;
+  border: 1px solid var(--home-border) !important;
+  border-left: 0.22rem solid var(--primary-color) !important;
   border-left-color: var(--primary-color) !important;
-  border-radius: 0.1875rem;
-  background-color: var(--grey-2) !important;
-  color: var(--grey-5) !important;
+  border-radius: 0.45rem;
+  background-color: #faf8f2 !important;
+  color: var(--grey-6) !important;
   word-wrap: break-word;
 }
 
@@ -68,7 +75,7 @@
 .md dl,
 .md ol,
 .md ul {
-  margin: 0 0 0.8em;
+  margin: 0 0 1em;
   padding: 0.1em 0.2em 0.1em 1.4em;
 }
 
@@ -89,13 +96,13 @@
   top: 0.4em;
   left: -1.8em;
   background: var(--primary-color);
-  color: var(--grey-1);
+  color: #fff;
   cursor: pointer;
 }
 
 .md ol > li:hover::before {
   color: var(--grey-1);
-  background: var(--color-pink);
+  background: var(--home-accent-warm);
 }
 
 .md li ul > li::before {
@@ -143,7 +150,7 @@ dt {
 
 .md dl dt:hover::before,
 .md ul > li:hover::before {
-  background: var(--color-pink);
+  background: var(--home-accent-warm);
 }
 
 .md dl dt::before,
@@ -191,10 +198,10 @@ dt {
 
 // code样式
 :not(pre) > code {
-  color: var(--primary-color) !important;
+  color: var(--home-accent-warm) !important;
   border-radius: 0.3rem !important;
-  border: 0.0625rem solid rgba(0, 0, 0, .1);
-  background-color: var(--grey-0) !important;
+  border: 0.0625rem solid var(--home-border);
+  background-color: #faf8f2 !important;
   padding: 0.2rem 0.3rem !important;
   word-wrap: break-word;
 }
@@ -207,7 +214,7 @@ dt {
   background: #282c34;
   margin-bottom: 1rem !important;
   padding: 3rem 1.5rem 1rem !important;
-  border-radius: 5px !important;
+  border-radius: 0.55rem !important;
   overflow: auto;
 }
 
@@ -267,14 +274,46 @@ dt {
 
 .md hr {
   margin: 20px auto;
-  border: 2px dashed var(--primary-color) !important;
+  border: 0;
+  border-top: 1px dashed var(--home-border-strong) !important;
 }
 
 .vuepress-markdown-body {
   color: var(--text-color) !important;
-  background: var(--grey-0) !important;
+  background: transparent !important;
 }
 
 .vuepress-markdown-body tr:nth-child(2n) {
   background-color: var(--grey-2) !important;
+}
+
+.md h1,
+.md h2,
+.md h3,
+.md h4,
+.md h5,
+.md h6 {
+  color: #333;
+  letter-spacing: 0;
+}
+
+.md h2,
+.md h3 {
+  padding-bottom: 0.25rem;
+  border-bottom: 1px solid var(--home-border);
+}
+
+.md img {
+  display: block;
+  max-width: 100%;
+  margin: 1.5rem auto;
+  border-radius: 0.35rem;
+  box-shadow: 0 8px 22px rgba(89, 78, 56, 0.1);
+}
+
+@media (max-width: 767px) {
+  .md {
+    padding: 0.8rem 0.85rem 0 !important;
+    font-size: 0.96rem;
+  }
 }

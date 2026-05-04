@@ -175,6 +175,15 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
+.catalog-header {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.65rem;
+  color: var(--home-accent-warm);
+  font-weight: 700;
+}
+
 .catalog-content {
   max-height: calc(100vh - 100px);
   overflow: auto;
@@ -183,11 +192,13 @@ onMounted(() => {
 }
 
 .catalog-item {
-  margin: 5px 0;
+  margin: 0.2rem 0;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
   font-size: 14px;
-  padding: 2px 6px;
+  padding: 0.24rem 0.4rem;
+  border-radius: 0.35rem;
+  color: var(--grey-6);
   overflow: hidden;
   text-overflow: ellipsis;
 
@@ -197,12 +208,13 @@ onMounted(() => {
 }
 
 .active {
-  background-color: var(--primary-color);
-  color: var(--grey-0);
+  background-color: var(--home-accent-soft);
+  color: var(--home-accent);
+  font-weight: 700;
 
   &:hover {
-    background-color: var(--color-blue);
-    color: var(--grey-0);
+    background-color: var(--home-accent-soft);
+    color: var(--home-accent);
   }
 }
 </style>
