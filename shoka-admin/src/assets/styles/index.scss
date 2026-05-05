@@ -8,6 +8,7 @@ body {
   height: 100%;
   padding: 0;
   margin: 0;
+  background: var(--writer-paper-deep);
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -137,14 +138,23 @@ div:focus {
 
 // 自定义全局CSS变量
 :root {
-  --menuBg: #304156;
-  --menuText: #bfcbd9;
-  --menuActiveText: #409eff;
-  --menuHover: #263445;
+  --writer-paper: #fffdf8;
+  --writer-paper-deep: #f7f1e6;
+  --writer-line: rgba(126, 111, 88, 0.18);
+  --writer-text: #40382e;
+  --writer-muted: #8b7c69;
+  --writer-primary: #5f8f86;
+  --writer-primary-deep: #42766e;
+  --writer-accent: #ba6a58;
 
-  --subMenuBg: #1f2d3d;
-  --subMenuActiveText: #f4f4f5;
-  --subMenuHover: #001528;
+  --menuBg: #4e655d;
+  --menuText: rgba(255, 253, 248, 0.76);
+  --menuActiveText: #fffaf0;
+  --menuHover: rgba(255, 250, 240, 0.12);
+
+  --subMenuBg: #465b53;
+  --subMenuActiveText: #fffdf8;
+  --subMenuHover: rgba(255, 250, 240, 0.14);
   --talkBg: #f0f1f4;
 }
 

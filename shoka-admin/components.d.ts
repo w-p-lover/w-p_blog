@@ -14,6 +14,7 @@ declare module '@vue/runtime-core' {
     Echarts: typeof import('./src/components/Echarts/index.vue')['default']
     Edit: typeof import('./src/components/Edit/index.vue')['default']
     Editor: typeof import('./src/components/Editor/index.vue')['default']
+    ElAlert: typeof import('element-plus/es')['ElAlert']
     ElAutocomplete: typeof import('element-plus/es')['ElAutocomplete']
     ElBadge: typeof import('element-plus/es')['ElBadge']
     ElBreadcrumb: typeof import('element-plus/es')['ElBreadcrumb']
