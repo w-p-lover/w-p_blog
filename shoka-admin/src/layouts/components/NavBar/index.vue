@@ -109,9 +109,11 @@ const exportExcel = () => {
   position: relative;
   display: flex;
   align-items: center;
-  background-color: var(--el-bg-color);
-  border-bottom: 1px solid #e5e7eb;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  background:
+      linear-gradient(90deg, rgba(255, 253, 248, 0.96), rgba(247, 241, 230, 0.92)),
+      var(--writer-paper);
+  border-bottom: 1px solid var(--writer-line);
+  box-shadow: 0 2px 10px rgba(77, 65, 48, 0.05);
   transition: all 0.3s ease;
   z-index: 100;
 
@@ -125,7 +127,7 @@ const exportExcel = () => {
     transition: background-color 0.2s ease;
 
     &:hover {
-      background-color: #f3f4f6;
+      background-color: rgba(95, 143, 134, 0.08);
     }
   }
 
@@ -152,15 +154,15 @@ const exportExcel = () => {
       justify-content: center;
       width: 48px;
       height: 100%;
-      color: #6b7280;
+      color: var(--writer-muted);
       transition: all 0.2s ease;
 
       &.hover-effect {
         cursor: pointer;
 
         &:hover {
-          color: #2563eb;
-          background-color: #f3f4f6;
+          color: var(--writer-primary-deep);
+          background-color: rgba(95, 143, 134, 0.08);
         }
       }
     }
@@ -181,12 +183,12 @@ const exportExcel = () => {
           border-radius: 50%;
           object-fit: cover;
           border: 2px solid transparent;
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+          box-shadow: 0 1px 4px rgba(77, 65, 48, 0.13);
           transition: all 0.2s ease;
 
           &:hover {
             transform: scale(1.05);
-            border-color: rgba(37, 99, 235, 0.2);
+            border-color: rgba(95, 143, 134, 0.28);
           }
         }
 
@@ -194,13 +196,13 @@ const exportExcel = () => {
           cursor: pointer;
           margin-left: 8px;
           font-size: 14px;
-          color: #9ca3af;
+          color: var(--writer-muted);
           transition: all 0.2s ease;
         }
       }
 
       &:hover .el-icon-caret-bottom {
-        color: #2563eb;
+        color: var(--writer-primary-deep);
       }
     }
   }
@@ -209,8 +211,8 @@ const exportExcel = () => {
 /* 下拉菜单样式优化 */
 :deep( .el-dropdown-menu) {
   border-radius: 8px;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--writer-line);
+  box-shadow: 0 8px 22px rgba(77, 65, 48, 0.1);
   padding: 4px 0;
   overflow: hidden;
   animation: dropdownFadeIn 0.2s ease-out;
@@ -219,22 +221,22 @@ const exportExcel = () => {
 :deep( .el-dropdown-menu) {
   padding: 8px 16px;
   font-size: 14px;
-  color: #374151;
+  color: var(--writer-text);
   transition: all 0.2s ease;
 
   &:hover {
-    background-color: #f3f4f6;
-    color: #2563eb;
+    background-color: rgba(95, 143, 134, 0.08);
+    color: var(--writer-primary-deep);
   }
 
   &.is-disabled {
-    color: #d1d5db;
+    color: rgba(139, 124, 105, 0.45);
     cursor: not-allowed;
   }
 }
 
 :deep( .el-dropdown-item).divided {
-  border-top: 1px dashed #e5e7eb;
+  border-top: 1px dashed var(--writer-line);
 }
 
 /* 动画效果 */
@@ -256,20 +258,21 @@ const exportExcel = () => {
   .el-breadcrumb__item {
     .el-breadcrumb__inner {
       color: #6b7280;
+      color: var(--writer-muted);
       font-weight: 400;
       transition: color 0.2s ease;
 
       &:hover {
-        color: #2563eb;
+        color: var(--writer-primary-deep);
       }
 
       &.is-link {
-        color: #2563eb;
+        color: var(--writer-primary-deep);
       }
     }
 
     .el-breadcrumb__separator {
-      color: #d1d5db;
+      color: rgba(139, 124, 105, 0.42);
       margin: 0 8px;
     }
   }
