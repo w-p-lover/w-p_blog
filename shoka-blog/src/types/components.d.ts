@@ -7,6 +7,7 @@ export {}
 
 declare module '@vue/runtime-core' {
   export interface GlobalComponents {
+    AiWriterFloat: typeof import('./../components/AiWriterFloat/index.vue')['default']
     AmapDistrict: typeof import('./../components/Map/AmapDistrict.vue')['default']
     Author: typeof import('./../components/Layout/SideBar/Author.vue')['default']
     BlogInfo: typeof import('./../components/Layout/SideBar/BlogInfo.vue')['default']
