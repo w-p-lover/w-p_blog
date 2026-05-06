@@ -23,10 +23,11 @@ export interface BookForm {
     title: string;
     author: string;
     status: "wish" | "reading" | "read";
-    cover: '',
+    cover: string;
     briefImg?: string;
     brief?: string;
-    tags: '',
+    tags: string;
+    resource?: string;
 }
 
 // 搜索结果

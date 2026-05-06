@@ -143,6 +143,13 @@ const routes: RouteRecordRaw[] = [
         },
     },
     {
+        path: "/book/:id",
+        component: () => import("@/views/Book/BookDetail.vue"),
+        meta: {
+            title: "书籍详情",
+        },
+    },
+    {
         path: "/user",
         component: () => import("@/views/User/index.vue"),
         meta: {
