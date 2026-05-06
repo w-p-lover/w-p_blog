@@ -77,6 +77,19 @@ export function updateBookStatus(bookId: number, status: string): AxiosPromise<R
 }
 
 /**
+ * 上传书籍图片
+ * 返回图片链接后写入书籍 cover/briefImg 字段。
+ */
+export function uploadBookImage(data: FormData): AxiosPromise<Result<string>> {
+    return request({
+        url: "/book/upload",
+        headers: {"content-type": "multipart/form-data"},
+        method: "post",
+        data,
+    });
+}
+
+/**
  * 搜索书籍
  * @param keyword 关键字
  */

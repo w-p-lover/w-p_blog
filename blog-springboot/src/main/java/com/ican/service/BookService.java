@@ -2,6 +2,7 @@ package com.ican.service;
 
 import com.ican.model.vo.BookVO;
 import com.ican.model.vo.PageResult;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -45,6 +46,11 @@ public interface BookService {
      * 更新书籍状态
      */
     void updateBookStatus(Integer bookId, String status);
+
+    /**
+     * 上传书籍图片
+     */
+    String uploadBookImage(MultipartFile file);
 
     /**
      * 搜索书籍

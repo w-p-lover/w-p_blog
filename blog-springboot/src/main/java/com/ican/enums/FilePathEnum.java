@@ -39,6 +39,11 @@ public enum FilePathEnum {
     PHOTO("photo/", "/photo", "相册路径"),
 
     /**
+     * 书籍图片路径
+     */
+    BOOK("book/", "/book", "书籍图片路径"),
+
+    /**
      * 聊天记录文件
      */
     CHAT_FILE("chatFile/","/chatFile","聊天记录文件路径"),

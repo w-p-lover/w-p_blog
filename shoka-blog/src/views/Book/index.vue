@@ -93,7 +93,7 @@
               v-for="book in visibleBooks"
               :key="book.id"
               class="book-card"
-              @click="showBookDetail(book)"
+              @click.capture="goBookDetail(book.id)"
               @mouseenter="book.hover = true"
               @mouseleave="book.hover = false"
             >
@@ -213,11 +213,51 @@
                   />
                 </div>
               </el-form-item>
-              <el-form-item label="封面 URL">
-                <el-input v-model="newBook.cover" placeholder="图片链接（可选）" />
+              <el-form-item label="封面" class="add-field--image">
+                <el-upload
+                  drag
+                  :show-file-list="false"
+                  accept="image/*"
+                  :http-request="uploadCoverImage"
+                  :before-upload="beforeImageUpload"
+                  class="book-image-uploader"
+                  :class="{ 'is-uploading': uploadingImageField === 'cover' }"
+                  :disabled="Boolean(uploadingImageField)"
+                >
+                  <div class="book-image-upload-content">
+                    <img v-if="newBook.cover" :src="newBook.cover" alt="封面预览">
+                    <div v-if="uploadingImageField === 'cover'" class="book-image-uploading">
+                      <span>上传中...</span>
+                    </div>
+                    <div v-else-if="!newBook.cover">
+                      <el-icon><Edit /></el-icon>
+                      <span>上传封面</span>
+                    </div>
+                  </div>
+                </el-upload>
               </el-form-item>
-              <el-form-item label="简介图 URL">
-                <el-input v-model="newBook.briefImg" placeholder="图片链接（可选）" />
+              <el-form-item label="简介图" class="add-field--image">
+                <el-upload
+                  drag
+                  :show-file-list="false"
+                  accept="image/*"
+                  :http-request="uploadBriefImage"
+                  :before-upload="beforeImageUpload"
+                  class="book-image-uploader"
+                  :class="{ 'is-uploading': uploadingImageField === 'briefImg' }"
+                  :disabled="Boolean(uploadingImageField)"
+                >
+                  <div class="book-image-upload-content">
+                    <img v-if="newBook.briefImg" :src="newBook.briefImg" alt="简介图预览">
+                    <div v-if="uploadingImageField === 'briefImg'" class="book-image-uploading">
+                      <span>上传中...</span>
+                    </div>
+                    <div v-else-if="!newBook.briefImg">
+                      <el-icon><Edit /></el-icon>
+                      <span>上传简介图</span>
+                    </div>
+                  </div>
+                </el-upload>
               </el-form-item>
               <el-form-item label="简介" class="add-field--brief">
                 <el-input v-model="newBook.brief" type="textarea" placeholder="请输入书籍简介" :rows="4" />
@@ -233,104 +273,17 @@
         </template>
       </el-dialog>
 
-      <el-dialog
-        title="书籍详情"
-        v-model="showDetailDialog"
-        width="1040px"
-        class="book-detail-dialog"
-        :modal-append-to-body="true"
-        :close-on-click-modal="false"
-      >
-        <div v-if="currentBook" class="book-detail">
-          <aside class="detail-side">
-            <div class="book-3d preview">
-              <div class="book-spine" :style="{ backgroundColor: getSpineColor(currentBook.tags) }">
-                <div class="spine-text">{{ currentBook.title }}</div>
-              </div>
-              <div class="book-cover">
-                <img :src="currentBook.cover || defaultCover" class="cover-img" :alt="currentBook.title">
-                <div class="cover-reflection"></div>
-              </div>
-              <div class="book-edge"></div>
-            </div>
-            <div class="detail-status">
-              <button
-                v-for="item in statusTabs.slice(1)"
-                :key="item.value"
-                type="button"
-                :class="{ active: currentBook.status === item.value }"
-                @click="changeStatus(currentBook.id, item.value)"
-              >
-                {{ item.label }}
-              </button>
-            </div>
-            <dl class="detail-side__meta">
-              <div>
-                <dt>资源</dt>
-                <dd>{{ currentBook.resource.length }}</dd>
-              </div>
-              <div>
-                <dt>添加</dt>
-                <dd>{{ formatDate(currentBook.addTime) }}</dd>
-              </div>
-            </dl>
-          </aside>
-
-          <section class="detail-main">
-            <header class="detail-heading">
-              <div class="detail-title-group">
-                <h2>{{ currentBook.title }}</h2>
-                <p>作者：{{ currentBook.author || '未知' }}</p>
-                <div class="tag-row detail-tags">
-                  <span v-for="tag in splitTags(currentBook.tags)" :key="tag">{{ tag }}</span>
-                  <span v-if="!splitTags(currentBook.tags).length">未分类</span>
-                </div>
-              </div>
-              <span class="status-pill" :class="currentBook.status">{{ getStatusLabel(currentBook.status) }}</span>
-            </header>
-
-            <section class="detail-block">
-              <h3>简介</h3>
-              <p>{{ currentBook.brief || '暂无简介' }}</p>
-            </section>
-
-            <section class="detail-block">
-              <div class="resource-head">
-                <h3>书源链接</h3>
-                <el-button size="small" @click="addResourceRow">添加资源</el-button>
-              </div>
-              <div v-if="currentBook.resource.length" class="resource-list">
-                <div v-for="(item, index) in currentBook.resource" :key="index" class="resource-row">
-                  <el-input v-model="item.name" placeholder="名称" class="resource-name" />
-                  <el-input v-model="item.url" placeholder="URL" class="resource-url" />
-                  <div class="resource-row__tools">
-                    <el-select v-model="item.type" placeholder="类型" class="resource-type">
-                      <el-option label="PDF" value="pdf" />
-                      <el-option label="笔记" value="note" />
-                      <el-option label="其他" value="other" />
-                    </el-select>
-                    <el-button @click="openLink(item.url)">访问</el-button>
-                    <el-button type="danger" plain @click="removeResourceRow(index)">删除</el-button>
-                  </div>
-                </div>
-              </div>
-              <el-empty v-else description="暂无书源，可添加电子书、笔记或相关链接" />
-              <div class="resource-actions">
-                <el-button type="primary" :loading="savingResources" @click="saveResources">保存书源</el-button>
-              </div>
-            </section>
-          </section>
-        </div>
-      </el-dialog>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, toRefs, watch } from "vue";
+import { useRouter } from "vue-router";
 import { Edit } from "@element-plus/icons-vue";
+import type { UploadRawFile, UploadRequestOptions } from "element-plus";
 import type { TagProps } from "element-plus/dist/index.full.mjs";
-import { addBook as apiAddBook, getBookList, updateBookStatus as apiChangeBookStatus, updateResource } from "@/api/book";
+import { addBook as apiAddBook, getBookList, uploadBookImage } from "@/api/book";
 import defaultCoverUrl from "@/assets/images/bg.jpg";
 import Waves from "@/components/Waves/index.vue";
 import {
@@ -347,10 +300,8 @@ import {
 } from "@/views/Book/bookModel";
 
 const showAddDialog = ref(false);
-const showDetailDialog = ref(false);
 const savingBook = ref(false);
-const savingResources = ref(false);
-const currentBook = ref<BookItem | null>(null);
+const uploadingImageField = ref<"cover" | "briefImg" | null>(null);
 const keyword = ref("");
 const statusFilter = ref<BookStatusFilter>("all");
 const sortType = ref("newest");
@@ -359,6 +310,7 @@ const loadError = ref(false);
 const defaultCover = defaultCoverUrl;
 const colorCache = new Map<string, string>();
 const tagTypes: TagProps["type"][] = ["primary", "success", "info", "warning", "danger"];
+const router = useRouter();
 
 const data = reactive({
   count: 0,
@@ -405,6 +357,10 @@ const openAddDialog = () => {
   showAddDialog.value = true;
 };
 
+const goBookDetail = (id: number) => {
+  router.push(`/book/${id}`);
+};
+
 const changeSort = async () => {
   queryParams.value.sortType = sortType.value;
   await fetchBookList();
@@ -426,7 +382,7 @@ const addBook = async () => {
     await apiAddBook({
       ...newBook.value,
       resource: JSON.stringify([]),
-    } as any);
+    });
     showAddDialog.value = false;
     await fetchBookList();
     window.$message?.success("已添加书籍");
@@ -455,48 +411,42 @@ const removeTag = (value: string) => {
   tagInput.value = tagInput.value.filter((tag) => tag !== value);
 };
 
-const showBookDetail = (book: BookItem) => {
-  currentBook.value = {
-    ...book,
-    resource: book.resource.map((item) => ({ ...item })),
-  };
-  showDetailDialog.value = true;
-};
-
-const changeStatus = async (id: number, status: BookStatusFilter) => {
-  if (status === "all") {
-    return;
+const beforeImageUpload = (file: UploadRawFile) => {
+  if (!file.type.startsWith("image/")) {
+    window.$message?.warning("请选择图片文件");
+    return false;
   }
-  await apiChangeBookStatus(id, status);
-  if (currentBook.value) {
-    currentBook.value.status = status;
+  const isUnderLimit = file.size / 1024 / 1024 < 5;
+  if (!isUnderLimit) {
+    window.$message?.warning("图片大小不能超过 5MB");
   }
-  await fetchBookList();
+  return isUnderLimit;
 };
 
-const addResourceRow = () => {
-  currentBook.value?.resource.push({ name: "", url: "", type: "other" });
-};
-
-const removeResourceRow = (index: number) => {
-  currentBook.value?.resource.splice(index, 1);
-};
-
-const saveResources = async () => {
-  if (!currentBook.value) {
-    return;
-  }
-  savingResources.value = true;
+const uploadImageToField = async (options: UploadRequestOptions, field: "cover" | "briefImg") => {
+  const formData = new FormData();
+  formData.append("file", options.file);
+  uploadingImageField.value = field;
   try {
-    const resources = currentBook.value.resource.filter((item) => item.name || item.url);
-    await updateResource(currentBook.value.id, resources);
-    currentBook.value.resource = resources;
-    await fetchBookList();
-    window.$message?.success("书源已保存");
+    const { data } = await uploadBookImage(formData);
+    if (data.flag && data.data) {
+      newBook.value[field] = data.data;
+      options.onSuccess?.(data);
+      window.$message?.success("图片已上传");
+      return;
+    }
+    throw new Error(data.msg || "图片上传失败");
+  } catch (error) {
+    options.onError?.(error as Error);
+    window.$message?.error("图片上传失败");
   } finally {
-    savingResources.value = false;
+    uploadingImageField.value = null;
   }
 };
+
+const uploadCoverImage = (options: UploadRequestOptions) => uploadImageToField(options, "cover");
+
+const uploadBriefImage = (options: UploadRequestOptions) => uploadImageToField(options, "briefImg");
 
 const fetchBookList = async () => {
   loadError.value = false;

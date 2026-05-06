@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.File;
@@ -92,6 +93,11 @@ public class BookController {
     public Result<?> addBook(@Validated @RequestBody BookDTO bookDTO) {
         bookService.addBook(bookDTO);
         return Result.success();
+    }
+
+    @PostMapping("/book/upload")
+    public Result<String> uploadBookImage(@RequestParam("file") MultipartFile file) {
+        return Result.success(bookService.uploadBookImage(file));
     }
 
     @VisitLogger(value = "书籍")

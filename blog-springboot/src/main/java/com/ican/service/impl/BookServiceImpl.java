@@ -5,14 +5,18 @@ import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.ican.entity.BlogFile;
 import com.ican.entity.Book;
+import com.ican.mapper.BlogFileMapper;
 import com.ican.mapper.BookMapper;
 import com.ican.model.dto.BookDTO;
 import com.ican.model.dto.ResourceDTO;
 import com.ican.model.vo.BookVO;
 import com.ican.model.vo.PageResult;
 import com.ican.service.BookService;
+import com.ican.strategy.context.UploadStrategyContext;
 import com.ican.utils.BeanCopyUtils;
+import com.ican.utils.FileUtils;
 import com.ican.utils.PageUtils;
 import com.ican.utils.PythonScriptRunner;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -38,6 +43,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import static com.ican.constant.CommonConstant.FALSE;
+import static com.ican.enums.FilePathEnum.BOOK;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -47,6 +55,8 @@ public class BookServiceImpl extends ServiceImpl<BookMapper, Book> implements Bo
     private static final Set<String> VALID_STATUS_SET = Set.of("wish", "reading", "read");
 
     private final BookMapper bookMapper;
+    private final BlogFileMapper blogFileMapper;
+    private final UploadStrategyContext uploadStrategyContext;
     private final PythonScriptRunner pythonScriptRunner;
     private final AtomicInteger totalCount = new AtomicInteger(1);
 
@@ -112,6 +122,33 @@ public class BookServiceImpl extends ServiceImpl<BookMapper, Book> implements Bo
         book.setStatus(status);
         book.setUpdateTime(LocalDateTime.now());
         bookMapper.updateById(book);
+    }
+
+    @Override
+    public String uploadBookImage(MultipartFile file) {
+        String url = uploadStrategyContext.executeUploadStrategy(file, BOOK.getPath());
+        try {
+            String md5 = FileUtils.getMd5(file.getInputStream());
+            String extName = FileUtils.getExtension(file);
+            BlogFile existFile = blogFileMapper.selectOne(new LambdaQueryWrapper<BlogFile>()
+                    .select(BlogFile::getId)
+                    .eq(BlogFile::getFileName, md5)
+                    .eq(BlogFile::getFilePath, BOOK.getFilePath()));
+            if (Objects.isNull(existFile)) {
+                BlogFile newFile = BlogFile.builder()
+                        .fileUrl(url)
+                        .fileName(md5)
+                        .filePath(BOOK.getFilePath())
+                        .extendName(extName)
+                        .fileSize((int) file.getSize())
+                        .isDir(FALSE)
+                        .build();
+                blogFileMapper.insert(newFile);
+            }
+        } catch (IOException e) {
+            log.error("书籍图片上传持久化错误: {}", e.getMessage());
+        }
+        return url;
     }
 
     @Override

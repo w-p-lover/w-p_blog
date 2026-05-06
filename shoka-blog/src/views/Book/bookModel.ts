@@ -106,6 +106,14 @@ export const getBookStats = (books: BookItem[]) => {
   );
 };
 
+export const getPrimaryResource = (resources: Resource[]) => {
+  return resources.find((item) => Boolean(item.url?.trim())) || null;
+};
+
+export const getAvailableResourceCount = (resources: Resource[]) => {
+  return resources.filter((item) => Boolean(item.url?.trim())).length;
+};
+
 const normalizeResource = (resource: any): Resource | null => {
   if (!resource || typeof resource !== "object") {
     return null;

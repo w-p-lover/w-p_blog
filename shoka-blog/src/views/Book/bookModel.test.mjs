@@ -19,7 +19,9 @@ await build({
 
 const {
   filterBooks,
+  getAvailableResourceCount,
   getBookStats,
+  getPrimaryResource,
   getStatusLabel,
   joinTags,
   normalizeBook,
@@ -64,6 +66,15 @@ assert.deepEqual(books[0].resource, [{ name: "PDF", url: "https://example.com/3.
 assert.deepEqual(parseResources({ name: "笔记", url: "https://example.com/note", type: "" }), [
   { name: "笔记", url: "https://example.com/note", type: "other" },
 ]);
+assert.deepEqual(getPrimaryResource([
+  { name: "空资源", url: "", type: "pdf" },
+  { name: "在线阅读", url: "https://example.com/read", type: "other" },
+]), { name: "在线阅读", url: "https://example.com/read", type: "other" });
+assert.equal(getPrimaryResource([{ name: "空资源", url: "", type: "pdf" }]), null);
+assert.equal(getAvailableResourceCount([
+  { name: "PDF", url: "https://example.com/book.pdf", type: "pdf" },
+  { name: "缺链接", url: "", type: "other" },
+]), 1);
 
 assert.deepEqual(splitTags("技术，前端, Vue；工程化"), ["技术", "前端", "Vue", "工程化"]);
 assert.equal(joinTags([" 技术 ", "", "前端"]), "技术,前端");
