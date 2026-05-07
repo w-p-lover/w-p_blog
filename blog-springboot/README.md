@@ -131,11 +131,12 @@ src/main/java/com/ican
 
 ## Docs
 
-- [安全配置](docs/secure-config-quickstart.md)
-- [Docker Compose 部署](docs/deployment-compose.md)
-- [Nacos 示例](docs/nacos-example.md)
-- [就业项目分析](docs/project-employment-analysis.md)
-- [后端深度开发路线](docs/backend-deep-development-roadmap.md)
+- [文档目录](docs/README.md)
+- [就业项目分析](docs/00-项目总览/01-就业项目分析.md)
+- [后端深度开发路线](docs/00-项目总览/02-后端深度开发路线.md)
+- [安全配置](docs/02-部署运维/01-安全配置快速开始.md)
+- [Docker Compose 部署](docs/02-部署运维/02-Docker-Compose部署说明.md)
+- [Nacos 示例](docs/02-部署运维/03-Nacos配置示例.md)
 
 ## Resume Line
 
