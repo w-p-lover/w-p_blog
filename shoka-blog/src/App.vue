@@ -50,9 +50,8 @@ onMounted(() => {
 .app-wrapper {
   position: relative;
   min-height: 100vh;
-  background:
-    radial-gradient(circle at 18% 0, rgba(85, 162, 160, 0.07), transparent 28rem),
-    linear-gradient(180deg, #fdfbf7 0, #faf8f2 100%);
+  color: var(--text-color);
+  background: var(--app-bg);
   z-index: 2;
 }
 

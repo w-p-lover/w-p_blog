@@ -57,7 +57,7 @@ onMounted(() => {
   gap: 0.85rem;
   width: 100%;
   height: 100%;
-  padding: 0.85rem 3.25rem 0.85rem 1rem;
+  padding: 0.85rem 3.25rem 0.85rem 3rem;
 }
 
 .recommend-badge {
@@ -148,7 +148,7 @@ onMounted(() => {
 :deep(.swiper-button-next),
 :deep(.swiper-button-prev) {
   width: 1.85rem;
-  height: 1.85rem;
+  height: 2.85rem;
   color: var(--home-accent);
   transition: all 0.3s;
 }

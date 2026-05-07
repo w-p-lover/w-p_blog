@@ -54,18 +54,18 @@ watch(y, (newValue, oldValue) => {
   width: 100%;
   height: 3.75rem;
   padding: 0 1.9rem;
-  border-bottom: 1px solid rgba(227, 223, 212, 0.72);
-  background: rgba(253, 251, 247, 0.88);
+  border-bottom: 1px solid var(--nav-border);
+  background: var(--nav-bg-initial);
   backdrop-filter: blur(12px);
   text-shadow: none;
-  color: var(--header-text-color);
+  color: var(--text-color);
   transition: all 0.2s ease-in-out 0s;
   z-index: 9;
 }
 
 .show {
   background: var(--nav-bg);
-  box-shadow: 0 8px 24px rgba(89, 78, 56, 0.07);
+  box-shadow: var(--nav-shadow);
   text-shadow: none;
   color: var(--text-color);
 }

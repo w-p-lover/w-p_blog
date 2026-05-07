@@ -13,6 +13,7 @@ const setLive2DMessage = Live2DModule.setMessageBox;
 
 const route = useRoute();
 let removeGlobalPointerFollow = null;
+let live2dReady = false;
 
 const pageMessages = {
   '/': '愿您在此寻得片刻安宁。',
@@ -40,10 +41,18 @@ const pageMessages = {
 };
 
 const showRouteMessage = (path, duration = 5000) => {
-  if (typeof setLive2DMessage !== 'function') return;
+  if (!live2dReady || typeof setLive2DMessage !== 'function') return;
   const regex = /\/(\d+)$/;
   const message = pageMessages[path.replace(regex, '/:id')];
-  if (message) setLive2DMessage(message, duration);
+  const messageBox = document.getElementById('live2dMessageBox');
+  const messageContent = document.getElementById('live2dMessageBox-content');
+  if (!message || !messageBox || !messageContent) return;
+
+  try {
+    setLive2DMessage(message, duration);
+  } catch (err) {
+    console.warn('Live2D 消息展示失败，已跳过本次提示：', err);
+  }
 };
 
 const setupRuntimeLayerBehavior = () => {
@@ -124,6 +133,7 @@ onMounted(async () => {
 
     const canvas = setupRuntimeLayerBehavior();
     setupGlobalPointerFollow(canvas);
+    live2dReady = true;
     showRouteMessage(route.path, 5000);
 
     console.log('Live2D 模型加载完成');

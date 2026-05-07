@@ -502,3 +502,101 @@ const handleClear = () => {
   }
 }
 </style>
+
+<style>
+[theme="dark"] .ai-hero {
+  border-color: var(--home-border);
+  background:
+    radial-gradient(circle at 8% 16%, rgba(143, 207, 203, 0.16), transparent 35%),
+    radial-gradient(circle at 85% 22%, rgba(213, 109, 88, 0.14), transparent 35%),
+    linear-gradient(160deg, rgba(33, 40, 52, 0.96), rgba(28, 35, 46, 0.92));
+  box-shadow: var(--home-shadow);
+}
+
+[theme="dark"] .ai-hero .hero-glow--left {
+  background: rgba(143, 207, 203, 0.16);
+}
+
+[theme="dark"] .ai-hero .hero-glow--right {
+  background: rgba(213, 109, 88, 0.14);
+}
+
+[theme="dark"] .ai-hero .hero-badge {
+  background: var(--note-bg);
+  color: var(--home-accent);
+}
+
+[theme="dark"] .ai-hero h2,
+[theme="dark"] .card-title-row h3 {
+  color: var(--grey-7);
+}
+
+[theme="dark"] .ai-hero .hero-desc,
+[theme="dark"] .ai-hero .stat-label,
+[theme="dark"] .ai-hero .hero-meter-text,
+[theme="dark"] .card-title-tip {
+  color: var(--grey-5);
+}
+
+[theme="dark"] .ai-hero .stat-item,
+[theme="dark"] .qa-card,
+[theme="dark"] .answer-card,
+[theme="dark"] .source-card {
+  border-color: var(--home-border);
+  background: var(--home-surface);
+  box-shadow: var(--home-shadow), var(--home-glow);
+}
+
+[theme="dark"] .ai-hero .stat-value,
+[theme="dark"] .answer-content {
+  color: var(--grey-6);
+}
+
+[theme="dark"] .ai-hero .hero-meter-track {
+  background: rgba(143, 207, 203, 0.14);
+}
+
+[theme="dark"] .ai-hero .hero-meter-fill {
+  background: linear-gradient(90deg, var(--home-accent), var(--home-accent-warm));
+}
+
+[theme="dark"] .prompt-chip,
+[theme="dark"] .ghost-btn,
+[theme="dark"] .source-index {
+  border-color: var(--home-border);
+  background: var(--note-bg);
+  color: var(--home-accent);
+}
+
+[theme="dark"] .prompt-chip:hover {
+  background: var(--home-accent-soft);
+}
+
+[theme="dark"] .source-card li {
+  border-bottom-color: rgba(143, 207, 203, 0.16);
+}
+
+[theme="dark"] .source-card a {
+  color: var(--home-accent-cool);
+}
+
+[theme="dark"] .source-card a:hover {
+  color: var(--home-accent);
+}
+
+[theme="dark"] .qa-card .el-textarea__inner {
+  border-color: var(--home-border);
+  background-color: rgba(24, 29, 38, 0.72);
+  color: var(--grey-6);
+  box-shadow: none;
+}
+
+[theme="dark"] .qa-card .el-textarea__inner::placeholder {
+  color: var(--grey-5);
+}
+
+[theme="dark"] .qa-card .el-input__count {
+  background: transparent;
+  color: var(--grey-5);
+}
+</style>

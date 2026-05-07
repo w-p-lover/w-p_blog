@@ -4,10 +4,11 @@
 .bg {
   position: relative;
   padding-bottom: 9.5rem;
+  color: var(--text-color);
   background:
     radial-gradient(circle at 12% -8%, rgba(85, 162, 160, 0.08), transparent 30%),
     radial-gradient(circle at 88% -4%, rgba(200, 85, 64, 0.06), transparent 28%),
-    linear-gradient(180deg, #faf8f2 0, var(--grey-0) 42%);
+    linear-gradient(180deg, var(--page-bg-start) 0, var(--grey-0) 42%);
 }
 
 /* 页面布局 */

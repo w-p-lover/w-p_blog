@@ -65,7 +65,13 @@
   --text-color: var(--grey-7);
   --header-text-color: var(--grey-0);
   --primary-color: var(--home-accent);
+  --app-bg: radial-gradient(circle at 18% 0, rgba(85, 162, 160, 0.07), transparent 28rem),
+    linear-gradient(180deg, #fdfbf7 0, #faf8f2 100%);
+  --page-bg-start: #faf8f2;
   --nav-bg: rgba(253, 251, 247, 0.92);
+  --nav-bg-initial: rgba(253, 251, 247, 0.88);
+  --nav-border: rgba(227, 223, 212, 0.72);
+  --nav-shadow: 0 8px 24px rgba(89, 78, 56, 0.07);
   --footer-bg: linear-gradient(135deg, #4a8e8c, #55a2a0 52%, #c85540);
   --note-border: rgba(85, 162, 160, 0.28);
   --note-bg: rgba(85, 162, 160, 0.11);
@@ -132,6 +138,13 @@
   --glass-highlight: rgba(255, 255, 255, 0.2);
   --text-color: var(--grey-5);
   --header-text-color: var(--grey-9);
+  --app-bg: radial-gradient(circle at 18% 0, rgba(143, 207, 203, 0.09), transparent 28rem),
+    linear-gradient(180deg, #171b23 0, #20242d 100%);
+  --page-bg-start: #20242d;
+  --nav-bg: rgba(29, 35, 46, 0.9);
+  --nav-bg-initial: rgba(24, 29, 38, 0.78);
+  --nav-border: rgba(118, 154, 148, 0.22);
+  --nav-shadow: 0 12px 30px rgba(0, 0, 0, 0.36);
   --note-bg: rgba(48, 49, 50, 0.8);
   --note-text: rgba(109, 164, 219, 0.8);
   --note-hover: rgba(168, 49, 72, 0.8);

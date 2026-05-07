@@ -59,10 +59,17 @@ import {Tag} from "@/api/tag/types";
 import {getDocTags} from "@/api/collab";
 import {CollabTag} from "@/api/collab/type";
 import Waves from "@/components/Waves/index.vue";
+import { useDark } from "@vueuse/core";
 
 // 数据变量
 const blogTagList = ref<Tag[]>([]);
 const collabTagList = ref<CollabTag[]>([]);
+const isDark = useDark({
+  selector: 'html',
+  attribute: 'theme',
+  valueDark: 'dark',
+  valueLight: 'light',
+});
 
 // 博客标签样式逻辑
 const getBlogTagSize = (freq: number) => {
@@ -90,7 +97,9 @@ const getBlogTagColor = (articleCount: number) => {
 
   // 微调饱和度和亮度
   const saturation = scheme.sat + (ratio * 20);
-  const lightness = scheme.light - (ratio * 15);
+  const lightness = isDark.value
+      ? Math.min(76, scheme.light + 22 - ratio * 8)
+      : scheme.light - (ratio * 15);
 
   return `hsl(${scheme.hue}, ${saturation}%, ${lightness}%)`;
 };
@@ -123,7 +132,9 @@ const getCollabTagColor = (docCount: number) => {
 
   // 微调饱和度和亮度
   const saturation = scheme.sat + (ratio * 20);
-  const lightness = scheme.light - (ratio * 15);
+  const lightness = isDark.value
+      ? Math.min(76, scheme.light + 22 - ratio * 8)
+      : scheme.light - (ratio * 15);
 
   return `hsl(${scheme.hue}, ${saturation}%, ${lightness}%)`;
 };
@@ -144,13 +155,19 @@ onMounted(() => {
 // 标签区域容器
 .tag-section {
   padding: 1rem;
+  border: 1px solid var(--home-border);
   border-radius: 6px;
-  background-color: rgba(255, 255, 255, 0.9);
+  background: var(--home-surface-strong);
+  box-shadow: var(--home-shadow), var(--home-glow);
+
+  &:not(:last-child) {
+    margin-bottom: 2rem;
+  }
 }
 
 .section-subtitle {
   font-size: 1rem;
-  color: #666;
+  color: var(--grey-5);
   font-weight: 700;
 }
 
@@ -185,6 +202,7 @@ onMounted(() => {
   margin: 0.7rem;
   text-decoration: none;
   border-radius: 50px;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.28) inset;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   font-weight: 500;
   position: relative;
@@ -241,7 +259,7 @@ sup {
   margin-left: 0.3rem;
   font-size: 0.7em;
   opacity: 0.8;
-  background: rgba(0, 0, 0, 0.05);
+  background: var(--home-accent-soft);
   padding: 0.1rem 0.4rem;
   border-radius: 10px;
   vertical-align: super;

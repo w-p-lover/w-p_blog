@@ -192,55 +192,6 @@ onUnmounted(() => {
 </script>
 
 <style lang="scss" scoped>
-// 页面头部样式
-.page-header {
-  position: relative;
-  margin-left: 10px;
-  padding-bottom: 20px;
-  padding-left: 20px;
-
-  &::before {
-    position: absolute;
-    top: 45%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: var(--grey-0);
-    font-size: 3.8rem;
-    font-weight: 700;
-    text-shadow: 0 3px 15px rgba(0, 0, 0, 0.3);
-    z-index: 2;
-    margin: 0;
-    padding: 0 20px;
-    text-align: center;
-    opacity: 0;
-    animation: fadeUp 1s ease-out 0.3s forwards;
-  }
-
-  .page-subtitle {
-    position: absolute;
-    top: 60%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: var(--grey-0);
-    font-size: 1.2rem;
-    z-index: 2;
-    margin: 0;
-    opacity: 0;
-    animation: fadeUp 1s ease-out 0.6s forwards;
-  }
-}
-
-@keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translate(-50%, 20px);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, -50%);
-  }
-}
-
 // 年份导航栏
 .year-nav {
   position: sticky;
@@ -249,8 +200,9 @@ onUnmounted(() => {
   display: flex;
   gap: 1rem;
   padding: 0.8rem 0;
-  background: var(--grey-0);;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid var(--home-border);
+  background: var(--home-surface-strong);
+  box-shadow: var(--home-shadow);
   overflow-x: auto;
   scrollbar-width: none;
 
@@ -262,7 +214,7 @@ onUnmounted(() => {
     padding: 0.4rem 1rem;
     border-radius: 20px;
     font-size: 1rem;
-    color: #666;
+    color: var(--grey-5);
     cursor: pointer;
     white-space: nowrap;
     transition: all 0.3s ease;
@@ -344,7 +296,7 @@ onUnmounted(() => {
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: var(--grey-0);;
+  background: var(--home-surface-strong);
   border: 3px solid #aadafa;
   transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
   z-index: 2;
@@ -366,8 +318,9 @@ onUnmounted(() => {
   margin-bottom: 2.5rem;
   padding: 15px;
   border-radius: 12px;
-  background: var(--grey-0);;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.03);
+  border: 1px solid var(--home-border);
+  background: var(--home-surface-strong);
+  box-shadow: var(--home-shadow), var(--home-glow);
   transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
   opacity: 0;
   transform: translateX(-20px);
@@ -376,7 +329,8 @@ onUnmounted(() => {
 
   &:hover {
     transform: translateY(-5px) translateX(0);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    border-color: var(--home-border-strong);
+    box-shadow: var(--home-shadow-hover), var(--home-glow);
   }
 
   // 为每个item设置索引，用于动画延迟
@@ -457,7 +411,7 @@ onUnmounted(() => {
 
   .article-time {
     font-size: 0.9rem;
-    color: #888;
+    color: var(--grey-5);
     display: flex;
     align-items: center;
     flex-wrap: wrap;
@@ -473,7 +427,7 @@ onUnmounted(() => {
     .tag-item {
       padding: 0.2rem 0.6rem;
       background: rgba(170, 218, 250, 0.3);
-      color: #666;
+      color: var(--grey-6);
       font-size: 0.8rem;
       border-radius: 4px;
     }
@@ -482,7 +436,7 @@ onUnmounted(() => {
   .article-title {
     font-size: 1.2rem;
     font-weight: 600;
-    color: var(--grey-9);
+    color: var(--grey-7);
     margin: 0.3rem 0 0.5rem;
     transition: color 0.3s ease;
     line-height: 1.4;
@@ -498,7 +452,7 @@ onUnmounted(() => {
   .article-excerpt
   {
     font-size: 0.9rem;
-    color: #666;
+    color: var(--grey-5);
     line-height: 1.6;
     max-height: 0;
     opacity: 0;
@@ -521,11 +475,6 @@ onUnmounted(() => {
 
 // 响应式适配
 @media (max-width: 768px) {
-  .page-header {
-    height: 35vh;
-    min-height: 260px;
-  }
-
   .page-subtitle {
     font-size: 1rem;
     top: 65%;
