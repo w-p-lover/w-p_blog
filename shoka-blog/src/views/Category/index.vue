@@ -157,13 +157,15 @@ onMounted(() => {
 .category-card {
   margin-bottom: 2rem;
   padding: 1.5rem;
+  border: 1px solid var(--home-border);
   border-radius: 8px;
-  background-color: rgba(255, 255, 255, 0.95);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  background: var(--home-surface-strong);
+  box-shadow: var(--home-shadow), var(--home-glow);
   transition: all 0.3s ease;
 
   &:hover {
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+    border-color: var(--home-border-strong);
+    box-shadow: var(--home-shadow-hover), var(--home-glow);
     transform: translateY(-2px);
   }
 }
@@ -212,9 +214,10 @@ onMounted(() => {
   width: 100%;
   padding: 1rem;
   margin: 0 auto 1.5rem;
-  background-color: #fff;
+  border: 1px solid var(--home-border);
+  background: var(--home-surface);
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  box-shadow: var(--home-shadow);
   transition: transform 0.3s ease;
 
   &:hover {
@@ -232,9 +235,10 @@ onMounted(() => {
 // 分类列表容器
 .category-list-wrap {
   padding: 0.5rem 1rem;
-  background-color: #fff;
+  border: 1px solid var(--home-border);
+  background: var(--home-surface);
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  box-shadow: var(--home-shadow);
 }
 
 // 分类列表通用样式
@@ -274,7 +278,7 @@ onMounted(() => {
   }
 
   &:hover {
-    background-color: rgba(142, 140, 216, 0.05);
+    background-color: rgba(142, 140, 216, 0.12);
   }
 }
 
@@ -285,7 +289,7 @@ onMounted(() => {
   }
 
   &:hover {
-    background-color: rgba(66, 153, 225, 0.05);
+    background-color: rgba(66, 153, 225, 0.12);
   }
 }
 
@@ -312,7 +316,7 @@ onMounted(() => {
 
 // 博客分类链接
 .blog-categories .category-link {
-  color: #333;
+  color: var(--grey-7);
 
   &:after {
     background-color: #8e8cd8;
@@ -329,7 +333,7 @@ onMounted(() => {
 
 // 协作分类链接
 .collab-categories .category-link {
-  color: #333;
+  color: var(--grey-7);
 
   &:after {
     background-color: #4299e1;
@@ -348,12 +352,12 @@ onMounted(() => {
 .category-count {
   margin-left: 0.5rem;
   font-size: 0.95rem;
-  color: #999;
+  color: var(--grey-5);
   transition: color 0.3s ease;
 }
 
 .category-item:hover .category-count {
-  color: #666;
+  color: var(--grey-6);
 }
 
 // 响应式调整

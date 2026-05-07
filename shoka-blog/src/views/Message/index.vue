@@ -93,8 +93,13 @@ const decorateMessage = (message: Message, index: number, isNew = false): NoteMe
 });
 
 onMounted(async () => {
-  const { data } = await getMessageList();
-  messageList.value = data.data.map((message, index) => decorateMessage(message, index));
+  try {
+    const { data } = await getMessageList();
+    messageList.value = data.data.map((message, index) => decorateMessage(message, index));
+  } catch {
+    messageList.value = [];
+    window.$message?.warning("留言加载失败，请稍后刷新重试");
+  }
 });
 
 const buildMessage = (): MessageForm => ({
@@ -110,26 +115,30 @@ const send = () => {
   }
 
   const message = buildMessage();
-  addMessage(message).then(({ data }) => {
-    if (data.flag) {
-      if (!blog.blogInfo.siteConfig.messageCheck) {
-        const note = decorateMessage(
-          {
-            id: Date.now(),
-            ...message,
-          },
-          messageList.value.length,
-          true
-        );
-        note.localId = `local-${note.id}`;
-        messageList.value.unshift(note);
-        window.$message?.success("留言成功");
-      } else {
-        window.$message?.warning("留言成功，正在审核中");
+  addMessage(message)
+    .then(({ data }) => {
+      if (data.flag) {
+        if (!blog.blogInfo.siteConfig.messageCheck) {
+          const note = decorateMessage(
+            {
+              id: Date.now(),
+              ...message,
+            },
+            messageList.value.length,
+            true
+          );
+          note.localId = `local-${note.id}`;
+          messageList.value.unshift(note);
+          window.$message?.success("留言成功");
+        } else {
+          window.$message?.warning("留言成功，正在审核中");
+        }
+        messageContent.value = "";
       }
-      messageContent.value = "";
-    }
-  });
+    })
+    .catch(() => {
+      window.$message?.error("留言发送失败，请稍后再试");
+    });
 };
 </script>
 
@@ -489,54 +498,6 @@ const send = () => {
   }
 }
 
-:global([theme="dark"]) .message-page {
-  background:
-    radial-gradient(circle at 15% 12%, rgba(143, 207, 203, 0.16), transparent 28rem),
-    radial-gradient(circle at 86% 24%, rgba(213, 109, 88, 0.13), transparent 24rem),
-    linear-gradient(rgba(143, 207, 203, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(143, 207, 203, 0.05) 1px, transparent 1px),
-    var(--grey-0);
-}
-
-:global([theme="dark"]) .message-page::before {
-  mix-blend-mode: screen;
-  opacity: 0.42;
-}
-
-:global([theme="dark"]) .input {
-  background: rgba(29, 35, 46, 0.7);
-}
-
-:global([theme="dark"]) .send {
-  color: #142223;
-}
-
-:global([theme="dark"]) .note-card {
-  border-color: rgba(118, 154, 148, 0.26);
-  box-shadow:
-    0 14px 24px rgba(0, 0, 0, 0.3),
-    0 1px 0 rgba(255, 255, 255, 0.08) inset;
-}
-
-:global([theme="dark"]) .tone-mint,
-:global([theme="dark"]) .tone-paper,
-:global([theme="dark"]) .tone-honey,
-:global([theme="dark"]) .tone-coral {
-  background: linear-gradient(145deg, rgba(37, 45, 59, 0.94), rgba(28, 35, 46, 0.9));
-}
-
-:global([theme="dark"]) .note-content {
-  color: rgba(246, 248, 255, 0.82);
-}
-
-:global([theme="dark"]) .note-strip {
-  border-left-color: rgba(143, 207, 203, 0.42);
-}
-
-:global([theme="dark"]) .note-postcard::after {
-  border-color: rgba(213, 109, 88, 0.42);
-}
-
 @media (max-width: 720px) {
   .message-page {
     padding: 5.8rem 1rem 3rem;
@@ -570,5 +531,73 @@ const send = () => {
   .note-card:hover {
     transform: none;
   }
+}
+</style>
+
+<style lang="scss">
+[theme="dark"] .message-page {
+  background:
+    radial-gradient(circle at 15% 12%, rgba(143, 207, 203, 0.16), transparent 28rem),
+    radial-gradient(circle at 86% 24%, rgba(213, 109, 88, 0.13), transparent 24rem),
+    linear-gradient(rgba(143, 207, 203, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(143, 207, 203, 0.05) 1px, transparent 1px),
+    var(--grey-0);
+}
+
+[theme="dark"] .message-page::before {
+  mix-blend-mode: screen;
+  opacity: 0.42;
+}
+
+[theme="dark"] .message-title {
+  text-shadow: none;
+}
+
+[theme="dark"] .message-input {
+  background: rgba(33, 40, 52, 0.76);
+}
+
+[theme="dark"] .message-input .input {
+  border-color: rgba(118, 154, 148, 0.2);
+  background: rgba(29, 35, 46, 0.7);
+}
+
+[theme="dark"] .message-input .send {
+  color: #142223;
+}
+
+[theme="dark"] .notes-wall {
+  border-color: var(--home-border);
+  background:
+    linear-gradient(90deg, rgba(143, 207, 203, 0.04) 1px, transparent 1px),
+    linear-gradient(rgba(143, 207, 203, 0.04) 1px, transparent 1px),
+    rgba(29, 35, 46, 0.46);
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.18) inset;
+}
+
+[theme="dark"] .notes-wall .note-card {
+  border-color: rgba(118, 154, 148, 0.26);
+  box-shadow:
+    0 14px 24px rgba(0, 0, 0, 0.3),
+    0 1px 0 rgba(255, 255, 255, 0.08) inset;
+}
+
+[theme="dark"] .notes-wall .tone-mint,
+[theme="dark"] .notes-wall .tone-paper,
+[theme="dark"] .notes-wall .tone-honey,
+[theme="dark"] .notes-wall .tone-coral {
+  background: linear-gradient(145deg, rgba(37, 45, 59, 0.94), rgba(28, 35, 46, 0.9));
+}
+
+[theme="dark"] .notes-wall .note-content {
+  color: rgba(246, 248, 255, 0.82);
+}
+
+[theme="dark"] .notes-wall .note-strip {
+  border-left-color: rgba(143, 207, 203, 0.42);
+}
+
+[theme="dark"] .notes-wall .note-postcard::after {
+  border-color: rgba(213, 109, 88, 0.42);
 }
 </style>
