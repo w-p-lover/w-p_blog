@@ -14,7 +14,9 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Answers.RETURNS_DEEP_STUBS;
@@ -44,10 +46,11 @@ class AiArticleServiceImplTest {
         when(chatClient.prompt(anyString()).call().content())
                 .thenReturn("这是摘要")
                 .thenReturn("Java,Spring Boot,AI");
+        clearInvocations(chatClient);
 
         aiArticleService.processArticle(1, "测试标题", "测试内容");
 
-        verify(chatClient).prompt(anyString());
+        verify(chatClient, times(2)).prompt(anyString());
         verify(vectorStore).add(any(List.class));
         verify(articleMapper).updateArticleAiResult(anyInt(), anyString(), anyString(), any());
     }

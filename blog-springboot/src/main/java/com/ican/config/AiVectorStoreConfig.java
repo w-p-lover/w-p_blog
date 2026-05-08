@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 @Configuration
 public class AiVectorStoreConfig {
@@ -27,6 +28,7 @@ public class AiVectorStoreConfig {
     }
 
     @Bean
+    @Profile("!test")
     public ApplicationRunner aiVectorStoreHealthRunner(VectorStore vectorStore) {
         return args -> {
             try {
