@@ -72,7 +72,10 @@ flowchart LR
 
 ```powershell
 Copy-Item .env.example .env
+Copy-Item config\application-private.example.yml config\application-private.yml
 ```
+
+`.env.example` 负责本地环境变量，`config/application-private.example.yml` 负责本机私有覆盖；两者都只需要按自己的数据库、Redis、RabbitMQ 和第三方密钥改值即可。
 
 启动后端：
 
