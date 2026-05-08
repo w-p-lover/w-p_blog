@@ -19,8 +19,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Answers.RETURNS_DEEP_STUBS;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -54,8 +56,8 @@ class AiRagServiceImplTest {
 
     @Test
     void chat_shouldReturnFallbackWhenDocumentsHaveNoUsableText() {
-        Document emptyDoc1 = new Document((String) null, Map.of("title", "文档1", "url", "/article/1"));
-        Document emptyDoc2 = new Document("   ", Map.of("title", "文档2", "url", "/article/2"));
+        Document emptyDoc1 = new Document("   ", Map.of("title", "文档1", "url", "/article/1"));
+        Document emptyDoc2 = new Document("\n\t", Map.of("title", "文档2", "url", "/article/2"));
         when(vectorStore.similaritySearch(any(org.springframework.ai.vectorstore.SearchRequest.class)))
                 .thenReturn(List.of(emptyDoc1, emptyDoc2));
 
@@ -73,6 +75,7 @@ class AiRagServiceImplTest {
         when(vectorStore.similaritySearch(any(org.springframework.ai.vectorstore.SearchRequest.class)))
                 .thenReturn(List.of(doc));
         when(chatClient.prompt(anyString()).call().content()).thenReturn("   ");
+        clearInvocations(chatClient);
 
         AiChatResponseVO response = aiRagService.chat("如何实现RAG问答");
 
@@ -81,7 +84,7 @@ class AiRagServiceImplTest {
         assertEquals(1, response.getSources().size());
         assertEquals("Spring AI 入门", response.getSources().get(0).getTitle());
         assertEquals("/article/1", response.getSources().get(0).getUrl());
-        verify(chatClient).prompt(anyString());
+        verify(chatClient, times(1)).prompt(anyString());
     }
 
     @Test
@@ -93,6 +96,7 @@ class AiRagServiceImplTest {
         when(vectorStore.similaritySearch(any(org.springframework.ai.vectorstore.SearchRequest.class)))
                 .thenReturn(List.of(doc1, doc2, duplicateDoc));
         when(chatClient.prompt(anyString()).call().content()).thenReturn("这是模型回答");
+        clearInvocations(chatClient);
 
         AiChatResponseVO response = aiRagService.chat("如何实现RAG问答");
 
@@ -103,6 +107,6 @@ class AiRagServiceImplTest {
         assertEquals("/article/1", response.getSources().get(0).getUrl());
         assertEquals("RAG 实践", response.getSources().get(1).getTitle());
         assertEquals("/article/2", response.getSources().get(1).getUrl());
-        verify(chatClient).prompt(anyString());
+        verify(chatClient, times(1)).prompt(anyString());
     }
 }
