@@ -7,7 +7,23 @@
       </li>
     </ul>
     <div class="quote-card">
-      <span class="quote-label">一言</span>
+      <div class="quote-toolbar">
+        <span class="quote-label">一言</span>
+        <label class="quote-type">
+          <span>类型</span>
+          <select
+            v-model="selectedType"
+            class="quote-type-select"
+            aria-label="选择一言类型"
+            title="选择一言类型"
+            @change="handleTypeChange"
+          >
+            <option v-for="type in HITOKOTO_TYPES" :key="type.value" :value="type.value">
+              {{ type.label }}
+            </option>
+          </select>
+        </label>
+      </div>
       <p class="quote-text">
         {{ typer.output }}
         <span class="easy-typed-cursor">|</span>
@@ -18,6 +34,15 @@
 
 <script setup lang="ts">
 import EasyTyper from "easy-typer-js";
+import {
+  buildHitokotoUrl,
+  DEFAULT_HITOKOTO_TYPE,
+  HITOKOTO_TYPE_CHANGE_EVENT,
+  HITOKOTO_TYPE_STORAGE_KEY,
+  HITOKOTO_TYPES,
+  normalizeHitokotoType,
+  type HitokotoType,
+} from "./hitokotoModel";
 
 const imageList = [
   "\n" +
@@ -30,6 +55,7 @@ const imageList = [
   "\n"
 ];
 const fallbackSentence = "愿你在此寻得片刻安宁。";
+const selectedType = ref<HitokotoType>(DEFAULT_HITOKOTO_TYPE);
 const typer = reactive({
   output: "",
   isEnd: false,
@@ -41,6 +67,7 @@ const typer = reactive({
   sentencePause: false,
 });
 const startTyping = (sentence: string) => {
+  typer.output = "";
   new EasyTyper(
       typer,
       sentence || fallbackSentence,
@@ -50,8 +77,8 @@ const startTyping = (sentence: string) => {
       }
   );
 };
-const fetchSentence = () => {
-  fetch("https://international.v1.hitokoto.cn/?c=d")
+const fetchSentence = (type: HitokotoType = selectedType.value) => {
+  fetch(buildHitokotoUrl(type))
       .then((res) => res.json())
       .then(({hitokoto}) => {
         startTyping(hitokoto);
@@ -60,8 +87,23 @@ const fetchSentence = () => {
         startTyping(fallbackSentence);
       });
 };
+const handleStoredTypeChange = (event: Event) => {
+  const nextType = normalizeHitokotoType((event as CustomEvent).detail);
+  selectedType.value = nextType;
+  fetchSentence(nextType);
+};
+const handleTypeChange = () => {
+  selectedType.value = normalizeHitokotoType(selectedType.value);
+  localStorage.setItem(HITOKOTO_TYPE_STORAGE_KEY, selectedType.value);
+  window.dispatchEvent(new CustomEvent(HITOKOTO_TYPE_CHANGE_EVENT, {detail: selectedType.value}));
+};
 onMounted(() => {
+  selectedType.value = normalizeHitokotoType(localStorage.getItem(HITOKOTO_TYPE_STORAGE_KEY));
+  window.addEventListener(HITOKOTO_TYPE_CHANGE_EVENT, handleStoredTypeChange);
   fetchSentence();
+});
+onBeforeUnmount(() => {
+  window.removeEventListener(HITOKOTO_TYPE_CHANGE_EVENT, handleStoredTypeChange);
 });
 </script>
 
@@ -148,12 +190,58 @@ onMounted(() => {
 }
 
 .quote-label {
-  display: block;
-  margin-bottom: 0.18rem;
+  display: inline-flex;
+  align-items: center;
   color: var(--home-accent);
   font-size: 0.76rem;
   font-weight: 800;
   line-height: 1.2;
+}
+
+.quote-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin-bottom: 0.18rem;
+}
+
+.quote-type {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  flex: 0 0 auto;
+  max-width: 8.2rem;
+  padding: 0.12rem 0.18rem 0.12rem 0.45rem;
+  border: 1px solid rgba(85, 162, 160, 0.32);
+  border-radius: 999px;
+  background-color: rgba(255, 254, 250, 0.64);
+  color: rgba(51, 51, 51, 0.58);
+  font-size: 0.7rem;
+  line-height: 1;
+
+  span {
+    flex: 0 0 auto;
+  }
+}
+
+.quote-type-select {
+  max-width: 5.6rem;
+  height: 1.3rem;
+  padding: 0 0.32rem;
+  border: 0;
+  outline: none;
+  background-color: transparent;
+  color: rgba(51, 51, 51, 0.78);
+  font-size: 0.72rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: color .18s ease;
+
+  &:hover,
+  &:focus {
+    color: rgba(51, 51, 51, 0.92);
+  }
 }
 
 .quote-text {
@@ -229,6 +317,18 @@ onMounted(() => {
     bottom: 0.75rem;
     width: auto;
     padding: 0.55rem 0.7rem 0.58rem 0.78rem;
+  }
+
+  .quote-type {
+    max-width: 7.4rem;
+    padding-left: 0.36rem;
+    font-size: 0.66rem;
+  }
+
+  .quote-type-select {
+    max-width: 4.85rem;
+    height: 1.25rem;
+    font-size: 0.68rem;
   }
 
   .quote-text {
