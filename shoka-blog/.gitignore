@@ -13,6 +13,7 @@ blog
 dist-ssr
 *.local
 .tmp/
+.temp/
 
 # Editor directories and files
 .vscode/*
