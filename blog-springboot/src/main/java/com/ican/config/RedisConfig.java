@@ -14,6 +14,7 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
@@ -28,6 +29,7 @@ import java.util.concurrent.TimeUnit;
  * @date 2022/12/02 15:40
  **/
 @Configuration
+@Profile("!test")
 public class RedisConfig {
     @Bean
     public Cache<String, Object> localCache() {
