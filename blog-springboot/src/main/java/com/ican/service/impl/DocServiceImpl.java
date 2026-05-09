@@ -237,10 +237,7 @@ public class DocServiceImpl extends ServiceImpl<DocMapper, Doc> implements DocSe
 
     @Override
     public List<Integer> listFavouriteDocs(Integer userId) {
-        List<String> favoriteIds = userFavoriteMapper.selectFavoriteIdsByUserId(userId);
-        return favoriteIds.stream()
-                .map(Integer::parseInt)
-                .collect(Collectors.toList());
+        return userFavoriteMapper.selectFavoriteIdsByUserId(userId);
     }
 
     @Override

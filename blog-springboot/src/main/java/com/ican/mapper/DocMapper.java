@@ -50,12 +50,12 @@ public interface DocMapper extends BaseMapper<Doc> {
     /**
      * 收藏+1
      */
-    @Insert("INSERT INTO t_user_favorite (user_id, doc_id) VALUES (#{userId}, #{docId})")
+    @Insert("INSERT INTO t_user_favorite (user_id, favorite_id) VALUES (#{userId}, #{docId})")
     void addFavorite(Integer userId, Integer docId);
 
     /**
      * 收藏-1
      */
-    @Delete("DELETE FROM t_user_favorite WHERE user_id = #{userId} AND doc_id = #{docId}")
+    @Delete("DELETE FROM t_user_favorite WHERE user_id = #{userId} AND favorite_id = #{docId}")
     void cancelFavorite(Integer userId, Integer docId);
 }
