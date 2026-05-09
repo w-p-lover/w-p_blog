@@ -71,6 +71,7 @@ public class ArticleHotScoreServiceImpl implements ArticleHotScoreService {
         }
 
         long costMillis = System.currentTimeMillis() - start;
+        blogMetrics.recordArticleHotScoreRefresh(articles.size(), costMillis);
         log.info("文章热度分刷新完成: count={}, cost={}ms", articles.size(), costMillis);
         return new ArticleHotScoreRefreshResultVO(articles.size(), costMillis);
     }
