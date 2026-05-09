@@ -3,13 +3,14 @@
 <mapper namespace="com.ican.mapper.UserFavoriteMapper">
 
     <sql id="Base_Column_List">
-        id, user_id, doc_id
+        id, user_id, favorite_id, favorite_type, create_time, update_time
     </sql>
 
-    <select id="selectFavoriteIdsByUserId" resultType="java.lang.String">
-        SELECT doc_id
+    <select id="selectFavoriteIdsByUserId" resultType="java.lang.Integer">
+        SELECT favorite_id
         FROM t_user_favorite
         WHERE user_id = #{userId}
+          AND is_deleted = 0
     </select>
 
     <select id="selectByUserIdAndFavoriteId" resultType="com.ican.entity.UserFavorite">
@@ -17,18 +18,30 @@
         <include refid="Base_Column_List"/>
         FROM t_user_favorite
         WHERE user_id = #{userId}
-        AND doc_id = #{favoriteId}
+        AND favorite_id = #{favoriteId}
+        AND is_deleted = 0
     </select>
 
     <select id="selectUserIdsByFavoriteId" resultType="java.lang.Integer">
         SELECT user_id
         FROM t_user_favorite
-        WHERE doc_id = #{favoriteId}
+        WHERE favorite_id = #{favoriteId}
+          AND is_deleted = 0
     </select>
 
     <select id="countByFavoriteId" resultType="java.lang.Integer">
         SELECT COUNT(1)
         FROM t_user_favorite
-        WHERE doc_id = #{favoriteId}
+        WHERE favorite_id = #{favoriteId}
+          AND is_deleted = 0
+    </select>
+
+    <select id="selectArticleFavoriteCount" resultType="com.ican.model.vo.ArticleFavoriteCountVO">
+        SELECT favorite_id AS articleId,
+               COUNT(1) AS favoriteCount
+        FROM t_user_favorite
+        WHERE favorite_type = 2
+          AND is_deleted = 0
+        GROUP BY favorite_id
     </select>
 </mapper>
