@@ -73,6 +73,15 @@
         GROUP BY type_id
     </select>
 
+    <select id="selectArticleCommentCount" resultType="com.ican.model.vo.CommentCountVO">
+        SELECT type_id AS id,
+               COUNT(1) AS comment_count
+        FROM t_comment
+        WHERE comment_type = 1
+          AND is_check = 1
+        GROUP BY type_id
+    </select>
+
     <select id="selectRecentComment" resultType="com.ican.model.vo.RecentCommentVO">
         SELECT c.id,
                u.nickname,
