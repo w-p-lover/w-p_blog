@@ -4,6 +4,7 @@ import com.ican.cache.MultiLevelCacheManager;
 import com.ican.mapper.*;
 import com.ican.metrics.BlogMetrics;
 import com.ican.model.vo.ArticleVO;
+import com.ican.service.HotArticleWarmupService;
 import com.ican.service.RedisService;
 import com.ican.service.TagService;
 import com.ican.strategy.context.SearchStrategyContext;
@@ -55,6 +56,8 @@ class ArticleServiceImplTest {
     @Mock
     private MultiLevelCacheManager cacheManager;
     @Mock
+    private HotArticleWarmupService hotArticleWarmupService;
+    @Mock
     private RabbitTemplate rabbitTemplate;
 
     private ArticleServiceImpl articleService;
@@ -74,6 +77,7 @@ class ArticleServiceImplTest {
                 blogFileMapper,
                 blogMetrics,
                 cacheManager,
+                hotArticleWarmupService,
                 rabbitTemplate
         );
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
