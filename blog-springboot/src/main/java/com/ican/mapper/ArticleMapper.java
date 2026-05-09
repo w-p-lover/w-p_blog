@@ -142,6 +142,13 @@ public interface ArticleMapper extends BaseMapper<Article> {
     List<ArticleStatisticsVO> selectArticleStatistics();
 
     /**
+     * 查询热度分计算所需文章基础数据
+     *
+     * @return 文章热度分来源数据
+     */
+    List<ArticleHotScoreSourceVO> selectHotScoreSourceArticles();
+
+    /**
      * 查询推荐文章
      *
      * @return 推荐文章

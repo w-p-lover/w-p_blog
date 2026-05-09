@@ -53,6 +53,13 @@ public interface CommentMapper extends BaseMapper<Comment> {
     List<CommentCountVO> selectCommentCountByTypeId(@Param("typeIdList") List<Integer> typeIdList, @Param("commentType") Integer commentType);
 
     /**
+     * 统计已审核文章评论数
+     *
+     * @return 文章评论数
+     */
+    List<CommentCountVO> selectArticleCommentCount();
+
+    /**
      * 查询最新评论
      *
      * @return 最新评论
