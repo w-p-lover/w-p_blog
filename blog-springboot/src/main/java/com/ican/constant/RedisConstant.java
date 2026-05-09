@@ -23,6 +23,26 @@ public class RedisConstant {
     public static final String ARTICLE_VIEW_COUNT = "article_view_count";
 
     /**
+     * 文章详情缓存前缀
+     */
+    public static final String ARTICLE_DETAIL_PREFIX = "article:";
+
+    /**
+     * 文章热度分 ZSet
+     */
+    public static final String ARTICLE_HOT_SCORE = "blog:article:hot_score";
+
+    /**
+     * 文章热度分刷新锁
+     */
+    public static final String ARTICLE_HOT_REFRESH_LOCK = "lock:article:hot:refresh";
+
+    /**
+     * 热点文章预热锁
+     */
+    public static final String ARTICLE_HOT_WARMUP_LOCK = "lock:article:hot:warmup";
+
+    /**
      * 文章点赞量
      */
     public static final String ARTICLE_LIKE_COUNT = "article_like_count";
