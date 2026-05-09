@@ -218,6 +218,11 @@ public class RedisServiceImpl implements RedisService {
     }
 
     @Override
+    public <T> Boolean setZsetScore(String key, T value, Double score) {
+        return redisTemplate.opsForZSet().add(key, value, score);
+    }
+
+    @Override
     public <T> Double decrZet(String key, T value, Double score) {
         return redisTemplate.opsForZSet().incrementScore(key, value, -score);
     }
@@ -229,9 +234,18 @@ public class RedisServiceImpl implements RedisService {
 
     @Override
     public Map<Object, Double> zReverseRangeWithScore(String key, long start, long end) {
-        return redisTemplate.opsForZSet().reverseRangeWithScores(key, start, end)
+        Set<ZSetOperations.TypedTuple<Object>> tuples = redisTemplate.opsForZSet()
+                .reverseRangeWithScores(key, start, end);
+        if (Objects.isNull(tuples)) {
+            return Collections.emptyMap();
+        }
+        return tuples
                 .stream()
-                .collect(Collectors.toMap(ZSetOperations.TypedTuple::getValue, ZSetOperations.TypedTuple::getScore));
+                .collect(Collectors.toMap(
+                        ZSetOperations.TypedTuple::getValue,
+                        ZSetOperations.TypedTuple::getScore,
+                        (oldValue, newValue) -> oldValue,
+                        LinkedHashMap::new));
     }
 
     @Override

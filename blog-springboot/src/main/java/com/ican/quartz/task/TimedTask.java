@@ -4,6 +4,8 @@ import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import com.ican.mapper.ChatMapper;
 import com.ican.mapper.VisitLogMapper;
+import com.ican.service.ArticleHotScoreService;
+import com.ican.service.HotArticleWarmupService;
 import com.ican.service.RedisService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -28,6 +30,12 @@ public class TimedTask {
 
     @Autowired
     private ChatMapper chatMapper;
+
+    @Autowired
+    private ArticleHotScoreService articleHotScoreService;
+
+    @Autowired
+    private HotArticleWarmupService hotArticleWarmupService;
 
 
     /**
@@ -58,6 +66,20 @@ public class TimedTask {
     public void clearChatRecord() {
         DateTime endTime = DateUtil.beginOfDay(DateUtil.offsetDay(new Date(), -15));
         chatMapper.deleteChatRecord(endTime);
+    }
+
+    /**
+     * 刷新文章热度分
+     */
+    public void refreshArticleHotScore() {
+        articleHotScoreService.refreshHotScores();
+    }
+
+    /**
+     * 预热热点文章缓存
+     */
+    public void warmupHotArticles() {
+        hotArticleWarmupService.warmupTopHotArticles(0);
     }
 
 }

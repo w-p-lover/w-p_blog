@@ -346,6 +346,18 @@
         ORDER BY date DESC
     </select>
 
+    <select id="selectHotScoreSourceArticles" resultType="com.ican.model.vo.ArticleHotScoreSourceVO">
+        SELECT id AS articleId,
+               article_title AS articleTitle,
+               views,
+               is_top AS isTop,
+               is_recommend AS isRecommend,
+               create_time AS createTime
+        FROM t_article
+        WHERE is_delete = 0
+          AND `status` = 1
+    </select>
+
     <select id="selectArticleRecommend" resultType="com.ican.model.vo.ArticleRecommendVO">
         SELECT id,
                article_title,
