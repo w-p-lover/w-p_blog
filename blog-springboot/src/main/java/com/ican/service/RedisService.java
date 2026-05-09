@@ -354,6 +354,16 @@ public interface RedisService {
     <T> Double incrZet(String key, T value, Double score);
 
     /**
+     * Zset设置指定分数
+     *
+     * @param key   键
+     * @param value 值
+     * @param score 分数
+     * @return 是否成功
+     */
+    <T> Boolean setZsetScore(String key, T value, Double score);
+
+    /**
      * Zset减少分数
      *
      * @param key   键
