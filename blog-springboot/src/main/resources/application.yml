@@ -202,6 +202,20 @@ cache:
       wait-seconds: ${BLOG_CACHE_LOCK_WAIT_SECONDS:3}
       lease-seconds: ${BLOG_CACHE_LOCK_LEASE_SECONDS:10}
 
+article:
+  hot-score:
+    top-limit: ${BLOG_ARTICLE_HOT_TOP_LIMIT:20}
+    warmup-limit: ${BLOG_ARTICLE_HOT_WARMUP_LIMIT:10}
+    detail-cache-ttl-minutes: ${BLOG_ARTICLE_HOT_DETAIL_CACHE_TTL_MINUTES:30}
+    weights:
+      view: ${BLOG_ARTICLE_HOT_WEIGHT_VIEW:1.0}
+      like: ${BLOG_ARTICLE_HOT_WEIGHT_LIKE:5.0}
+      comment: ${BLOG_ARTICLE_HOT_WEIGHT_COMMENT:8.0}
+      favorite: ${BLOG_ARTICLE_HOT_WEIGHT_FAVORITE:10.0}
+      recommend: ${BLOG_ARTICLE_HOT_WEIGHT_RECOMMEND:30.0}
+      top: ${BLOG_ARTICLE_HOT_WEIGHT_TOP:50.0}
+      time-decay-per-day: ${BLOG_ARTICLE_HOT_WEIGHT_DECAY_PER_DAY:1.5}
+
 logging:
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} %highlight(%-5level) %magenta(${PID:- }) --- [%t] %cyan(%-40.40logger{39}) : %m%n"

@@ -16,6 +16,7 @@ import com.ican.model.dto.*;
 import com.ican.model.dto.ArticleAiMessage;
 import com.ican.model.vo.*;
 import com.ican.service.ArticleService;
+import com.ican.service.HotArticleWarmupService;
 import com.ican.service.RedisService;
 import com.ican.service.TagService;
 import com.ican.strategy.context.SearchStrategyContext;
@@ -86,6 +87,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     private final BlogMetrics blogMetrics;
 
     private final MultiLevelCacheManager cacheManager;
+
+    private final HotArticleWarmupService hotArticleWarmupService;
 
     private final RabbitTemplate rabbitTemplate;
 
@@ -272,22 +275,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         }
 
         if (!hotCandidates.isEmpty()) {
-            CompletableFuture.runAsync(() -> batchProcessHotArticles(hotCandidates), hotArticleExecutor);
+            CompletableFuture.runAsync(() -> hotArticleWarmupService.warmupArticleIds(hotCandidates), hotArticleExecutor);
         }
-    }
-
-    private void batchProcessHotArticles(Set<Integer> articleIds) {
-        articleIds.forEach(id -> {
-            String cacheKey = "article:" + id;
-            // 使用多级缓存管理器预热缓存
-            cacheManager.get(cacheKey, key -> {
-                ArticleVO article = articleMapper.selectArticleHomeById(id);
-                if (article != null) {
-                    hydrateArticleStatsFromRedis(id, article);
-                }
-                return article;
-            }, 30); // 30 分钟过期
-        });
     }
 
     /**

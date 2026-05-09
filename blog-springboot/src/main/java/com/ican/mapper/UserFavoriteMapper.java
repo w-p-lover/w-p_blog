@@ -2,6 +2,7 @@ package com.ican.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.ican.entity.UserFavorite;
+import com.ican.model.vo.ArticleFavoriteCountVO;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -20,7 +21,7 @@ public interface UserFavoriteMapper extends BaseMapper<UserFavorite> {
      * @param userId 用户ID
      * @return 收藏ID列表
      */
-    List<String> selectFavoriteIdsByUserId(@Param("userId") Integer userId);
+    List<Integer> selectFavoriteIdsByUserId(@Param("userId") Integer userId);
 
     /**
      * 根据用户ID和收藏ID查询
@@ -29,7 +30,7 @@ public interface UserFavoriteMapper extends BaseMapper<UserFavorite> {
      * @param favoriteId 收藏ID
      * @return 用户收藏记录
      */
-    UserFavorite selectByUserIdAndFavoriteId(@Param("userId") Integer userId, @Param("favoriteId") String favoriteId);
+    UserFavorite selectByUserIdAndFavoriteId(@Param("userId") Integer userId, @Param("favoriteId") Integer favoriteId);
 
     /**
      * 根据收藏ID查询用户ID列表
@@ -37,7 +38,7 @@ public interface UserFavoriteMapper extends BaseMapper<UserFavorite> {
      * @param favoriteId 收藏ID
      * @return 用户ID列表
      */
-    List<Integer> selectUserIdsByFavoriteId(@Param("favoriteId") String favoriteId);
+    List<Integer> selectUserIdsByFavoriteId(@Param("favoriteId") Integer favoriteId);
 
     /**
      * 统计收藏数量
@@ -45,5 +46,12 @@ public interface UserFavoriteMapper extends BaseMapper<UserFavorite> {
      * @param favoriteId 收藏ID
      * @return 收藏数量
      */
-    Integer countByFavoriteId(@Param("favoriteId") String favoriteId);
+    Integer countByFavoriteId(@Param("favoriteId") Integer favoriteId);
+
+    /**
+     * 统计文章收藏数
+     *
+     * @return 文章收藏统计
+     */
+    List<ArticleFavoriteCountVO> selectArticleFavoriteCount();
 }
