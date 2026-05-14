@@ -1,7 +1,6 @@
 
 .idea
 blog-springboot/target/
-blog-springboot/src/main/resources/bg_images/
 blog-springboot/src/main/resources/renren-generator-1.0.0.jar
 blog-springboot/src/main/resources/static/Wallhaven/
 blog-springboot/src/main/resources/static/__pycache__/
