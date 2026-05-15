@@ -145,7 +145,7 @@ import {
 
 const route = useRoute();
 const router = useRouter();
-const { music } = useStore();
+const { music, user } = useStore();
 
 const showEditDialog = ref(false);
 const lyricLines = ref<LyricLine[]>([]);
@@ -207,11 +207,14 @@ const openEditPanel = () => {
   showEditDialog.value = true;
 };
 
-const saveSong = () => {
+const saveSong = async () => {
   if (!song.value) {
     return;
   }
-  music.updateItem(song.value.id, { ...editForm });
+  const saved = await music.updateItemWithPermission(song.value.id, { ...editForm }, user.hasPermission);
+  if (!saved) {
+    return;
+  }
   showEditDialog.value = false;
   window.$message?.success("已保存歌曲展示");
 };
@@ -303,9 +306,10 @@ const handlePlaybackEnded = () => {
 
 watch(song, syncEditForm, { immediate: true });
 watch(() => song.value?.id, loadLyric, { immediate: true });
-onMounted(() => {
+onMounted(async () => {
   document.body.classList.add("music-library-page");
-  music.ensureDefaultSongs();
+  await music.fetchLibrary();
+  await music.ensureDefaultSongs();
 });
 
 onBeforeUnmount(() => {

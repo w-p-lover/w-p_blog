@@ -40,6 +40,16 @@ export interface MusicPlaylist {
   cover?: string;
 }
 
+export interface MusicLibraryPayload {
+  items?: Array<Partial<MusicItem> & { updateTime?: string }>;
+  playlists?: MusicPlaylist[];
+}
+
+export interface MusicLibraryData {
+  items: MusicItem[];
+  playlists: MusicPlaylist[];
+}
+
 export interface MusicFilter {
   keyword: string;
   tag: string;
@@ -64,6 +74,22 @@ const DEFAULT_COVER =
 
 export const seedMusicPlaylists: MusicPlaylist[] = [];
 export const seedMusicItems: MusicItem[] = [];
+
+export const normalizeMusicLibraryPayload = (payload?: MusicLibraryPayload): MusicLibraryData => {
+  return {
+    items: (payload?.items || []).map((item) => normalizeMusicItemPayload(item)),
+    playlists: payload?.playlists || [],
+  };
+};
+
+export const normalizeMusicItemPayload = (item: Partial<MusicItem> & { updateTime?: string }): MusicItem => {
+  const fallback = createManualMusicItem(item);
+  return {
+    ...fallback,
+    ...item,
+    updatedAt: item.updateTime || item.updatedAt || item.importedAt || fallback.updatedAt,
+  };
+};
 
 export const extractNeteasePlaylistId = (source: string) => {
   const value = source.trim();

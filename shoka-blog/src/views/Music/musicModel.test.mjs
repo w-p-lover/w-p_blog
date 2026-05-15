@@ -23,6 +23,7 @@ const {
   getFeaturedMusic,
   getMusicStats,
   joinMusicTags,
+  normalizeMusicLibraryPayload,
   normalizeMetingSong,
   parseLyricText,
   sortMusicItems,
@@ -121,3 +122,25 @@ assert.equal(getMusicStats(fixtureItems).tagCount, 4);
 assert.equal(getFeaturedMusic(fixtureItems, 2).length, 2);
 assert.equal(getFeaturedMusic(fixtureItems, 2)[0].isPinned, true);
 assert.deepEqual(sortMusicItems(fixtureItems, "rating").map((item) => item.rating), [5, 4, 4]);
+
+const backendLibrary = normalizeMusicLibraryPayload({
+  items: [
+    {
+      ...normalized,
+      id: "backend-song",
+      updateTime: "2026-05-15T11:00:00",
+    },
+  ],
+  playlists: [
+    {
+      id: "backend-list",
+      name: "后端歌单",
+      importedAt: "2026-05-15T10:00:00",
+      updateTime: "2026-05-15T11:00:00",
+    },
+  ],
+});
+
+assert.equal(backendLibrary.items[0].updatedAt, "2026-05-15T11:00:00");
+assert.equal(backendLibrary.playlists[0].name, "后端歌单");
+assert.deepEqual(normalizeMusicLibraryPayload({}).items, []);
