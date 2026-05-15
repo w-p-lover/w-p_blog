@@ -3,6 +3,7 @@ package com.ican.model.vo;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -68,4 +69,9 @@ public class UserInfoVO {
      * 登录类型
      */
     private Integer loginType;
+
+    /**
+     * 权限码集合
+     */
+    private List<String> permissionList;
 }

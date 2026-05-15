@@ -103,6 +103,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 .commentLikeSet(commentLikeSet)
                 .talkLikeSet(talkLikeSet)
                 .loginType(user.getLoginType())
+                .permissionList(StpUtil.getPermissionList())
                 .build();
     }
 
