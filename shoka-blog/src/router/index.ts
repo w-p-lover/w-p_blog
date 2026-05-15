@@ -50,6 +50,20 @@ const routes: RouteRecordRaw[] = [
         },
     },
     {
+        path: "/music",
+        component: () => import("@/views/Music/index.vue"),
+        meta: {
+            title: "音乐库",
+        },
+    },
+    {
+        path: "/music/:id",
+        component: () => import("@/views/Music/MusicDetail.vue"),
+        meta: {
+            title: "音乐详情",
+        },
+    },
+    {
         path: "/category/:categoryId",
         component: () => import("@/views/Category/ArticleList.vue"),
     },

@@ -43,6 +43,11 @@ export const activityMenuItems: MenuItem[] = [
     path: "/album",
   },
   {
+    name: "音乐库",
+    icon: "laba",
+    path: "/music",
+  },
+  {
     name: "留言板",
     icon: "message",
     path: "/message",
@@ -123,7 +128,7 @@ export const menuList: MenuGroup[] = [
     name: "动态",
     icon: "talk",
     path: "/talk",
-    matchPaths: ["/talk", "/album", "/message", "/friend"],
+    matchPaths: ["/talk", "/album", "/message", "/friend", "/music"],
     children: activityMenuItems,
   },
   {
