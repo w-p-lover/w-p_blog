@@ -1,23 +1,32 @@
 import {
   DEFAULT_NETEASE_PLAYLIST_ID,
   DEFAULT_NETEASE_PLAYLIST_NAME,
-  METING_PLAYLIST_API,
   createManualMusicItem,
   extractNeteasePlaylistId,
-  normalizeMetingSong,
+  normalizeMusicItemPayload,
+  normalizeMusicLibraryPayload,
   seedMusicItems,
   seedMusicPlaylists,
   splitPlaylistSources,
-  type MetingSong,
   type MusicFilter,
   type MusicItem,
   type MusicPlaylist,
 } from "@/views/Music/musicModel";
+import {
+  addMusicItem,
+  getMusicLibrary,
+  importNeteasePlaylist as importNeteasePlaylistApi,
+  resetMusicLibrary,
+  updateMusicItem,
+  type MusicItemForm,
+} from "@/api/music";
+import { getToken } from "@/utils/token";
 
 interface MusicState {
   items: MusicItem[];
   playlists: MusicPlaylist[];
   activeItemId: string;
+  libraryLoading: boolean;
   importSource: string;
   importLoading: boolean;
   importError: string;
@@ -29,6 +38,8 @@ interface ImportPlaylistOptions {
   silent?: boolean;
   keepFilter?: boolean;
 }
+
+type PermissionChecker = (permission: string) => boolean;
 
 const initialFilter = (): MusicFilter => ({
   keyword: "",
@@ -42,6 +53,7 @@ const useMusicStore = defineStore("useMusicStore", {
     items: seedMusicItems,
     playlists: seedMusicPlaylists,
     activeItemId: seedMusicItems[0]?.id || "",
+    libraryLoading: false,
     importSource: "",
     importLoading: false,
     importError: "",
@@ -61,7 +73,36 @@ const useMusicStore = defineStore("useMusicStore", {
     setSortType(sortType: string) {
       this.sortType = sortType;
     },
-    updateItem(id: string, patch: Partial<MusicItem>) {
+    replaceLibrary(payload: { items?: MusicItem[]; playlists?: MusicPlaylist[] }) {
+      this.items = payload.items || [];
+      this.playlists = payload.playlists || [];
+      if (!this.items.some((item) => item.id === this.activeItemId)) {
+        this.activeItemId = this.items[0]?.id || "";
+      }
+    },
+    async fetchLibrary() {
+      this.libraryLoading = true;
+      try {
+        const response = await getMusicLibrary({
+          keyword: this.filter.keyword || undefined,
+          playlistId: this.filter.playlistId !== "all" ? this.filter.playlistId : undefined,
+          tag: this.filter.tag !== "all" ? this.filter.tag : undefined,
+          mood: this.filter.mood !== "all" ? this.filter.mood : undefined,
+          sortType: this.sortType,
+        });
+        if (response.data.flag) {
+          this.replaceLibrary(normalizeMusicLibraryPayload(response.data.data));
+        }
+      } finally {
+        this.libraryLoading = false;
+      }
+    },
+    async updateItem(id: string, patch: Partial<MusicItem>) {
+      const oldItem = this.items.find((item) => item.id === id);
+      if (!oldItem) {
+        return;
+      }
+      const oldItems = [...this.items];
       this.items = this.items.map((item) =>
         item.id === id
           ? {
@@ -71,9 +112,49 @@ const useMusicStore = defineStore("useMusicStore", {
             }
           : item,
       );
+      const response = await updateMusicItem(id, {
+        ...oldItem,
+        ...patch,
+      } as MusicItemForm);
+      if (!response.data.flag) {
+        this.items = oldItems;
+        return;
+      }
+      if (response.data.flag && response.data.data) {
+        const savedItem = normalizeMusicItemPayload(response.data.data);
+        this.items = this.items.map((item) => (item.id === id ? savedItem : item));
+      }
     },
-    addManualItem(item: Partial<MusicItem>) {
-      const musicItem = createManualMusicItem(item);
+    async updateItemWithPermission(id: string, patch: Partial<MusicItem>, hasPermission: PermissionChecker) {
+      if (!this.canMutate("music:item:update", hasPermission)) {
+        return false;
+      }
+      await this.updateItem(id, patch);
+      return true;
+    },
+    canMutate(permission: string, hasPermission: PermissionChecker) {
+      if (!getToken()) {
+        this.importError = "请先登录后再维护音乐库";
+        window.$message?.warning(this.importError);
+        return false;
+      }
+      if (!hasPermission(permission)) {
+        this.importError = "当前账号没有音乐库维护权限";
+        window.$message?.warning(this.importError);
+        return false;
+      }
+      return true;
+    },
+    async addManualItem(item: Partial<MusicItem>, hasPermission: PermissionChecker) {
+      if (!this.canMutate("music:item:add", hasPermission)) {
+        return;
+      }
+      const draftItem = createManualMusicItem(item);
+      const response = await addMusicItem(draftItem as MusicItemForm);
+      if (!response.data.flag || !response.data.data) {
+        return;
+      }
+      const musicItem = normalizeMusicItemPayload(response.data.data);
       this.items = [musicItem, ...this.items];
       if (!this.playlists.some((playlist) => playlist.id === musicItem.playlistId)) {
         this.playlists = [
@@ -103,7 +184,10 @@ const useMusicStore = defineStore("useMusicStore", {
       }
       await this.importNeteasePlaylist(DEFAULT_NETEASE_PLAYLIST_ID, { silent: true, keepFilter: true });
     },
-    async importNeteasePlaylist(source: string, options: ImportPlaylistOptions = {}) {
+    async importNeteasePlaylist(source: string, options: ImportPlaylistOptions = {}, hasPermission: PermissionChecker = () => false) {
+      if (!this.canMutate("music:library:import", hasPermission)) {
+        return;
+      }
       const playlistId = extractNeteasePlaylistId(source);
       this.importSource = source;
       this.importError = "";
@@ -115,42 +199,33 @@ const useMusicStore = defineStore("useMusicStore", {
 
       this.importLoading = true;
       try {
-        const response = await fetch(`${METING_PLAYLIST_API}${playlistId}`);
-        if (!response.ok) {
-          throw new Error(`request failed: ${response.status}`);
-        }
-        const result = (await response.json()) as MetingSong[];
-        if (!Array.isArray(result) || !result.length) {
-          throw new Error("empty playlist");
-        }
-
         const playlistName = playlistId === DEFAULT_NETEASE_PLAYLIST_ID ? DEFAULT_NETEASE_PLAYLIST_NAME : `网易云歌曲 ${playlistId}`;
-        const importedItems = result.map((song, index) => normalizeMetingSong(song, playlistId, index, playlistName));
-        const existingKeys = new Set(this.items.map(getDuplicateKey));
-        const nextItems = importedItems.filter((item) => !existingKeys.has(getDuplicateKey(item)));
-
-        this.items = [...nextItems, ...this.items];
-        this.playlists = upsertPlaylist(this.playlists, {
-          id: playlistId,
-          name: playlistName,
-          sourceUrl: `https://music.163.com/#/playlist?id=${playlistId}`,
-          importedAt: new Date().toISOString(),
-          cover: nextItems[0]?.cover || importedItems[0]?.cover,
+        const response = await importNeteasePlaylistApi({
+          source,
+          playlistName,
         });
-        this.activeItemId = nextItems[0]?.id || importedItems[0]?.id || this.activeItemId;
+        if (!response.data.flag) {
+          throw new Error(response.data.msg);
+        }
+        const library = normalizeMusicLibraryPayload(response.data.data);
+        const importedIds = new Set(library.items.map((item) => item.id));
+        const remainingItems = this.items.filter((item) => !importedIds.has(item.id));
+        this.items = [...library.items, ...remainingItems];
+        this.playlists = upsertPlaylists(this.playlists, library.playlists);
+        this.activeItemId = library.items[0]?.id || this.activeItemId;
         if (!options.keepFilter) {
           this.setFilter({ playlistId });
         }
         this.importSource = "";
-      } catch {
+      } catch (error) {
         if (!options.silent) {
-          this.importError = "歌曲读取失败，可以稍后重试，或先手动添加收藏。";
+          this.importError = error instanceof Error && error.message ? error.message : "歌曲读取失败，可以稍后重试，或先手动添加收藏。";
         }
       } finally {
         this.importLoading = false;
       }
     },
-    async importNeteasePlaylists(source: string) {
+    async importNeteasePlaylists(source: string, hasPermission: PermissionChecker) {
       const sources = splitPlaylistSources(source);
       if (!sources.length) {
         this.importError = "请输入公开网易云歌单链接或歌单 ID，系统会导入其中的歌曲";
@@ -158,7 +233,7 @@ const useMusicStore = defineStore("useMusicStore", {
       }
       this.importError = "";
       for (const item of sources) {
-        await this.importNeteasePlaylist(item, { keepFilter: sources.length > 1 });
+        await this.importNeteasePlaylist(item, { keepFilter: sources.length > 1 }, hasPermission);
         if (this.importError) {
           return;
         }
@@ -167,32 +242,32 @@ const useMusicStore = defineStore("useMusicStore", {
         this.setFilter({ playlistId: "all" });
       }
     },
-    resetLibrary() {
-      this.items = seedMusicItems;
-      this.playlists = seedMusicPlaylists;
-      this.activeItemId = seedMusicItems[0]?.id || "";
-      this.filter = initialFilter();
-      this.sortType = "curated";
-      this.importSource = "";
-      this.importError = "";
+    async resetLibrary(hasPermission: PermissionChecker) {
+      if (!this.canMutate("music:library:reset", hasPermission)) {
+        return;
+      }
+      const response = await resetMusicLibrary();
+      if (response.data.flag) {
+        this.items = seedMusicItems;
+        this.playlists = seedMusicPlaylists;
+        this.activeItemId = seedMusicItems[0]?.id || "";
+        this.filter = initialFilter();
+        this.sortType = "curated";
+        this.importSource = "";
+        this.importError = "";
+      }
     },
   },
   persist: {
     key: "music-library",
+    paths: ["activeItemId", "filter", "sortType"],
     storage: localStorage,
   },
 });
 
-const getDuplicateKey = (item: MusicItem) => {
-  return `${item.playlistId}-${item.title.trim().toLowerCase()}-${item.artist.trim().toLowerCase()}`;
-};
-
-const upsertPlaylist = (playlists: MusicPlaylist[], playlist: MusicPlaylist) => {
-  const exists = playlists.some((item) => item.id === playlist.id);
-  if (!exists) {
-    return [playlist, ...playlists];
-  }
-  return playlists.map((item) => (item.id === playlist.id ? { ...item, ...playlist } : item));
+const upsertPlaylists = (playlists: MusicPlaylist[], incomingPlaylists: MusicPlaylist[]) => {
+  const incomingIds = new Set(incomingPlaylists.map((playlist) => playlist.id));
+  return [...incomingPlaylists, ...playlists.filter((playlist) => !incomingIds.has(playlist.id))];
 };
 
 export default useMusicStore;

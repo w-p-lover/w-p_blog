@@ -19,6 +19,7 @@ const useUserStore = defineStore("useUserStore", {
         articleLikeSet: [],
         commentLikeSet: [],
         talkLikeSet: [],
+        permissionList: [],
     }),
     actions: {
         GetUserInfo() {
@@ -37,6 +38,7 @@ const useUserStore = defineStore("useUserStore", {
                             this.articleLikeSet = data.data.articleLikeSet;
                             this.commentLikeSet = data.data.commentLikeSet;
                             this.talkLikeSet = data.data.talkLikeSet;
+                            this.permissionList = data.data.permissionList || [];
                         }
                         resolve(data);
                     })
@@ -99,7 +101,11 @@ const useUserStore = defineStore("useUserStore", {
             this.intro = user.intro;
         },
     },
-    getters: {},
+    getters: {
+        hasPermission: (state) => {
+            return (permission: string) => state.permissionList.includes(permission);
+        },
+    },
     persist: {
         key: "user",
         storage: sessionStorage,

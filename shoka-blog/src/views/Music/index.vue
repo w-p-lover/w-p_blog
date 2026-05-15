@@ -160,7 +160,7 @@ import {
   type MusicItem,
 } from "@/views/Music/musicModel";
 
-const { music } = useStore();
+const { music, user } = useStore();
 const router = useRouter();
 
 const showImportDialog = ref(false);
@@ -232,7 +232,7 @@ const selectPlaylistGroup = (id: string) => {
 };
 
 const importPlaylist = async () => {
-  await music.importNeteasePlaylists(importSource.value);
+  await music.importNeteasePlaylists(importSource.value, user.hasPermission);
   if (!music.importError) {
     showImportDialog.value = false;
     window.$message?.success("歌曲已导入");
@@ -248,17 +248,20 @@ const openManualPanel = () => {
   showManualDialog.value = true;
 };
 
-const addManualItem = () => {
+const addManualItem = async () => {
   if (!manualForm.title.trim()) {
     window.$message?.warning("请输入歌名");
     return;
   }
-  music.addManualItem({
+  await music.addManualItem({
     ...manualForm,
     playlistId: "manual",
     playlistName: "手动收藏",
     note: manualForm.summary,
-  });
+  }, user.hasPermission);
+  if (music.importError) {
+    return;
+  }
   showManualDialog.value = false;
   window.$message?.success("已加入音乐库");
 };
@@ -267,9 +270,10 @@ const clearFilters = () => {
   music.setFilter({ keyword: "", tag: "all", playlistId: "all", mood: "all" });
 };
 
-onMounted(() => {
+onMounted(async () => {
   document.body.classList.add("music-library-page");
-  music.ensureDefaultSongs();
+  await music.fetchLibrary();
+  await music.ensureDefaultSongs();
 });
 
 onBeforeUnmount(() => {

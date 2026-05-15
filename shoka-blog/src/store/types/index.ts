@@ -86,6 +86,10 @@ export interface UserState {
      * 说说点赞集合
      */
     talkLikeSet: number[];
+    /**
+     * 权限码集合
+     */
+    permissionList: string[];
 }
 
 /**
