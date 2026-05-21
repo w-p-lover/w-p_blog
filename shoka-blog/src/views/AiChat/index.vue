@@ -29,9 +29,24 @@
         <header class="ai-hero">
           <div class="hero-glow hero-glow--left"></div>
           <div class="hero-glow hero-glow--right"></div>
-          <p class="hero-badge">INTELLIGENT RESEARCH</p>
-          <h2>用更专业的方式，提一个更聪明的问题</h2>
-          <p class="hero-desc">聚焦技术排障、方案取舍、架构建议。回答会尽量结构化并附参考来源。</p>
+          <p class="hero-badge">{{ currentMode.badge }}</p>
+          <h2>{{ currentMode.headline }}</h2>
+          <p class="hero-desc">{{ currentMode.description }}</p>
+
+          <div class="mode-switch" role="tablist" aria-label="AI 对话方向">
+            <button
+              v-for="item in aiChatModes"
+              :key="item.key"
+              type="button"
+              class="mode-switch__item"
+              :class="{ active: item.key === activeMode }"
+              :aria-selected="item.key === activeMode"
+              role="tab"
+              @click="changeMode(item.key)"
+            >
+              {{ item.label }}
+            </button>
+          </div>
 
           <div class="hero-stats">
             <div class="stat-item">
@@ -58,8 +73,8 @@
 
         <section class="qa-card">
           <div class="card-title-row">
-            <h3>提问面板</h3>
-            <span class="card-title-tip">支持 500 字内精准提问</span>
+            <h3>{{ currentMode.inputTitle }}</h3>
+            <span class="card-title-tip">{{ currentMode.inputTip }}</span>
           </div>
 
           <el-input
@@ -68,12 +83,12 @@
             :rows="6"
             maxlength="500"
             show-word-limit
-            placeholder="例如：我的 SpringBoot 项目 Redis 命中率下降，如何从指标、键设计、过期策略三个层面定位问题？"
+            :placeholder="currentMode.placeholder"
           />
 
           <div class="prompt-list">
             <button
-              v-for="item in quickPrompts"
+              v-for="item in currentMode.quickPrompts"
               :key="item"
               type="button"
               class="prompt-chip"
@@ -84,7 +99,7 @@
           </div>
 
           <div class="actions">
-            <el-button type="primary" :loading="submitting" @click="handleSubmit">开始分析</el-button>
+            <el-button type="primary" :loading="submitting" @click="handleSubmit">{{ currentMode.submitText }}</el-button>
             <el-button :disabled="submitting" @click="handleClear">重置内容</el-button>
           </div>
         </section>
@@ -94,7 +109,7 @@
             <h3>AI 回答</h3>
             <button class="ghost-btn" type="button" @click="handleCopyAnswer">复制内容</button>
           </div>
-          <div class="answer-content">{{ answer }}</div>
+          <v-md-preview class="answer-content" :text="normalizeAiMarkdown(answer)"></v-md-preview>
         </section>
 
         <section v-if="sources.length" class="source-card">
@@ -115,28 +130,30 @@
 </template>
 
 <script setup lang="ts">
-import { aiChat } from "@/api/ai";
+import { aiKnowledgeChat, aiWriteAssistStream } from "@/api/ai";
 import type { AiSource } from "@/api/ai/types";
 import Waves from "@/components/Waves/index.vue";
+import { normalizeAiMarkdown } from "@/utils/markdown";
+import { aiChatModes, getAiChatMode } from "./aiChatModel";
 
 const question = ref("");
 const submitting = ref(false);
 const answer = ref("");
 const sources = ref<AiSource[]>([]);
+const activeMode = ref("chat");
 const coverLoaded = ref(false);
 const coverUrl = "https://wangyoupeng-penghong.oss-cn-beijing.aliyuncs.com/avatar/wallhaven-q21drl_2560x1440.png";
 const lowResCoverUrl = `${coverUrl}?x-oss-process=image/resize,w_320/quality,q_35`;
 
 const questionLengthRatio = computed(() => Math.min(100, Math.round((question.value.length / 500) * 100)));
-
-const quickPrompts = [
-  "帮我对比 Redis 与 Caffeine 的缓存策略选择",
-  "给我一个线上慢 SQL 排查 checklist",
-  "把这段业务需求拆成可执行开发任务",
-];
+const currentMode = computed(() => getAiChatMode(activeMode.value));
 
 const applyPrompt = (value: string) => {
   question.value = value;
+};
+
+const changeMode = (value: string) => {
+  activeMode.value = value;
 };
 
 const handleCoverLoad = () => {
@@ -152,11 +169,32 @@ const handleSubmit = async () => {
 
   submitting.value = true;
   try {
-    const { data } = await aiChat({ question: content });
-    answer.value = data?.data?.answer ?? "";
-    sources.value = data?.data?.sources ?? [];
-  } catch {
-    window.$message?.error("提问失败，请稍后重试");
+    if (currentMode.value.provider === "knowledge") {
+      const { data: result } = await aiKnowledgeChat({ question: content });
+      if (!result?.flag || !result.data) {
+        throw new Error(result?.msg || "提问失败");
+      }
+      answer.value = result.data.answer ?? "";
+      sources.value = result.data.sources ?? [];
+      return;
+    }
+    answer.value = "";
+    sources.value = [];
+    await aiWriteAssistStream(
+      { action: "chat", content },
+      {
+        onMessage: (chunk) => {
+          answer.value += chunk;
+        },
+        onComplete: () => {
+          if (!answer.value.trim()) {
+            answer.value = "这次没有拿到回答，可以换个说法再试一次。";
+          }
+        },
+      },
+    );
+  } catch (error: any) {
+    window.$message?.error(error?.message || "提问失败，请稍后重试");
   } finally {
     submitting.value = false;
   }
@@ -297,6 +335,37 @@ const handleClear = () => {
   line-height: 1.85;
 }
 
+.mode-switch {
+  position: relative;
+  z-index: 1;
+  width: fit-content;
+  margin-top: 14px;
+  padding: 4px;
+  display: inline-flex;
+  gap: 4px;
+  border: 1px solid rgba(127, 152, 207, 0.2);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.52);
+}
+
+.mode-switch__item {
+  min-height: 34px;
+  border: 0;
+  border-radius: 7px;
+  padding: 0 13px;
+  color: #55709b;
+  background: transparent;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.mode-switch__item.active {
+  color: #173e7b;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 5px 14px rgba(35, 67, 126, 0.14);
+}
+
 .hero-stats {
   position: relative;
   z-index: 1;
@@ -424,10 +493,116 @@ const handleClear = () => {
 }
 
 .answer-content {
-  line-height: 1.9;
-  white-space: pre-wrap;
-  word-break: break-word;
   color: #2b426a;
+  white-space: normal;
+}
+
+.answer-content :deep(.v-md-editor-preview) {
+  padding: 0;
+}
+
+.answer-content :deep(.vuepress-markdown-body) {
+  color: inherit;
+  background: transparent;
+  font-size: 15px;
+  line-height: 1.9;
+}
+
+.answer-content :deep(.vuepress-markdown-body:not(.custom)) {
+  padding: 0;
+}
+
+.answer-content :deep(.vuepress-markdown-body > :first-child) {
+  margin-top: 0;
+}
+
+.answer-content :deep(.vuepress-markdown-body > :last-child) {
+  margin-bottom: 0;
+}
+
+.answer-content :deep(.vuepress-markdown-body h1),
+.answer-content :deep(.vuepress-markdown-body h2),
+.answer-content :deep(.vuepress-markdown-body h3),
+.answer-content :deep(.vuepress-markdown-body h4),
+.answer-content :deep(.vuepress-markdown-body h5),
+.answer-content :deep(.vuepress-markdown-body h6) {
+  position: relative;
+  margin-top: 1.05em;
+  margin-bottom: 0.55em;
+  padding: 0 0 0 0.72em;
+  border: 0;
+  color: #183d70;
+  line-height: 1.45;
+  letter-spacing: 0;
+}
+
+.answer-content :deep(.vuepress-markdown-body h1::before),
+.answer-content :deep(.vuepress-markdown-body h2::before),
+.answer-content :deep(.vuepress-markdown-body h3::before),
+.answer-content :deep(.vuepress-markdown-body h4::before),
+.answer-content :deep(.vuepress-markdown-body h5::before),
+.answer-content :deep(.vuepress-markdown-body h6::before) {
+  position: absolute;
+  left: 0;
+  top: 0.28em;
+  bottom: 0.28em;
+  width: 4px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #4b74d2, #58dec6);
+  content: "";
+}
+
+.answer-content :deep(.vuepress-markdown-body h1) {
+  font-size: 1.35rem;
+}
+
+.answer-content :deep(.vuepress-markdown-body h2) {
+  font-size: 1.2rem;
+}
+
+.answer-content :deep(.vuepress-markdown-body h3) {
+  font-size: 1.08rem;
+}
+
+.answer-content :deep(.vuepress-markdown-body h4),
+.answer-content :deep(.vuepress-markdown-body h5),
+.answer-content :deep(.vuepress-markdown-body h6) {
+  font-size: 1rem;
+}
+
+.answer-content :deep(.vuepress-markdown-body pre),
+.answer-content :deep(.vuepress-markdown-body table) {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.answer-content :deep(.vuepress-markdown-body a) {
+  color: #2f5eb4;
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-color: rgba(47, 94, 180, 0.28);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.answer-content :deep(.vuepress-markdown-body a:hover) {
+  color: #163f88;
+  text-decoration-color: rgba(22, 63, 136, 0.42);
+}
+
+.answer-content :deep(.vuepress-markdown-body img) {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  max-height: min(520px, 70vh);
+  margin: 1rem auto;
+  border: 1px solid rgba(131, 156, 209, 0.18);
+  border-radius: 10px;
+  object-fit: contain;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 14px 30px rgba(16, 31, 64, 0.12);
 }
 
 .source-card ul {
@@ -536,6 +711,21 @@ const handleClear = () => {
 [theme="dark"] .ai-hero .hero-meter-text,
 [theme="dark"] .card-title-tip {
   color: var(--grey-5);
+}
+
+[theme="dark"] .ai-hero .mode-switch {
+  border-color: var(--home-border);
+  background: rgba(20, 25, 34, 0.46);
+}
+
+[theme="dark"] .ai-hero .mode-switch__item {
+  color: var(--grey-5);
+}
+
+[theme="dark"] .ai-hero .mode-switch__item.active {
+  color: var(--grey-7);
+  background: var(--note-bg);
+  box-shadow: var(--home-shadow);
 }
 
 [theme="dark"] .ai-hero .stat-item,

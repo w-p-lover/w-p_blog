@@ -21,9 +21,11 @@ public class AiWriteAssistServiceImpl implements AiWriteAssistService {
 
     private String buildPrompt(String action, String content) {
         return switch (action) {
+            case "chat" -> content;
             case "continue" -> "请基于以下内容继续写作，保持技术风格：\n\n" + content;
             case "summary" -> "请提炼以下内容为简洁摘要：\n\n" + content;
             case "expand" -> "请对以下内容扩写，补充细节和案例：\n\n" + content;
+            case "polish" -> "请润色以下内容，保留原意，让表达更自然、清晰、有节奏：\n\n" + content;
             case "rewrite" -> "请将以下内容改写为更通俗易懂的技术表达：\n\n" + content;
             default -> throw new ServiceException("不支持的写作动作");
         };
