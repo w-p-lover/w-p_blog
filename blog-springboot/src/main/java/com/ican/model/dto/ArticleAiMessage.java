@@ -8,6 +8,8 @@ import lombok.Data;
 @Data
 public class ArticleAiMessage {
 
+    private Integer taskId;
+
     private Integer articleId;
 
     private String articleTitle;
