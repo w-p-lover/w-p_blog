@@ -9,9 +9,11 @@ import {
   AiWriteAssistStreamOptions,
 } from "./types";
 
-export function aiChat(data: AiChatRequest): AxiosPromise<Result<AiChatResponse>> {
-  return request({ url: "/api/ai/chat", method: "post", data });
+export function aiKnowledgeChat(data: AiChatRequest, signal?: AbortSignal): AxiosPromise<Result<AiChatResponse>> {
+  return request({ url: "/api/ai/chat", method: "post", data, signal });
 }
+
+export const aiChat = aiKnowledgeChat;
 
 export async function aiWriteAssistStream(
   params: AiWriteAssistRequest,
@@ -44,6 +46,37 @@ export async function aiWriteAssistStream(
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let buffer = "";
+  let eventLines: string[] = [];
+
+  const emitEvent = () => {
+    if (!eventLines.length) {
+      return;
+    }
+
+    const chunk = eventLines.join("\n");
+    eventLines = [];
+    if (chunk && chunk !== "[DONE]") {
+      options.onMessage(chunk);
+    }
+  };
+
+  const parseLine = (line: string) => {
+    const raw = line.endsWith("\r") ? line.slice(0, -1) : line;
+    if (!raw) {
+      emitEvent();
+      return;
+    }
+
+    if (raw.startsWith("data:")) {
+      const data = raw.startsWith("data: ") ? raw.slice(6) : raw.slice(5);
+      eventLines.push(data);
+      return;
+    }
+
+    if (!raw.startsWith(":")) {
+      eventLines.push(raw);
+    }
+  };
 
   while (true) {
     const { done, value } = await reader.read();
@@ -55,28 +88,13 @@ export async function aiWriteAssistStream(
     const lines = buffer.split("\n");
     buffer = lines.pop() ?? "";
 
-    lines.forEach((line) => {
-      const raw = line.trim();
-      if (!raw) {
-        return;
-      }
-
-      const chunk = raw.startsWith("data:") ? raw.slice(5).trim() : raw;
-      if (!chunk || chunk === "[DONE]") {
-        return;
-      }
-
-      options.onMessage(chunk);
-    });
+    lines.forEach(parseLine);
   }
 
-  const tail = buffer.trim();
-  if (tail) {
-    const chunk = tail.startsWith("data:") ? tail.slice(5).trim() : tail;
-    if (chunk && chunk !== "[DONE]") {
-      options.onMessage(chunk);
-    }
+  if (buffer) {
+    parseLine(buffer);
   }
+  emitEvent();
 
   options.onComplete?.();
 }
