@@ -1,7 +1,7 @@
 package com.ican.consumer;
 
 import com.ican.model.dto.ArticleAiMessage;
-import com.ican.service.AiArticleService;
+import com.ican.service.AiTaskService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
@@ -16,7 +16,7 @@ import static com.ican.constant.MqConstant.ARTICLE_AI_QUEUE;
 @Slf4j
 public class AiArticleConsumer {
 
-    private final AiArticleService aiArticleService;
+    private final AiTaskService aiTaskService;
 
     @RabbitListener(queues = ARTICLE_AI_QUEUE)
     public void consume(@Payload ArticleAiMessage message) {
@@ -24,10 +24,14 @@ public class AiArticleConsumer {
             log.warn("收到空的文章AI消息，已忽略");
             return;
         }
+        if (message.getTaskId() == null) {
+            log.warn("收到缺少taskId的文章AI消息，已忽略");
+            return;
+        }
         try {
-            aiArticleService.processArticle(message.getArticleId(), message.getArticleTitle(), message.getArticleContent());
+            aiTaskService.executeTask(message.getTaskId());
         } catch (Exception e) {
-            log.error("文章AI消息消费失败，进入死信队列，articleId={}", message.getArticleId(), e);
+            log.error("文章AI任务消费失败，进入死信队列，taskId={}", message.getTaskId(), e);
             throw new AmqpRejectAndDontRequeueException("文章AI处理失败", e);
         }
     }

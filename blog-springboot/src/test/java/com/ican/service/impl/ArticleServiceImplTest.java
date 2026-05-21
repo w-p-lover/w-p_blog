@@ -4,6 +4,7 @@ import com.ican.cache.MultiLevelCacheManager;
 import com.ican.mapper.*;
 import com.ican.metrics.BlogMetrics;
 import com.ican.model.vo.ArticleVO;
+import com.ican.service.AiTaskService;
 import com.ican.service.HotArticleWarmupService;
 import com.ican.service.RedisService;
 import com.ican.service.TagService;
@@ -14,7 +15,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -58,7 +58,7 @@ class ArticleServiceImplTest {
     @Mock
     private HotArticleWarmupService hotArticleWarmupService;
     @Mock
-    private RabbitTemplate rabbitTemplate;
+    private AiTaskService aiTaskService;
 
     private ArticleServiceImpl articleService;
 
@@ -78,7 +78,7 @@ class ArticleServiceImplTest {
                 blogMetrics,
                 cacheManager,
                 hotArticleWarmupService,
-                rabbitTemplate
+                aiTaskService
         );
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(1);
