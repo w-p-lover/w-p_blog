@@ -12,7 +12,7 @@ export interface AiChatResponse {
   sources: AiSource[];
 }
 
-export type AiWriteAssistAction = "expand" | "polish" | "summary";
+export type AiWriteAssistAction = "chat" | "expand" | "polish" | "summary";
 
 export interface AiWriteAssistRequest {
   action: AiWriteAssistAction;

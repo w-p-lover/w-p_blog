@@ -18,6 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import reactor.core.publisher.Flux;
 
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -55,6 +56,18 @@ class AiControllerTest {
         mockMvc.perform(get("/api/ai/write-assist")
                         .param("action", "expand")
                         .param("content", "缓存优化"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_EVENT_STREAM));
+    }
+
+    @Test
+    void writeAssistChat_shouldReuseDirectOpenAiStream() throws Exception {
+        when(aiWriteAssistService.writeAssist(eq("chat"), eq("随便聊聊")))
+                .thenReturn(Flux.just("直接回答"));
+
+        mockMvc.perform(get("/api/ai/write-assist")
+                        .param("action", "chat")
+                        .param("content", "随便聊聊"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_EVENT_STREAM));
     }
