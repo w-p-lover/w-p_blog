@@ -63,7 +63,7 @@
 - `src/test/java/com/ican/service/impl/ArticleServiceImplTest.java`
   - 更新构造依赖，适配文章服务改为依赖 `AiTaskService`。
 
-- `docs/02-部署运维/06-Phase3-AI任务中心建表与权限SQL.sql`
+- `docs/07-数据库变更/02-Phase3-AI任务中心建表与权限SQL.sql`
   - 新增 AI 任务中心建表和权限 SQL。
 
 ## 注意事项

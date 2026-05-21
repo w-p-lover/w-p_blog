@@ -64,7 +64,7 @@ BUILD SUCCESS
 | Modify | `src/main/java/com/ican/metrics/BlogMetrics.java` | Add hot score refresh and warmup metrics |
 | Modify | `src/test/java/com/ican/metrics/BlogMetricsTest.java` | Verify new metric counters/timers |
 | Modify | `src/main/resources/application.yml` | Add `article.hot-score` weights and limits |
-| Create | `docs/03-缓存体系/02-Phase2-文章热度分与热点预热总结.md` | Stage summary required by user workflow |
+| Create | `docs/04-缓存体系/02-Phase2-文章热度分与热点预热总结.md` | Stage summary required by user workflow |
 
 ---
 
@@ -1389,11 +1389,11 @@ git commit -m "feat: 增加热榜缓存管理接口"
 ### Task 7: Stage Summary Documentation And Full Verification
 
 **Files:**
-- Create: `docs/03-缓存体系/02-Phase2-文章热度分与热点预热总结.md`
+- Create: `docs/04-缓存体系/02-Phase2-文章热度分与热点预热总结.md`
 
 - [ ] **Step 1: Write stage summary document**
 
-Create `docs/03-缓存体系/02-Phase2-文章热度分与热点预热总结.md` with these sections:
+Create `docs/04-缓存体系/02-Phase2-文章热度分与热点预热总结.md` with these sections:
 
 ```markdown
 # Phase2 文章热度分与热点缓存预热总结
@@ -1462,7 +1462,7 @@ Expected: no whitespace errors.
 - [ ] **Step 5: Commit documentation**
 
 ```powershell
-git add docs/03-缓存体系/02-Phase2-文章热度分与热点预热总结.md
+git add docs/04-缓存体系/02-Phase2-文章热度分与热点预热总结.md
 git commit -m "docs: 补充第二阶段缓存总结"
 ```
 
