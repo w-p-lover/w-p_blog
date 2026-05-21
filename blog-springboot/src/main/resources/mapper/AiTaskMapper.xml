@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ican.mapper.AiTaskMapper">
+
+    <select id="countTaskBackVO" resultType="java.lang.Long">
+        SELECT COUNT(id)
+        FROM t_ai_task
+        <where>
+            <if test="condition.keyword != null and condition.keyword != ''">
+                AND (biz_type LIKE concat('%', #{condition.keyword}, '%')
+                    OR task_type LIKE concat('%', #{condition.keyword}, '%')
+                    OR error_message LIKE concat('%', #{condition.keyword}, '%'))
+            </if>
+            <if test="condition.bizType != null and condition.bizType != ''">
+                AND biz_type = #{condition.bizType}
+            </if>
+            <if test="condition.taskType != null and condition.taskType != ''">
+                AND task_type = #{condition.taskType}
+            </if>
+            <if test="condition.status != null and condition.status != ''">
+                AND status = #{condition.status}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectTaskBackVO" resultType="com.ican.model.vo.AiTaskBackVO">
+        SELECT id,
+               biz_type,
+               biz_id,
+               task_type,
+               status,
+               retry_count,
+               max_retry_count,
+               error_message,
+               model_name,
+               prompt_version,
+               started_at,
+               finished_at,
+               cost_time,
+               create_time,
+               update_time
+        FROM t_ai_task
+        <where>
+            <if test="condition.keyword != null and condition.keyword != ''">
+                AND (biz_type LIKE concat('%', #{condition.keyword}, '%')
+                    OR task_type LIKE concat('%', #{condition.keyword}, '%')
+                    OR error_message LIKE concat('%', #{condition.keyword}, '%'))
+            </if>
+            <if test="condition.bizType != null and condition.bizType != ''">
+                AND biz_type = #{condition.bizType}
+            </if>
+            <if test="condition.taskType != null and condition.taskType != ''">
+                AND task_type = #{condition.taskType}
+            </if>
+            <if test="condition.status != null and condition.status != ''">
+                AND status = #{condition.status}
+            </if>
+        </where>
+        ORDER BY id DESC
+        LIMIT #{limit}, #{size}
+    </select>
+</mapper>
