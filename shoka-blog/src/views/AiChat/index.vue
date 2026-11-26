@@ -170,6 +170,8 @@ const handleSubmit = async () => {
   submitting.value = true;
   try {
     if (currentMode.value.provider === "knowledge") {
+      answer.value = "";
+      sources.value = [];
       const { data: result } = await aiKnowledgeChat({ question: content });
       if (!result?.flag || !result.data) {
         throw new Error(result?.msg || "提问失败");

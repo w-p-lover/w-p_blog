@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ican.mapper.ActivityMapper">
+    <!-- LocalDateTime契约固定北京时间；不能把会话/服务器默认时区当业务时间。 -->
+    <sql id="activityNow">TIMESTAMPADD(HOUR,8,UTC_TIMESTAMP(6))</sql>
+    <insert id="insertActivity" useGeneratedKeys="true" keyProperty="activity.id">
+        INSERT INTO t_activity(owner_id,title,description,status,starts_at,ends_at,capacity,remaining,pending_count,create_time,update_time)
+        SELECT #{activity.ownerId},#{activity.title},#{activity.description},'DRAFT',#{activity.startsAt},#{activity.endsAt},
+               #{activity.capacity},#{activity.capacity},0,<include refid="activityNow"/>,<include refid="activityNow"/>
+        WHERE #{activity.startsAt} &gt; <include refid="activityNow"/> AND #{activity.endsAt} &gt; #{activity.startsAt}
+    </insert>
+    <update id="updateBeforeStart">
+        UPDATE t_activity SET title=#{dto.title},description=#{dto.description},starts_at=#{dto.startsAt},
+            ends_at=#{dto.endsAt},capacity=#{dto.capacity},remaining=#{dto.capacity},update_time=<include refid="activityNow"/>
+        WHERE id=#{id} AND starts_at &gt; <include refid="activityNow"/> AND pending_count=0
+          AND #{dto.startsAt} &gt; <include refid="activityNow"/> AND #{dto.endsAt} &gt; #{dto.startsAt}
+    </update>
+    <update id="publish">
+        UPDATE t_activity SET status='PUBLISHED',update_time=<include refid="activityNow"/>
+        WHERE id=#{id} AND status='DRAFT' AND starts_at &gt; <include refid="activityNow"/>
+    </update>
+    <select id="selectActivity" resultType="com.ican.entity.Activity">
+        SELECT * FROM t_activity WHERE id=#{id}
+    </select>
+    <sql id="publicColumns">id,title,description,status,starts_at,ends_at,capacity,remaining</sql>
+    <select id="listActivities" resultType="com.ican.model.vo.ActivityVO">
+        SELECT <include refid="publicColumns"/> FROM t_activity
+        <if test="!admin">WHERE status='PUBLISHED'</if>
+        ORDER BY starts_at DESC,id DESC LIMIT #{offset},#{size}
+    </select>
+    <select id="countActivities" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM t_activity <if test="!admin">WHERE status='PUBLISHED'</if>
+    </select>
+    <insert id="insertRegistration">
+        INSERT INTO t_activity_registration(request_id,activity_id,user_id,status,next_dispatch_at,create_time,update_time)
+        VALUES(#{requestId},#{activityId},#{userId},'PENDING',<include refid="activityNow"/>,<include refid="activityNow"/>,<include refid="activityNow"/>)
+    </insert>
+    <select id="lockRequest" resultType="com.ican.entity.ActivityRegistration">
+        SELECT * FROM t_activity_registration WHERE request_id=#{requestId} FOR UPDATE
+    </select>
+    <select id="lockUserRequest" resultType="com.ican.entity.ActivityRegistration">
+        SELECT * FROM t_activity_registration WHERE activity_id=#{activityId} AND user_id=#{userId} FOR UPDATE
+    </select>
+    <select id="findMine" resultType="com.ican.entity.ActivityRegistration">
+        SELECT * FROM t_activity_registration WHERE activity_id=#{activityId} AND user_id=#{userId}
+    </select>
+    <select id="lockDispatched" resultType="com.ican.entity.ActivityRegistration">
+        SELECT * FROM t_activity_registration
+        WHERE request_id=#{requestId} AND status='PENDING' AND dispatch_token=#{token} FOR UPDATE
+    </select>
+    <select id="listRegistrations" resultType="com.ican.model.vo.AdminActivityRegistrationVO">
+        SELECT request_id,activity_id,status,create_time,update_time,dispatch_attempts,failure_count,
+            CASE WHEN status='PENDING' THEN next_dispatch_at END AS next_dispatch_at,
+            CASE WHEN status IN ('PENDING','FAILED') AND last_error IS NOT NULL
+                THEN '确认事务失败或结果未知，按当前状态恢复' END AS failure_summary
+        FROM t_activity_registration
+        WHERE activity_id=#{activityId} <if test="status != null">AND status=#{status}</if>
+        ORDER BY create_time DESC,request_id LIMIT #{offset},#{size}
+    </select>
+    <select id="countRegistrations" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM t_activity_registration
+        WHERE activity_id=#{activityId} <if test="status != null">AND status=#{status}</if>
+    </select>
+    <!-- 每个变更事务先取得请求行，再竞争活动行；待办上限是初始保护预算，不是性能结论。 -->
+    <update id="reserveAdmission">
+        UPDATE t_activity SET pending_count=pending_count+1,update_time=<include refid="activityNow"/>
+        WHERE id=#{id} AND status='PUBLISHED' AND starts_at &lt;= <include refid="activityNow"/> AND ends_at &gt; <include refid="activityNow"/>
+          AND pending_count &lt; 1000
+    </update>
+    <update id="releasePending">
+        UPDATE t_activity SET pending_count=pending_count-1,update_time=<include refid="activityNow"/>
+        WHERE id=#{id} AND pending_count &gt; 0
+    </update>
+    <update id="consumeCapacity">
+        UPDATE t_activity SET remaining=remaining-1,pending_count=pending_count-1,update_time=<include refid="activityNow"/>
+        WHERE id=#{id} AND status='PUBLISHED' AND remaining &gt; 0 AND pending_count &gt; 0
+    </update>
+    <update id="restoreCapacity">
+        UPDATE t_activity SET remaining=remaining+1,update_time=<include refid="activityNow"/>
+        WHERE id=#{id} AND remaining &lt; capacity
+    </update>
+    <update id="changeStatus">
+        UPDATE t_activity_registration SET status=#{to},dispatch_token=NULL,next_dispatch_at=NULL,
+            last_error=NULL,update_time=<include refid="activityNow"/>
+        WHERE request_id=#{requestId} AND status=#{from}
+    </update>
+    <select id="selectDue" resultType="java.lang.String">
+        SELECT request_id FROM t_activity_registration
+        WHERE status='PENDING' AND next_dispatch_at &lt;= <include refid="activityNow"/>
+        ORDER BY next_dispatch_at,request_id LIMIT #{size}
+    </select>
+    <update id="reserveDispatch">
+        UPDATE t_activity_registration SET dispatch_token=COALESCE(dispatch_token,#{token}),
+            next_dispatch_at=TIMESTAMPADD(SECOND,LEAST(300,30*POW(2,LEAST(dispatch_attempts,4))),<include refid="activityNow"/>),
+            dispatch_attempts=LEAST(dispatch_attempts+1,2147483647),update_time=<include refid="activityNow"/>
+        WHERE request_id=#{requestId} AND status='PENDING' AND next_dispatch_at &lt;= <include refid="activityNow"/>
+    </update>
+    <update id="failDispatch">
+        UPDATE t_activity_registration SET failure_count=failure_count+1,
+            status=CASE WHEN #{terminal} THEN 'FAILED' ELSE 'PENDING' END,dispatch_token=NULL,
+            next_dispatch_at=CASE WHEN #{terminal} THEN NULL ELSE TIMESTAMPADD(SECOND,
+                LEAST(300,30*POW(2,LEAST(failure_count,4))),<include refid="activityNow"/>) END,
+            last_error='确认事务失败或结果未知，按当前状态恢复',update_time=<include refid="activityNow"/>
+        WHERE request_id=#{requestId} AND status='PENDING' AND dispatch_token=#{token}
+    </update>
+    <update id="reserveRetry">
+        UPDATE t_activity SET pending_count=pending_count+1,update_time=<include refid="activityNow"/>
+        WHERE id=#{id} AND status='PUBLISHED' AND pending_count &lt; 1000
+    </update>
+    <update id="retryFailed">
+        UPDATE t_activity_registration SET status='PENDING',failure_count=0,dispatch_attempts=0,
+            dispatch_token=NULL,next_dispatch_at=<include refid="activityNow"/>,last_error=NULL,update_time=<include refid="activityNow"/>
+        WHERE request_id=#{requestId} AND status='FAILED'
+    </update>
+</mapper>

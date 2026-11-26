@@ -137,9 +137,9 @@ src/main/java/com/ican
 - [文档目录](docs/README.md)
 - [就业项目分析](docs/00-项目总览/01-就业项目分析.md)
 - [后端深度开发路线](docs/00-项目总览/02-后端深度开发路线.md)
-- [安全配置](docs/02-部署运维/01-安全配置快速开始.md)
-- [Docker Compose 部署](docs/02-部署运维/02-Docker-Compose部署说明.md)
-- [Nacos 示例](docs/02-部署运维/03-Nacos配置示例.md)
+- [安全配置](docs/06-部署运维/01-安全配置快速开始.md)
+- [Docker Compose 部署](docs/06-部署运维/02-Docker-Compose部署说明.md)
+- [Nacos 示例](docs/06-部署运维/03-Nacos配置示例.md)
 
 ## Resume Line
 

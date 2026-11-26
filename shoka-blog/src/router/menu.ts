@@ -33,6 +33,12 @@ export const articleMenuItems: MenuItem[] = [
 
 export const activityMenuItems: MenuItem[] = [
   {
+    name: "技术活动",
+    icon: "qizhi",
+    path: "/activities",
+    matchPaths: ["/activities"],
+  },
+  {
     name: "说说",
     icon: "talk",
     path: "/talk",
@@ -128,7 +134,7 @@ export const menuList: MenuGroup[] = [
     name: "动态",
     icon: "talk",
     path: "/talk",
-    matchPaths: ["/talk", "/album", "/message", "/friend", "/music"],
+    matchPaths: ["/activities", "/talk", "/album", "/message", "/friend", "/music"],
     children: activityMenuItems,
   },
   {

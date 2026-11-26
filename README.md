@@ -49,6 +49,8 @@ blog
 └─ deploy/            # 部署与辅助配置
 ```
 
+本地目录 `homa-xxl-job/` 是拥有独立 Git 仓库和 Maven 构建的调度项目，不属于 blog 模块。blog 根 `.gitignore` 将其排除；它的开发、提交和部署在自身仓库单独进行，不随 blog 一起管理。
+
 ## Highlights
 
 | 方向 | 内容 |
@@ -122,9 +124,9 @@ docker compose up -d --build
 ## Docs
 
 - [后端专项说明](blog-springboot/README.md)
-- [安全配置](blog-springboot/docs/secure-config-quickstart.md)
-- [Docker Compose 部署](blog-springboot/docs/deployment-compose.md)
-- [就业项目分析](blog-springboot/docs/project-employment-analysis.md)
+- [安全配置](blog-springboot/docs/06-部署运维/01-安全配置快速开始.md)
+- [Docker Compose 部署](blog-springboot/docs/06-部署运维/02-Docker-Compose部署说明.md)
+- [就业项目分析](blog-springboot/docs/00-项目总览/01-就业项目分析.md)
 
 ## Roadmap
 

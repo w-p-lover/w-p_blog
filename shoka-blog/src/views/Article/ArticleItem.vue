@@ -6,6 +6,7 @@
           class="sort-option"
           @click="changeSort('id')"
           :class="{ active: queryParams.sort === 'id' }"
+          :aria-pressed="queryParams.sort === 'id'"
       >
         <svg-icon icon-class="calendar" size="1rem"></svg-icon>
         <span>按时间</span>
@@ -15,6 +16,7 @@
           class="sort-option"
           @click="changeSort('views')"
           :class="{ active: queryParams.sort === 'views' }"
+          :aria-pressed="queryParams.sort === 'views'"
       >
         <svg-icon icon-class="fun" size="1rem"></svg-icon>
         <span>按热度</span>
@@ -23,7 +25,9 @@
     <el-select
         clearable
         v-model="selectedTag"
-        placeholder="选择标签"
+        placeholder="全部标签"
+        aria-label="按标签筛选文章"
+        :disabled="tagsFailed"
         size="large"
         class="selectWidth"
         @change="filterByTag"
@@ -37,7 +41,7 @@
     </el-select>
     <div class="date-picker-container">
       <el-date-picker
-          is-range
+          aria-label="按发布日期筛选文章"
           v-model="dateRange"
           type="daterange"
           range-separator="至"
@@ -49,172 +53,170 @@
 
   </div>
 
-  <div
-      class="article-item"
-      v-animate="['slideUpBigIn']"
-      v-for="(article, index) of articleList"
-      :key="article.id"
-  >
-    <div class="article-mark">
-      <svg-icon icon-class="qizhi" size="1.25rem"></svg-icon>
+  <div class="feed-summary" role="status" aria-live="polite">
+    <span v-if="loading">正在加载文章…</span>
+    <span v-else-if="failed">文章暂时无法加载</span>
+    <span v-else>共 {{ count }} 篇文章<span v-if="count"> · 第 {{ queryParams.current }} / {{ Math.ceil(count / queryParams.size) }} 页</span></span>
+    <button v-if="hasFilters" type="button" class="feed-action" @click="clearFilters">清除筛选</button>
+  </div>
+  <p v-if="tagsFailed" class="tag-error">
+    标签暂时无法加载，仍可按时间和热度浏览。
+    <button type="button" class="feed-action" @click="loadTags">重试标签</button>
+  </p>
+  <div class="article-results" :aria-busy="loading">
+    <div v-if="loading" class="feed-state">正在整理文章，请稍候…</div>
+    <div v-else-if="failed" class="feed-state">
+      <h3>文章加载失败</h3>
+      <p>请稍后重试，当前筛选条件已保留。</p>
+      <button type="button" class="feed-action" @click="loadArticles">重新加载</button>
     </div>
-    <!-- 文章缩略图 -->
-    <div class="article-cover">
-      <router-link :to="`/article/${article.id}`" href="">
-        <img class="cover" v-lazy="article.articleCover"/>
-      </router-link>
+    <div v-else-if="!articleList.length" class="feed-state">
+      <h3>{{ hasFilters ? "没有符合条件的文章" : "还没有可展示的文章" }}</h3>
+      <p>{{ hasFilters ? "试试其他标签或日期，也可以清除筛选查看全部文章。" : "新的内容发布后会显示在这里。" }}</p>
     </div>
-    <!-- 文章信息 -->
-    <div class="article-info">
-      <div class="article-meta">
-        <!-- 置顶 -->
-        <span class="top" v-if="article.isTop == 1">
-          <svg-icon icon-class="top" size="0.85rem" style="margin-right: 0.15rem"></svg-icon>置顶</span>
-        <!-- 发表时间 -->
-        <span class="meta-item ml">
-          <svg-icon icon-class="calendar" size="0.9rem" style="margin-right: 0.15rem"></svg-icon>{{
-            formatDate(article.createTime)
-          }}
-        </span>
-        <!-- 文章标签 -->
-        <router-link class="meta-item ml" :to="`/tag/${tag.id}`" v-for="tag in article.tagVOList.slice(0, 2)" :key="tag.id">
-          <svg-icon icon-class="tag" size="0.9rem" style="margin-right: 0.15rem"></svg-icon>
-          {{ tag.tagName }}
-        </router-link>
-      </div>
-      <!-- 文章标题 -->
-      <h3 class="article-title">
-        <router-link :to="`/article/${article.id}`">
-          {{ article.articleTitle }}
-        </router-link>
-      </h3>
-      <!-- 文章内容 -->
-        <div class="article-content" v-html="renderMarkdown(article.articleContent)"></div>
-      <div class="article-footer">
-        <!-- 文章分类 -->
-        <div class="article-category">
-          <svg-icon icon-class="qizhi" size="0.85rem" style="margin-right: 0.15rem"></svg-icon>
-          <router-link :to="`/category/${article.category.id}`">{{
-              article.category.categoryName
-            }}
+    <template v-else>
+      <article
+          class="article-item"
+          v-for="article of displayArticles"
+          :key="article.id"
+      >
+        <div class="article-mark">
+          <svg-icon icon-class="qizhi" size="1.25rem"></svg-icon>
+        </div>
+        <!-- 文章缩略图 -->
+        <div v-if="article.articleCover" class="article-cover">
+          <router-link :to="`/article/${article.id}`" :aria-label="`阅读：${article.articleTitle}`">
+            <img class="cover" :src="article.articleCover" alt="" loading="lazy" decoding="async"/>
           </router-link>
         </div>
-        <!-- 阅读按钮 -->
-        <router-link class="article-btn" :to="`/article/${article.id}`">阅读全文</router-link>
-      </div>
-    </div>
+        <!-- 文章信息 -->
+        <div class="article-info">
+          <div class="article-meta">
+            <!-- 置顶 -->
+            <span class="top" v-if="article.isTop == 1">
+              <svg-icon icon-class="top" size="0.85rem" style="margin-right: 0.15rem"></svg-icon>置顶</span>
+            <!-- 发表时间 -->
+            <span class="meta-item ml">
+              <svg-icon icon-class="calendar" size="0.9rem" style="margin-right: 0.15rem"></svg-icon>{{
+                formatDate(article.createTime)
+              }}
+            </span>
+            <!-- 文章标签 -->
+            <router-link class="meta-item ml" :to="`/tag/${tag.id}`" v-for="tag in (article.tagVOList || []).slice(0, 2)" :key="tag.id">
+              <svg-icon icon-class="tag" size="0.9rem" style="margin-right: 0.15rem"></svg-icon>
+              {{ tag.tagName }}
+            </router-link>
+          </div>
+          <!-- 文章标题 -->
+          <h3 class="article-title">
+            <router-link :to="`/article/${article.id}`">
+              {{ article.articleTitle }}
+            </router-link>
+          </h3>
+          <!-- 文章内容 -->
+            <p class="article-content">{{ article.preview }}</p>
+          <div class="article-footer">
+            <!-- 文章分类 -->
+            <div v-if="article.category" class="article-category">
+              <svg-icon icon-class="qizhi" size="0.85rem" style="margin-right: 0.15rem"></svg-icon>
+              <router-link :to="`/category/${article.category.id}`">{{
+                  article.category.categoryName
+                }}
+              </router-link>
+            </div>
+            <!-- 阅读按钮 -->
+            <router-link class="article-btn" :to="`/article/${article.id}`">阅读全文</router-link>
+          </div>
+        </div>
+      </article>
+    </template>
   </div>
-  <Pagination v-if="count > 5" v-model:current="queryParams.current" :total="Math.ceil(count / 5)"></Pagination>
+  <Pagination v-if="!loading && !failed && count > queryParams.size" v-model:current="queryParams.current" :total="Math.ceil(count / queryParams.size)"></Pagination>
 </template>
 
 <script setup lang="ts">
-import {getArticleList} from "@/api/article";
-import {Article} from "@/api/article/types";
-import {PageQueryArticle} from "@/model";
-import {formatDate} from "@/utils/date";
-import EventBus from '@/eventBus';
-import {formatDateTime} from "@/utils/date";
-import {getTagList} from "@/api/tag";
-import {Tag} from "@/api/tag/types";
-import { marked } from 'marked'
-const selectedTag = ref(null);
-const tagList = ref<Tag[]>([]);
-const dateRange = ref<[Date, Date]>([
-  new Date(2023, 1, 10, 8, 40),
-  new Date(2025, 11, 10, 9, 40),
-])
-const data = reactive({
-  count: 0,
-  queryParams: {
-    current: 1,
-    size: 5,
-    sort: 'id',
-    start: null,
-    end: null,
-    tagId: null
-  } as PageQueryArticle,
-  articleList: [] as Article[],
-});
+import { computed } from "vue";
+import { marked } from "marked";
+import { formatDate } from "@/utils/date";
+import { useArticleFeed } from "./useArticleFeed";
 
-const {count, queryParams, articleList} = toRefs(data);
+const {
+  queryParams, selectedTag, dateRange, articleList, count, loading, failed,
+  tagList, tagsFailed, hasFilters, changeSort, filterByTag, filterByDate,
+  clearFilters, loadArticles, loadTags,
+} = useArticleFeed();
 
-function changeSort(sortType: string) {
-  queryParams.value.sort = sortType;
-  console.log("Current sort:", queryParams.value.sort);
-}
-
-function filterByTag() {
-  data.queryParams.tagId = selectedTag.value;
-}
-
-function renderMarkdown(content: string) {
-  return marked(content || '')
-}
-
-function filterByDate() {
-  if (dateRange.value != null) {
-    queryParams.value.start = formatDateTime(dateRange.value[0]);
-    queryParams.value.end = formatDateTime(dateRange.value[1]);
-  } else {
-    queryParams.value.start = null;
-    queryParams.value.end = null;
-  }
-  console.log(data.queryParams.start);
-}
-
-watch(
-    () => [queryParams.value.current, queryParams.value.sort, queryParams.value.tagId],
-    () => {
-      getArticleList(queryParams.value).then(({data}) => {
-        articleList.value = data.data.recordList;
-        count.value = data.data.count;
-      });
-    }
-);
-watch(
-    () => [dateRange.value, queryParams.value.tagId],
-    () => {
-      // 调用接口，使用新的日期范围
-      filterByDate();
-      queryParams.value.current = 1;
-      console.log(dateRange.value);
-      getArticleList(queryParams.value).then(({data}) => {
-        articleList.value = data.data.recordList;
-        count.value = data.data.count;
-      });
-    }
-);
-
-onMounted(() => {
-  getArticleList(queryParams.value).then(({data}) => {
-    articleList.value = data.data.recordList;
-    count.value = data.data.count;
-  });
-  getTagList().then(({data}) => {
-    tagList.value = data.data;
-  });
-  EventBus.on("refresh-articles", () => {
-    queryParams.value.current = 1;
-    getArticleList(queryParams.value).then(({data}) => {
-      articleList.value = data.data.recordList;
-      count.value = data.data.count;
-    });
-  });
-});
-
+const displayArticles = computed(() => articleList.value.map(article => {
+  // 在惰性模板中提取文本，不把摘要 HTML 插入页面。
+  const template = document.createElement("template");
+  template.innerHTML = marked.parse(article.articleContent || "", { async: false }) as string;
+  template.content.querySelectorAll("script, style, img, iframe, object").forEach(node => node.remove());
+  const preview = (template.content.textContent || "").replace(/\s+/g, " ").trim();
+  return { ...article, preview: preview || "这篇文章暂未提供摘要，阅读全文了解内容。" };
+}));
 </script>
 
 <style lang="scss" scoped>
+.article-results {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.feed-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  color: var(--home-muted);
+  font-size: 0.875rem;
+}
+
+.feed-state {
+  padding: 2.5rem 1.25rem;
+  border: 1px solid var(--home-border);
+  border-radius: 0.65rem;
+  background: var(--home-surface-strong);
+  color: var(--home-muted);
+  text-align: center;
+
+  h3 { margin: 0 0 0.5rem; color: var(--text-color); }
+  p { margin: 0 0 0.75rem; }
+}
+
+.feed-action {
+  padding: 0.3rem 0.6rem;
+  border: 1px solid var(--home-border-strong);
+  border-radius: 0.35rem;
+  background: var(--home-accent-soft);
+  color: var(--text-color);
+  font: inherit;
+  cursor: pointer;
+}
+
+.tag-error { color: var(--home-muted); font-size: 0.875rem; }
+
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--text-color);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .article-item, .sort-option, .cover { transition: none !important; }
+}
+
 .article-toolbar {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.75rem;
   margin: 0 0 0.25rem;
   padding: 0.72rem;
   border: 1px solid var(--home-border);
   border-radius: 0.65rem;
   background: var(--home-surface-strong);
-  box-shadow: var(--home-shadow), var(--home-glow);
 }
 
 .sortList {
@@ -238,14 +240,14 @@ onMounted(() => {
   transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 
   &.active {
-    color: var(--home-accent);
+    color: var(--text-color);
     border-color: var(--home-border-strong);
     background: var(--home-accent-soft);
   }
 
   &:hover {
     transform: translateY(-1px);
-    color: var(--home-accent);
+    color: var(--text-color);
     border-color: var(--home-border-strong);
   }
 }
@@ -255,9 +257,15 @@ onMounted(() => {
 }
 
 .date-picker-container {
-  min-width: 18rem;
+  flex: 1 1 18rem;
+  min-width: 0;
+
+  :deep(.el-date-editor--daterange) {
+    width: 100%;
+  }
 }
 
+:deep(.el-select__wrapper),
 :deep(.el-select .el-input__wrapper),
 :deep(.el-date-editor.el-input__wrapper) {
   min-height: 2.5rem;
@@ -265,6 +273,17 @@ onMounted(() => {
   box-shadow: 0 0 0 1px var(--home-border) inset;
   background: var(--home-surface-muted);
   color: var(--home-muted);
+}
+
+:deep(.el-date-editor .el-range-input),
+:deep(.el-date-editor .el-range-separator) {
+  color: var(--home-muted);
+}
+
+:deep(.el-select__placeholder),
+:deep(.el-date-editor input::placeholder) {
+  color: var(--home-muted);
+  opacity: 1;
 }
 
 .article-item {
@@ -275,19 +294,14 @@ onMounted(() => {
   padding: 1.25rem 1.05rem 1.05rem 1.45rem;
   border-radius: 0.65rem;
   border: 1px solid var(--home-border);
-  border-left: 4px solid rgba(85, 162, 160, 0.6);
   background: var(--home-surface-strong);
-  box-shadow: var(--home-shadow), var(--home-glow);
   animation-duration: 0.5s;
   transition: transform 0.24s ease, box-shadow 0.24s ease, border-color 0.24s ease;
   overflow: hidden;
-  visibility: hidden;
 
   &:hover {
     transform: translateY(-2px);
     border-color: var(--home-border-strong);
-    border-left-color: var(--home-accent);
-    box-shadow: var(--home-shadow-hover), var(--home-glow);
 
     .cover {
       transform: scale(1.035);
@@ -357,7 +371,7 @@ onMounted(() => {
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
     margin: 0.5rem 0 0.4rem;
-    color: var(--home-title);
+    color: var(--text-color);
     font-size: clamp(1.2rem, 2vw, 1.55rem);
     line-height: 1.45;
     overflow: hidden;
@@ -368,7 +382,8 @@ onMounted(() => {
     }
 
     &:hover {
-      color: var(--home-accent-cool);
+      color: var(--text-color);
+      text-decoration: underline;
     }
   }
 
@@ -377,39 +392,13 @@ onMounted(() => {
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
     max-height: 3.5rem;
+    margin: 0;
+    overflow-wrap: anywhere;
     font-family: Mulish, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
     font-size: 0.95rem;
     line-height: 1.75;
     color: var(--home-muted);
     overflow: hidden;
-
-    :deep(p) {
-      display: inline;
-      margin: 0;
-    }
-
-    :deep(h1),
-    :deep(h2),
-    :deep(h3),
-    :deep(h4),
-    :deep(h5),
-    :deep(h6),
-    :deep(blockquote),
-    :deep(ul),
-    :deep(ol),
-    :deep(pre) {
-      display: inline;
-      margin: 0;
-      padding: 0;
-      border: 0;
-      background: transparent;
-      color: inherit;
-      font: inherit;
-    }
-
-    :deep(img) {
-      display: none;
-    }
   }
 }
 
@@ -434,7 +423,7 @@ onMounted(() => {
   padding: 0.18rem 0.7rem;
   border: 1px solid var(--home-border-strong);
   border-radius: 99px;
-  color: var(--home-accent);
+  color: var(--text-color);
   font-size: 0.82rem;
   line-height: 1.6;
   background: var(--home-accent-soft);
@@ -460,6 +449,7 @@ onMounted(() => {
   .date-picker-container {
     width: 100%;
     min-width: 0;
+    flex: none;
   }
 
   :deep(.el-date-editor--daterange.el-input__wrapper) {

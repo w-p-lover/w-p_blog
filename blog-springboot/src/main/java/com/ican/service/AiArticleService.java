@@ -1,5 +1,8 @@
 package com.ican.service;
 
+import com.ican.entity.AiTask;
+import com.ican.entity.Article;
+
 /**
  * 文章 AI 处理服务
  */
@@ -8,11 +11,11 @@ public interface AiArticleService {
     /**
      * 异步处理文章内容，生成摘要和标签并入库向量。
      *
-     * @param articleId 文章ID
-     * @param title 文章标题
-     * @param content 文章内容
+     * @param task 已认领且绑定源版本的任务
+     * @param article 同一源版本的作者正文
+     * @return 是否已完成向量准备（最终发布与任务终态由独立短事务完成）
      */
-    void processArticle(Integer articleId, String title, String content);
+    boolean processArticle(AiTask task, Article article);
 
     /**
      * 历史文章回填向量（默认实验数量）

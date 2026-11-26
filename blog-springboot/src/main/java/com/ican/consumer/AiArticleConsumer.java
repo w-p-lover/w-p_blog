@@ -18,7 +18,7 @@ public class AiArticleConsumer {
 
     private final AiTaskService aiTaskService;
 
-    @RabbitListener(queues = ARTICLE_AI_QUEUE)
+    @RabbitListener(queues = ARTICLE_AI_QUEUE, containerFactory = "articleAiListenerContainerFactory")
     public void consume(@Payload ArticleAiMessage message) {
         if (message == null) {
             log.warn("收到空的文章AI消息，已忽略");
@@ -31,7 +31,7 @@ public class AiArticleConsumer {
         try {
             aiTaskService.executeTask(message.getTaskId());
         } catch (Exception e) {
-            log.error("文章AI任务消费失败，进入死信队列，taskId={}", message.getTaskId(), e);
+            log.error("文章AI任务消费失败，拒绝重入队，需核查持久任务状态和死信投递，taskId={}", message.getTaskId(), e);
             throw new AmqpRejectAndDontRequeueException("文章AI处理失败", e);
         }
     }

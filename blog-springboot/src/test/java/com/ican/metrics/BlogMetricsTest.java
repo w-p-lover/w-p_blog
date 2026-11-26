@@ -51,4 +51,15 @@ class BlogMetricsTest {
         assertThat(warmupTimer).isNotNull();
         assertThat(warmupTimer.count()).isEqualTo(1);
     }
+    @Test
+    void backlogSnapshotClearsDisappearedStatusesAndUsesFiniteLabels() {
+        var registry = new SimpleMeterRegistry();
+        var metrics = new BlogMetrics(registry);
+        metrics.setAiTaskBacklog(java.util.List.of(java.util.Map.of("taskStatus", "UNKNOWN", "taskCount", 2L, "oldestSeconds", 900L)));
+        assertThat(registry.get("blog.ai.task.backlog").tag("status", "UNKNOWN").gauge().value()).isEqualTo(2);
+        assertThat(registry.get("blog.ai.task.oldest.seconds").tag("status", "UNKNOWN").gauge().value()).isEqualTo(900);
+        assertThat(registry.get("blog.ai.task.snapshot.timestamp").gauge().value()).isPositive();
+        metrics.setAiTaskBacklog(java.util.List.of());
+        assertThat(registry.get("blog.ai.task.backlog").tag("status", "UNKNOWN").gauge().value()).isZero();
+    }
 }

@@ -42,5 +42,5 @@ public class CanalDTO {
     /**
      * 产生该条消息的事件发生时的13位时间戳
      */
-    private Integer es;
+    private Long es;
 }

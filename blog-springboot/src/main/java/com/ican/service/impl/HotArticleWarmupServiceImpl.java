@@ -3,6 +3,7 @@ package com.ican.service.impl;
 import com.ican.cache.ArticleHotScoreProperties;
 import com.ican.cache.MultiLevelCacheManager;
 import com.ican.mapper.ArticleMapper;
+import com.ican.exception.ServiceException;
 import com.ican.metrics.BlogMetrics;
 import com.ican.model.vo.ArticleHotScoreVO;
 import com.ican.model.vo.ArticleVO;
@@ -56,11 +57,21 @@ public class HotArticleWarmupServiceImpl implements HotArticleWarmupService {
                 continue;
             }
             try {
-                ArticleVO article = cacheManager.get(
-                        ARTICLE_DETAIL_PREFIX + articleId,
-                        key -> articleMapper.selectArticleHomeById(articleId),
-                        properties.getDetailCacheTtlMinutes());
+                String contentVersion = articleMapper.selectVisibleArticleVersion(articleId, true);
+                if (contentVersion == null) {
+                    skipped++;
+                    continue;
+                }
+                String cacheKey = ARTICLE_DETAIL_PREFIX + articleId + ":v:" + contentVersion + ":body";
+                ArticleVO article = cacheManager.get(cacheKey, key -> {
+                    ArticleVO loaded = articleMapper.selectArticleHomeById(articleId, contentVersion);
+                    if (loaded == null) {
+                        throw new ServiceException("预热时文章版本或状态已变化");
+                    }
+                    return loaded;
+                }, properties.getDetailCacheTtlMinutes());
                 if (Objects.isNull(article)) {
+                    cacheManager.evict(cacheKey);
                     skipped++;
                 } else {
                     warmed++;

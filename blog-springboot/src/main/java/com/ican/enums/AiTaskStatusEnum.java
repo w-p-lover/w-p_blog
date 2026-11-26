@@ -15,7 +15,8 @@ public enum AiTaskStatusEnum {
     SUCCESS("SUCCESS"),
     FAILED("FAILED"),
     RETRYING("RETRYING"),
-    CANCELED("CANCELED");
+    CANCELED("CANCELED"),
+    UNKNOWN("UNKNOWN");
 
     private final String status;
 }

@@ -50,6 +50,8 @@ spring:
     port: ${BLOG_RABBITMQ_PORT:5672}
     username: ${BLOG_RABBITMQ_USERNAME:guest}
     password: ${BLOG_RABBITMQ_PASSWORD:guest}
+    publisher-confirm-type: correlated
+    publisher-returns: true
     listener:
       simple:
         retry:
@@ -193,11 +195,9 @@ cache:
     local:
       max-size: ${BLOG_CACHE_L1_MAX_SIZE:1000}
       expire-minutes: ${BLOG_CACHE_L1_EXPIRE_MINUTES:5}
-    bloom:
-      expected-insertions: ${BLOG_CACHE_BLOOM_EXPECTED_INSERTIONS:1000000}
-      false-probability: ${BLOG_CACHE_BLOOM_FALSE_PROBABILITY:0.01}
     null-cache-ttl-minutes: ${BLOG_CACHE_NULL_TTL_MINUTES:5}
     ttl-jitter-max-minutes: ${BLOG_CACHE_TTL_JITTER_MAX_MINUTES:5}
+    max-concurrent-loads: ${BLOG_CACHE_MAX_CONCURRENT_LOADS:8}
     lock:
       wait-seconds: ${BLOG_CACHE_LOCK_WAIT_SECONDS:3}
       lease-seconds: ${BLOG_CACHE_LOCK_LEASE_SECONDS:10}

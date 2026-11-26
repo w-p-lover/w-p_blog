@@ -34,6 +34,18 @@ public class AiTask {
 
     private Integer maxRetryCount;
 
+    private Integer dispatchAttempts;
+
+    /** PENDING投递到期 / RUNNING租约到期 / RETRYING业务退避；状态决定语义。 */
+    private LocalDateTime nextDispatchAt;
+
+    private String executionToken;
+
+    private String sourceVersion;
+
+    /** 已生成的摘要/标签检查点，失败重试保留，避免向量失败后再次生成。 */
+    private String generatedPayload;
+
     private String requestPayload;
 
     @TableField(updateStrategy = FieldStrategy.IGNORED)

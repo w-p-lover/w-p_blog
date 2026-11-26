@@ -90,6 +90,21 @@ public class RabbitMqConfig {
         return BindingBuilder.bind(articleQueue()).to(articleExchange()).with(ARTICLE_KEY);
     }
 
+    @Bean
+    public DirectExchange articleSyncErrorExchange() {
+        return new DirectExchange(ARTICLE_SYNC_ERROR_EXCHANGE, true, false);
+    }
+
+    @Bean
+    public Queue articleSyncErrorQueue() {
+        return QueueBuilder.durable(ARTICLE_SYNC_ERROR_QUEUE).build();
+    }
+
+    @Bean
+    public Binding articleSyncErrorBinding() {
+        return BindingBuilder.bind(articleSyncErrorQueue()).to(articleSyncErrorExchange()).with(ARTICLE_SYNC_ERROR_KEY);
+    }
+
     /**
      * 文章AI交换机
      */

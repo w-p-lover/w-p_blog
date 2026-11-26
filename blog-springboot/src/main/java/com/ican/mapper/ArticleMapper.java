@@ -9,6 +9,7 @@ import org.apache.ibatis.annotations.Update;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -54,6 +55,12 @@ public interface ArticleMapper extends BaseMapper<Article> {
      */
     List<ArticleSearchVO> searchArticle(@Param("keyword") String keyword);
 
+    /**
+     * 从当前数据库状态确认当前读者可见的公开主键，不依赖内容缓存或搜索索引。
+     */
+    List<Integer> selectVisibleArticleIds(@Param("articleIds") Collection<Integer> articleIds,
+                                          @Param("privateAccess") boolean privateAccess);
+
 
 /**
      * 查询首页文章
@@ -98,7 +105,20 @@ public interface ArticleMapper extends BaseMapper<Article> {
      * @param articleId 文章id
      * @return 首页文章
      */
-    ArticleVO selectArticleHomeById(Integer articleId);
+    ArticleVO selectArticleHomeById(@Param("articleId") Integer articleId,
+                                    @Param("contentVersion") String contentVersion);
+
+    /**
+     * 从当前数据库取得可见正文版本，不读取大字段，也不信任Redis失效结果。
+     */
+    String selectVisibleArticleVersion(@Param("articleId") Integer articleId,
+                                       @Param("privateAccess") boolean privateAccess);
+
+    /**
+     * 当前读者可见的版本与分类/标签快照，不缓存关联名称。
+     */
+    ArticleDetailStateVO selectVisibleArticleDetailState(@Param("articleId") Integer articleId,
+                                                        @Param("privateAccess") boolean privateAccess);
 
     /**
      * 查询上一篇文章
@@ -106,7 +126,7 @@ public interface ArticleMapper extends BaseMapper<Article> {
      * @param articleId 文章id
      * @return 上一篇文章
      */
-    ArticlePaginationVO selectLastArticle(Integer articleId);
+    ArticlePaginationVO selectLastArticle(@Param("articleId") Integer articleId, @Param("privateAccess") boolean privateAccess);
 
     /**
      * 查询下一篇文章
@@ -114,7 +134,7 @@ public interface ArticleMapper extends BaseMapper<Article> {
      * @param articleId 文章id
      * @return 下一篇文章
      */
-    ArticlePaginationVO selectNextArticle(Integer articleId);
+    ArticlePaginationVO selectNextArticle(@Param("articleId") Integer articleId, @Param("privateAccess") boolean privateAccess);
 
     /**
      * 查询文章归档
@@ -123,16 +143,13 @@ public interface ArticleMapper extends BaseMapper<Article> {
      * @param size  大小
      * @return 文章归档
      */
-    List<ArchiveVO> selectArchiveList(@Param("limit") Long limit, @Param("size") Long size);
+    List<ArchiveVO> selectArchiveList(@Param("limit") Long limit, @Param("size") Long size,
+                                      @Param("privateAccess") boolean privateAccess);
 
     /**
-     * 查询私人文章归档
-     *
-     * @param limit
-     * @param size
-     * @return
+     * 与归档列表使用相同可见性条件的数量。
      */
-    List<ArchiveVO> PselectArchiveList(@Param("limit") Long limit, @Param("size") Long size);
+    Long countVisibleArticles(@Param("privateAccess") boolean privateAccess);
 
     /**
      * 查询文章统计
@@ -153,7 +170,7 @@ public interface ArticleMapper extends BaseMapper<Article> {
      *
      * @return 推荐文章
      */
-    List<ArticleRecommendVO> selectArticleRecommend();
+    List<ArticleRecommendVO> selectArticleRecommend(@Param("privateAccess") boolean privateAccess);
 
     /**
      * 根据条件查询文章
@@ -163,16 +180,30 @@ public interface ArticleMapper extends BaseMapper<Article> {
      * @param condition 条件
      * @return 文章列表
      */
-    List<ArticleConditionVO> listArticleByCondition(@Param("limit") Long limit, @Param("size") Long size, @Param("condition") ConditionDTO condition);
+    List<ArticleConditionVO> listArticleByCondition(@Param("limit") Long limit, @Param("size") Long size, @Param("condition") ConditionDTO condition,
+                                                    @Param("privateAccess") boolean privateAccess);
 
     @Update("UPDATE t_article SET views = views + 1 WHERE id = #{articleId}")
     void incrementViews(@Param("articleId") Long articleId);
 
+    /** 展示型PV的累计快照；重试和乱序写入不重复加数，也不回退已持久化值。 */
+    @Update("UPDATE t_article SET views = GREATEST(COALESCE(views, 0), #{views}) WHERE id = #{articleId}")
+    int persistViewSnapshot(@Param("articleId") Integer articleId, @Param("views") int views);
+
     @Update("UPDATE t_article SET views = views + #{i} WHERE id = #{articleId}")
     void incrementViewsByi(@Param("articleId") Integer id, @Param("i") Double aDouble);
 
-    void updateArticleAiResult(@Param("articleId") Integer articleId,
+    List<Article> selectVisibleAiArticles(@Param("articleIds") Collection<Integer> articleIds,
+                                          @Param("privateAccess") boolean privateAccess);
+
+    int resetArticleAiResult(@Param("articleId") Integer articleId, @Param("sourceVersion") String sourceVersion);
+
+    int publishArticleVector(@Param("articleId") Integer articleId, @Param("sourceVersion") String sourceVersion);
+
+    int updateArticleAiResult(@Param("articleId") Integer articleId,
                                @Param("aiSummary") String aiSummary,
                                @Param("aiSuggestTags") String aiSuggestTags,
-                               @Param("aiIndexedAt") LocalDateTime aiIndexedAt);
+                               @Param("aiIndexedAt") LocalDateTime aiIndexedAt,
+                               @Param("sourceVersion") String sourceVersion,
+                               @Param("taskId") Integer taskId, @Param("token") String token);
 }
