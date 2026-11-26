@@ -16,7 +16,7 @@
             <el-col :md="6">
               <el-form-item label="用户头像" class="upload-form-item">
                 <el-upload class="avatar-uploader" :headers="authorization"
-                           action="http://121.41.87.40:8080/admin/site/upload"
+                           :action="`${apiBaseUrl}/admin/site/upload`"
                            :show-file-list="false" accept="image/*" :before-upload="beforeUpload"
                            :on-success="handleUserAvatarSuccess">
                   <div class="avatar-container">
@@ -34,7 +34,7 @@
             <el-col :md="6">
               <el-form-item label="游客头像" class="upload-form-item">
                 <el-upload class="avatar-uploader" :headers="authorization"
-                           action="http://121.41.87.40:8080/admin/site/upload"
+                           :action="`${apiBaseUrl}/admin/site/upload`"
                            :show-file-list="false" accept="image/*" :before-upload="beforeUpload"
                            :on-success="handleTouristAvatarSuccess">
                   <div class="avatar-container">
@@ -89,7 +89,7 @@
         <el-form label-width="80px" :model="siteConfig" label-position="left" class="config-form">
           <el-form-item label="作者头像" class="upload-form-item">
             <el-upload class="avatar-uploader" :headers="authorization"
-                       action="http://121.41.87.40:8080/admin/site/upload"
+                       :action="`${apiBaseUrl}/admin/site/upload`"
                        :show-file-list="false" accept="image/*" :before-upload="beforeUpload"
                        :on-success="handleAuthorAvatarSuccess">
               <div class="avatar-container">
@@ -184,7 +184,7 @@
             <el-col :md="12">
               <el-form-item label="微信收款码" class="upload-form-item">
                 <el-upload class="avatar-uploader" :headers="authorization"
-                           action="http://121.41.87.40:8080/admin/site/upload"
+                           :action="`${apiBaseUrl}/admin/site/upload`"
                            :show-file-list="false" accept="image/*" :before-upload="beforeUpload"
                            :on-success="handleWeiXinSuccess">
                   <div class="avatar-container">
@@ -202,7 +202,7 @@
             <el-col :md="12">
               <el-form-item label="支付宝收款码" class="upload-form-item">
                 <el-upload class="avatar-uploader" :headers="authorization"
-                           action="http://121.41.87.40:8080/admin/site/upload"
+                           :action="`${apiBaseUrl}/admin/site/upload`"
                            :show-file-list="false" accept="image/*" :before-upload="beforeUpload"
                            :on-success="handleAliSuccess">
                   <div class="avatar-container">
@@ -237,7 +237,7 @@
         <el-form label-width="100px" :model="siteConfig" label-position="left" class="config-form">
           <el-form-item label="文章默认封面" class="upload-form-item article-cover-item">
             <el-upload class="avatar-uploader" :headers="authorization"
-                       action="http://121.41.87.40:8080/admin/site/upload"
+                       :action="`${apiBaseUrl}/admin/site/upload`"
                        :show-file-list="false" accept="image/*" :before-upload="beforeUpload"
                        :on-success="handleArticleSuccess">
               <div class="article-cover-container">
@@ -283,6 +283,7 @@
 </template>
 
 <script setup lang="ts">
+import {apiBaseUrl} from "@/utils/request";
 import {getSiteConfig, updateSiteConfig, uploadSiteImg} from '@/api/site';
 import {SiteConfig} from '@/api/site/types';
 import {notifySuccess} from '@/utils/modal';

@@ -12,18 +12,8 @@ spring:
       - org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchClientAutoConfiguration
       - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration
       - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchRepositoriesAutoConfiguration
-      - org.springframework.ai.vectorstore.qdrant.autoconfigure.QdrantVectorStoreAutoConfiguration
       - cn.dev33.satoken.dao.SaTokenDaoRedisJackson
-  ai:
-    openai:
-      api-key: test-key
-      base-url: http://localhost:18080
-    dashscope:
-      api-key: test-key
-
 blog:
   security:
     allowed-origins:
-      - http://localhost:5173
-    websocket-allowed-origins:
       - http://localhost:5173

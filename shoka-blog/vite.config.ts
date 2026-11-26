@@ -2,6 +2,7 @@ import vue from "@vitejs/plugin-vue";
 import path from "path";
 import AutoImport from "unplugin-auto-import/vite";
 import Components from "unplugin-vue-components/vite";
+import {ElementPlusResolver, NaiveUiResolver} from "unplugin-vue-components/resolvers";
 import {defineConfig} from "vite";
 import {prismjsPlugin} from "vite-plugin-prismjs";
 import {createSvgIconsPlugin} from "vite-plugin-svg-icons";
@@ -9,18 +10,13 @@ import {createSvgIconsPlugin} from "vite-plugin-svg-icons";
 // https://vitejs.dev/config/
 export default defineConfig({
     plugins: [
-        vue({
-            template: {
-                compilerOptions: {
-                    isCustomElement: tag => tag === 'meting-js'
-                }
-            }
-        }),
+        vue({template: {compilerOptions: {isCustomElement: tag => tag === "meting-js"}}}),
         AutoImport({
             imports: ["vue", "vue-router", "pinia"],
             dts: "src/types/auto-imports.d.ts",
         }),
         Components({
+            resolvers: [ElementPlusResolver({importStyle: "css"}), NaiveUiResolver()],
             dts: "src/types/components.d.ts",
         }),
         createSvgIconsPlugin({
@@ -64,7 +60,7 @@ export default defineConfig({
         extensions: [".mjs", ".js", ".ts", ".jsx", ".tsx", ".json", ".vue"],
     },
     server: {
-        open: true,
+        open: false,
         /*    proxy: {
               "/api": {
                 target: "http://192.168.88.130:8080",

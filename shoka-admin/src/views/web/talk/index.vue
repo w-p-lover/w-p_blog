@@ -257,7 +257,7 @@
               :headers="authorization"
               accept="image/*"
               multiple
-              action="http://121.41.87.40:8080/admin/talk/upload"
+              :action="`${apiBaseUrl}/admin/talk/upload`"
               :before-upload="beforeUpload"
               :on-success="handleSuccess"
               :show-file-list="false"
@@ -318,7 +318,7 @@
       <div v-if="uploadList.length > 0" class="uploaded-images">
         <el-upload
             accept="image/*"
-            action="/api/admin/talk/upload"
+            :action="`${apiBaseUrl}/admin/talk/upload`"
             :headers="authorization"
             list-type="picture-card"
             :file-list="uploadList"
@@ -344,6 +344,7 @@
 </template>
 
 <script setup lang="ts">
+import {apiBaseUrl} from "@/utils/request";
 // 新增引入图标组件
 import {MoreFilled, Hide, ArrowDown, Plus, Lock, Clock, Picture} from '@element-plus/icons-vue';
 import {addTalk, deleteTalk, editTalk, getTalkList, updateTalk} from "@/api/talk";

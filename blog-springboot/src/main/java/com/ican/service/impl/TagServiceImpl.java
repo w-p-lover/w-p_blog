@@ -16,6 +16,7 @@ import com.ican.model.dto.ConditionDTO;
 import com.ican.model.dto.TagDTO;
 import com.ican.model.vo.*;
 import com.ican.service.TagService;
+import com.ican.service.ArticleAccessService;
 import com.ican.utils.PageUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +49,8 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements TagSe
     private final ArticleTagMapper articleTagMapper;
 
     private final ArticleMapper articleMapper;
+
+    private final ArticleAccessService articleAccessService;
 
     @Override
     public PageResult<TagBackVO> listTagBackVO(ConditionDTO condition) {
@@ -128,7 +131,7 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements TagSe
     @Override
     public ArticleConditionList listArticleTag(ConditionDTO condition) {
         List<ArticleConditionVO> articleConditionList = articleMapper.listArticleByCondition(PageUtils.getLimit(),
-                PageUtils.getSize(), condition);
+                PageUtils.getSize(), condition, articleAccessService.canReadPrivateArticles());
         String name = tagMapper.selectOne(new LambdaQueryWrapper<Tag>()
                         .select(Tag::getTagName)
                         .eq(Tag::getId, condition.getTagId()))

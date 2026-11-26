@@ -7,10 +7,10 @@
 
   <div class="bg">
     <div class="page-container">
-      <!-- 第一部分：博客标签 -->
+      <!-- 第一部分：标签 -->
       <div class="tag-section animated-section">
         <div class="section-header">
-          <h2 class="section-title blog-title">博客标签</h2>
+          <h2 class="section-title blog-title">标签</h2>
         </div>
         <div class="tag-cloud blog-tags">
           <router-link
@@ -28,26 +28,6 @@
         </div>
       </div>
 
-      <!-- 第二部分：协作标签 -->
-      <div class="tag-section animated-section">
-        <div class="section-header">
-          <h2 class="section-title collab-title">协作标签</h2>
-        </div>
-        <div class="tag-cloud collab-tags">
-          <router-link
-              :to="`/collab/tag/${tag.id}`"
-              class="tag-item"
-              v-for="tag in collabTagList"
-              :key="'collab-' + tag.id"
-              :style="{
-                'font-size': getCollabTagSize(tag.docCount),
-                'color': getCollabTagColor(tag.docCount)
-              }">
-            {{ tag.tagName }}
-            <sup>{{ tag.docCount }}</sup>
-          </router-link>
-        </div>
-      </div>
     </div>
   </div>
 </template>
@@ -56,14 +36,11 @@
 import {ref, onMounted} from 'vue';
 import {getTagList} from "@/api/tag";
 import {Tag} from "@/api/tag/types";
-import {getDocTags} from "@/api/collab";
-import {CollabTag} from "@/api/collab/type";
 import Waves from "@/components/Waves/index.vue";
 import { useDark } from "@vueuse/core";
 
 // 数据变量
 const blogTagList = ref<Tag[]>([]);
-const collabTagList = ref<CollabTag[]>([]);
 const isDark = useDark({
   selector: 'html',
   attribute: 'theme',
@@ -71,7 +48,7 @@ const isDark = useDark({
   valueLight: 'light',
 });
 
-// 博客标签样式逻辑
+// 标签样式逻辑
 const getBlogTagSize = (freq: number) => {
   const minSize = 1;
   const maxSize = 1.5;
@@ -105,52 +82,13 @@ const getBlogTagColor = (articleCount: number) => {
 };
 
 
-// 协作标签样式逻辑
-const getCollabTagSize = (freq: number) => {
-  const minSize = 1.0;
-  const maxSize = 1.5;
-  const maxCount = Math.max(...collabTagList.value.map(t => t.docCount), 1);
-  return (minSize + (freq / maxCount) * (maxSize - minSize)) + "rem";
-};
-
-const getCollabTagColor = (docCount: number) => {
-  const maxCount = Math.max(...collabTagList.value.map(t => t.docCount), 1);
-  const ratio = docCount / maxCount;
-
-  // 定义多个色系用于协作标签
-  const colorSchemes = [
-    {hue: 210, sat: 70, light: 45}, // 蓝色
-    {hue: 180, sat: 65, light: 40}, // 青色
-    {hue: 240, sat: 60, light: 50}, // 靛蓝色
-    {hue: 200, sat: 75, light: 40}, // 天蓝色
-    {hue: 190, sat: 68, light: 48}  // 青蓝色
-  ];
-
-  // 根据文档数量选择色系
-  const schemeIndex = Math.floor(ratio * colorSchemes.length);
-  const scheme = colorSchemes[Math.min(schemeIndex, colorSchemes.length - 1)];
-
-  // 微调饱和度和亮度
-  const saturation = scheme.sat + (ratio * 20);
-  const lightness = isDark.value
-      ? Math.min(76, scheme.light + 22 - ratio * 8)
-      : scheme.light - (ratio * 15);
-
-  return `hsl(${scheme.hue}, ${saturation}%, ${lightness}%)`;
-};
-
-
-// 加载数据
+// 加载标签
 onMounted(() => {
   getTagList().then(({data}) => {
     blogTagList.value = data.data;
   });
-  getDocTags().then(({data}) => {
-    collabTagList.value = data.data;
-  });
 });
 </script>
-
 <style lang="scss" scoped>
 // 标签区域容器
 .tag-section {
@@ -240,17 +178,6 @@ onMounted(() => {
   &:hover {
     background: linear-gradient(135deg, rgba(142, 140, 216, 0.2) 0%, rgba(142, 140, 216, 0.1) 100%);
     border-color: rgba(142, 140, 216, 0.4);
-  }
-}
-
-// 协作标签交互样式
-.collab-tags .tag-item {
-  background: linear-gradient(135deg, rgba(66, 153, 225, 0.1) 0%, rgba(66, 153, 225, 0.05) 100%);
-  border: 1px solid rgba(66, 153, 225, 0.2);
-
-  &:hover {
-    background: linear-gradient(135deg, rgba(66, 153, 225, 0.2) 0%, rgba(66, 153, 225, 0.1) 100%);
-    border-color: rgba(66, 153, 225, 0.4);
   }
 }
 

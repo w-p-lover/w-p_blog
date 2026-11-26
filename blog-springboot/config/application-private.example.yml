@@ -20,15 +20,6 @@ spring:
     username: ${BLOG_MAIL_USERNAME:replace@example.com}
     password: ${BLOG_MAIL_PASSWORD:replace-me}
 
-  ai:
-    openai:
-      api-key: ${BLOG_OPENAI_API_KEY:replace-me}
-    dashscope:
-      api-key: ${BLOG_DASHSCOPE_API_KEY:replace-me}
-
-hefeng:
-  api-key: ${BLOG_HEFENG_API_KEY:replace-me}
-
 oauth:
   gitee:
     client-id: ${BLOG_GITEE_CLIENT_ID:replace-me}

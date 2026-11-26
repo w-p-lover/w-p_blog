@@ -1,6 +1,5 @@
 package com.ican.quartz.task;
 
-import com.ican.mapper.ChatMapper;
 import com.ican.mapper.VisitLogMapper;
 import com.ican.service.ArticleHotScoreService;
 import com.ican.service.HotArticleWarmupService;
@@ -22,8 +21,6 @@ class TimedTaskTest {
     @Mock
     private VisitLogMapper visitLogMapper;
     @Mock
-    private ChatMapper chatMapper;
-    @Mock
     private ArticleHotScoreService articleHotScoreService;
     @Mock
     private HotArticleWarmupService hotArticleWarmupService;
@@ -35,7 +32,6 @@ class TimedTaskTest {
         timedTask = new TimedTask();
         ReflectionTestUtils.setField(timedTask, "redisService", redisService);
         ReflectionTestUtils.setField(timedTask, "visitLogMapper", visitLogMapper);
-        ReflectionTestUtils.setField(timedTask, "chatMapper", chatMapper);
         ReflectionTestUtils.setField(timedTask, "articleHotScoreService", articleHotScoreService);
         ReflectionTestUtils.setField(timedTask, "hotArticleWarmupService", hotArticleWarmupService);
     }

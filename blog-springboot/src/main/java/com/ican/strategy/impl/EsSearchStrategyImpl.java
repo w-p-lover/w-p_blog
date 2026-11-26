@@ -4,6 +4,7 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import com.ican.model.vo.ArticleSearchVO;
+import com.ican.exception.ServiceException;
 import com.ican.strategy.SearchStrategy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -54,8 +55,8 @@ public class EsSearchStrategyImpl implements SearchStrategy {
                     .map(this::mapHitToVO)
                     .toList();
         } catch (Exception e) {
-            log.error("ES 搜索失败: {}", e.getMessage());
-            return new ArrayList<>();
+            log.error("ES 搜索失败", e);
+            throw new ServiceException("搜索服务暂时不可用，请稍后重试");
         }
     }
 

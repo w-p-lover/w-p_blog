@@ -87,16 +87,7 @@ public class UserInfoController {
     }
 
 
-    /**
-     * 查看在线用户
-     *
-     * @param condition 条件
-     * @return {@link OnlineVO} 在线用户列表
-     */
-    @GetMapping("/collab/writerList")
-    public Result<PageResult<DocDTO.CollabDTO>> getUserLis(ConditionDTO condition) {
-        return Result.success(userService.getUserLis(condition));
-    }
+
 
 
 }

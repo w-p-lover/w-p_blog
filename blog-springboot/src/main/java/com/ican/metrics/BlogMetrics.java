@@ -1,11 +1,14 @@
 package com.ican.metrics;
 
 import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import org.springframework.stereotype.Component;
 
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 博客业务自定义指标
@@ -15,9 +18,36 @@ import java.util.concurrent.TimeUnit;
 public class BlogMetrics {
 
     private final MeterRegistry registry;
+    private final AtomicLong articleViewsPending = new AtomicLong();
 
     public BlogMetrics(MeterRegistry registry) {
         this.registry = registry;
+        Gauge.builder("blog.article.views.pending", articleViewsPending, AtomicLong::get)
+                .description("最近一次PV同步观察到的待同步文章数")
+                .register(registry);
+    }
+
+    /** 只使用缓存阶段/结果等有限标签，不以文章ID、缓存key或异常消息打标签。 */
+    public void recordCacheEvent(String stage, String outcome) {
+        Counter.builder("blog.cache.events")
+                .tag("stage", stage).tag("outcome", outcome)
+                .register(registry).increment();
+    }
+
+
+
+    /** 最近一次成功扫描的持久任务快照；年龄从任务创建开始，不是broker队列长度。 */
+
+
+    public void recordCacheDuration(String stage, long costNanos) {
+        Timer.builder("blog.cache.duration").tag("stage", stage)
+                .register(registry).record(costNanos, TimeUnit.NANOSECONDS);
+    }
+
+    public void bindCacheLoadBudget(Semaphore permits, int capacity) {
+        Gauge.builder("blog.cache.rebuild.active", permits, value -> capacity - value.availablePermits())
+                .description("本实例正在等锁或执行正文重建的请求数，不含权威SQL")
+                .register(registry);
     }
 
     /**
@@ -30,6 +60,23 @@ public class BlogMetrics {
                 .tag("articleId", String.valueOf(articleId))
                 .register(registry)
                 .increment();
+    }
+
+    public void recordArticleStatsFailure(String operation) {
+        Counter.builder("blog.article.stats.failures")
+                .tag("operation", operation)
+                .register(registry).increment();
+    }
+
+    public void setArticleViewsPending(long pending) {
+        articleViewsPending.set(pending);
+    }
+
+    public void recordArticleViewFlush(int persisted, int failed, long costNanos) {
+        Counter.builder("blog.article.views.flush.snapshots").register(registry).increment(persisted);
+        Counter.builder("blog.article.views.flush.failures").register(registry).increment(failed);
+        Timer.builder("blog.article.views.flush.duration").register(registry)
+                .record(costNanos, TimeUnit.NANOSECONDS);
     }
 
     /**

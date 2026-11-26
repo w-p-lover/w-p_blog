@@ -1,6 +1,12 @@
 <template>
   <div class="bg article-page">
-    <div class="main-container article-layout" v-if="article">
+    <div v-if="loading" class="article-state" role="status">正在加载文章…</div>
+    <div v-else-if="loadError" class="article-state" role="alert">
+      <h1>{{ loadError }}</h1>
+      <button type="button" @click="loadArticle">重新加载</button>
+      <router-link to="/">返回首页</router-link>
+    </div>
+    <div class="main-container article-layout" v-else-if="article">
       <div class="left-container" :class="app.sideFlag ? 'test' : ''">
         <div class="article-container">
           <header class="article-head">
@@ -133,6 +139,8 @@ import {Share} from 'vue3-social-share';
 import 'vue3-social-share/lib/index.css';
 const {app, blog, user} = useStore();
 const articleRef = ref();
+const loading = ref(true);
+const loadError = ref("");
 const route = useRoute();
 const articleHref = window.location.href;
 const data = reactive({
@@ -189,19 +197,43 @@ const like = () => {
     }
   });
 };
-onMounted(() => {
-  getArticle(Number(route.params.id)).then(({data}) => {
+const loadArticle = async () => {
+  loading.value = true;
+  loadError.value = "";
+  articleLoaded.value = false;
+  try {
+    const {data} = await getArticle(Number(route.params.id));
+    if (!data.flag || !data.data) {
+      loadError.value = "文章不存在或暂不可见";
+      return;
+    }
     article.value = data.data;
     document.title = article.value.articleTitle;
     wordNum.value = deleteHTMLTag(article.value.articleContent).length;
     readTime.value = Math.round(wordNum.value / 400);
     articleLoaded.value = true;
-  })
-})
+  } catch {
+    loadError.value = "文章暂时无法加载";
+  } finally {
+    loading.value = false;
+  }
+};
+onMounted(loadArticle);
 </script>
 
 <style lang="scss" scoped>
 @import "@/assets/styles/mixin.scss";
+
+.article-state {
+  max-width: 48rem;
+  margin: 2rem auto;
+  padding: 2rem;
+  text-align: center;
+
+  h1 { font-size: 1.3rem; }
+  button, a { margin: 0.5rem; color: var(--home-accent); }
+  button { cursor: pointer; text-decoration: underline; }
+}
 
 .article-container {
   border: 1px solid var(--home-border);
@@ -227,9 +259,7 @@ onMounted(() => {
 .article-head {
   padding: 2.35rem 2.45rem 1rem;
   border-bottom: 1px solid var(--home-border);
-  background:
-      radial-gradient(circle at 8% 0, rgba(85, 162, 160, 0.08), transparent 18rem),
-      linear-gradient(180deg, #fffefa 0, #fdfbf7 100%);
+  background: var(--home-surface-strong);
 }
 
 .article-title {
@@ -239,7 +269,7 @@ onMounted(() => {
   font-size: clamp(1.65rem, 2.8vw, 2.2rem);
   letter-spacing: 0;
   text-align: left;
-  color: #333;
+  color: var(--text-color);
   line-height: 1.32;
 }
 
@@ -326,8 +356,8 @@ onMounted(() => {
   padding: 0 0.85rem;
   border: 1px solid var(--home-border-strong);
   border-radius: 999px;
-  color: var(--grey-6);
-  background: rgba(255, 255, 255, 0.42);
+  color: var(--text-color);
+  background: var(--home-surface-muted);
   font: inherit;
   font-size: 0.86rem;
 }

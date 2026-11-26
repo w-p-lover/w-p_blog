@@ -50,11 +50,12 @@ class HotArticleWarmupServiceImplTest {
 
     @Test
     void warmupTopHotArticles_shouldWarmArticleDetailCaches() {
+        when(articleMapper.selectVisibleArticleVersion(1, true)).thenReturn("v1");
         ArticleVO article = new ArticleVO();
         article.setId(1);
         when(hotScoreService.listTopHotScores(2))
                 .thenReturn(List.of(new ArticleHotScoreVO(1, null, 99.0)));
-        when(cacheManager.get(eq(ARTICLE_DETAIL_PREFIX + 1), any(Function.class), eq(30)))
+        when(cacheManager.get(eq(ARTICLE_DETAIL_PREFIX + 1 + ":v:v1:body"), any(Function.class), eq(30)))
                 .thenReturn(article);
 
         var result = service.warmupTopHotArticles(2);
@@ -63,16 +64,18 @@ class HotArticleWarmupServiceImplTest {
         assertThat(result.getWarmedCount()).isEqualTo(1);
         assertThat(result.getSkippedCount()).isZero();
         assertThat(result.getFailedCount()).isZero();
-        verify(cacheManager).get(eq(ARTICLE_DETAIL_PREFIX + 1), any(Function.class), eq(30));
+        verify(cacheManager).get(eq(ARTICLE_DETAIL_PREFIX + 1 + ":v:v1:body"), any(Function.class), eq(30));
     }
 
     @Test
     void warmupArticleIds_shouldDeduplicateAndCountSkippedAndFailedArticles() {
+        when(articleMapper.selectVisibleArticleVersion(2, true)).thenReturn("v2");
+        when(articleMapper.selectVisibleArticleVersion(1, true)).thenReturn("v1");
         ArticleVO article = new ArticleVO();
         article.setId(1);
-        when(cacheManager.get(eq(ARTICLE_DETAIL_PREFIX + 1), any(Function.class), eq(30)))
+        when(cacheManager.get(eq(ARTICLE_DETAIL_PREFIX + 1 + ":v:v1:body"), any(Function.class), eq(30)))
                 .thenReturn(article);
-        when(cacheManager.get(eq(ARTICLE_DETAIL_PREFIX + 2), any(Function.class), eq(30)))
+        when(cacheManager.get(eq(ARTICLE_DETAIL_PREFIX + 2 + ":v:v2:body"), any(Function.class), eq(30)))
                 .thenThrow(new IllegalStateException("cache loader failed"));
 
         var result = service.warmupArticleIds(new java.util.ArrayList<>(java.util.Arrays.asList(1, 1, null, 2)));
@@ -81,7 +84,7 @@ class HotArticleWarmupServiceImplTest {
         assertThat(result.getWarmedCount()).isEqualTo(1);
         assertThat(result.getSkippedCount()).isEqualTo(1);
         assertThat(result.getFailedCount()).isEqualTo(1);
-        verify(cacheManager).get(eq(ARTICLE_DETAIL_PREFIX + 1), any(Function.class), eq(30));
-        verify(cacheManager).get(eq(ARTICLE_DETAIL_PREFIX + 2), any(Function.class), eq(30));
+        verify(cacheManager).get(eq(ARTICLE_DETAIL_PREFIX + 1 + ":v:v1:body"), any(Function.class), eq(30));
+        verify(cacheManager).get(eq(ARTICLE_DETAIL_PREFIX + 2 + ":v:v2:body"), any(Function.class), eq(30));
     }
 }

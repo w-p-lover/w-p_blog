@@ -26,6 +26,11 @@ public @interface RateLimit {
     String key();
 
     /**
+     * 在资源 key 后附加访问者维度：登录用户 ID，匿名请求的连接 IP。
+     */
+    boolean perClient() default false;
+
+    /**
      * 时间窗口内允许的最大请求数
      */
     int limit() default 100;

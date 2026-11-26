@@ -54,6 +54,10 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
         scheduler.clear();
         List<Task> taskList = taskMapper.selectList(null);
         for (Task task : taskList) {
+            // 旧记录保留在数据库；成品版不再装配已退出的聊天清理任务。
+            if (task.getInvokeTarget() != null && task.getInvokeTarget().startsWith("timedTask.clearChatRecord")) {
+                continue;
+            }
             // 创建定时任务
             ScheduleUtils.createScheduleJob(scheduler, task);
         }

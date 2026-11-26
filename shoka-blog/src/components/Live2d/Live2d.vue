@@ -6,10 +6,10 @@
 import { onBeforeUnmount, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
-import * as Live2DModule from 'live2d-render';
-
-const initializeLive2D = Live2DModule.initializeLive2D || Live2DModule.default;
-const setLive2DMessage = Live2DModule.setMessageBox;
+let setLive2DMessage;
+const desktopViewport = window.matchMedia('(min-width: 769px)');
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+let initializing = false;
 
 const route = useRoute();
 let removeGlobalPointerFollow = null;
@@ -17,27 +17,18 @@ let live2dReady = false;
 
 const pageMessages = {
   '/': '愿您在此寻得片刻安宁。',
-  '/message': '笔墨传情，静待您的留言。',
-  '/chat': '此处可畅所欲言，以言会友。',
-  '/chat/ChatHome': '聊天主页，期待您的分享。',
   '/about': '关于我们，些许薄见，望君雅正。',
   '/category': '万物有序，分类而聚，便于君寻。',
   '/category/:id': '此分类下的文章，或合您意。',
   '/tag': '标签汇聚，皆是心意所向。',
   '/tag/:id': '此标签下的内容，盼能共鸣。',
+  '/talk': '闲言碎语，皆是生活感悟。',
+  '/talk/:id': '这则说说，道尽当时心境。',
   '/friend': '友链相连，皆是同道中人。',
   '/archive': '时光归档，每一刻都值得回味。',
   '/user': '个人中心，记录您的点滴足迹。',
-  '/album': '相册集萃，定格美好瞬间。',
-  '/album/:id': '这些照片，藏着一段故事。',
-  '/talk': '闲言碎语，皆是生活感悟。',
-  '/talk/:id': '这则说说，道尽当时心境。',
   '/article/:id': '此篇文章，愿能与君共勉。',
-  '/404': '页面暂未寻得，不妨换条路径。',
-  '/weather': '天气多云转晴，爱会一直放晴',
-  '/book': '看书，看的就是书，我看看看看',
-  '/oauth/login/gitee': '正在通过Gitee登录，稍候片刻。',
-  '/oauth/login/github': '正在通过Github登录，稍候片刻。'
+  '/404': '页面暂未寻得，不妨换条路径。'
 };
 
 const showRouteMessage = (path, duration = 5000) => {
@@ -77,6 +68,7 @@ const setupGlobalPointerFollow = (canvas) => {
   if (!canvas) return;
 
   const forwardPointer = (event) => {
+    if (!desktopViewport.matches || document.hidden) return;
     const rect = canvas.getBoundingClientRect();
     const normalizedX = Math.min(Math.max(event.clientX / window.innerWidth, 0), 1);
     const normalizedY = Math.min(Math.max(event.clientY / window.innerHeight, 0), 1);
@@ -101,10 +93,8 @@ const setupGlobalPointerFollow = (canvas) => {
     }));
   };
 
-  window.addEventListener('mousemove', forwardPointer, { passive: true });
   window.addEventListener('pointermove', forwardPointer, { passive: true });
   removeGlobalPointerFollow = () => {
-    window.removeEventListener('mousemove', forwardPointer);
     window.removeEventListener('pointermove', forwardPointer);
   };
 };
@@ -113,13 +103,22 @@ watch(() => route.path, (newPath) => {
   showRouteMessage(newPath, 5000);
 });
 
-onMounted(async () => {
-  if (!initializeLive2D || typeof initializeLive2D !== 'function') {
-    console.error('initializeLive2D 未导入成功，请检查 live2d-render 版本或导入方式！');
-    return;
-  }
-
+const initialize = async () => {
+  if (!desktopViewport.matches || reducedMotion.matches || live2dReady || initializing) return;
+  initializing = true;
   try {
+    const previousBeforeUnload = window.onbeforeunload;
+    const module = await import('live2d-render');
+    // 渲染库在 beforeunload 提前释放模型时，尚未结束的帧可能读取已释放实例。
+    // 页面实际离开后再释放，同时保留原页面的 beforeunload 处理。
+    const release = window.onbeforeunload;
+    if (release && release !== previousBeforeUnload) {
+      window.onbeforeunload = previousBeforeUnload;
+      window.addEventListener('pagehide', release, {once: true});
+    }
+    const initializeLive2D = module.initializeLive2D || module.default;
+    setLive2DMessage = module.setMessageBox;
+    if (typeof initializeLive2D !== 'function') return;
     await initializeLive2D({
       CanvasId: 'live2d-canvas',
       BackgroundRGBA: [0, 0, 0, 0],
@@ -130,19 +129,24 @@ onMounted(async () => {
       Scale: 0.5,
       Offset: { x: 0, y: 0 }
     });
-
     const canvas = setupRuntimeLayerBehavior();
     setupGlobalPointerFollow(canvas);
     live2dReady = true;
     showRouteMessage(route.path, 5000);
-
-    console.log('Live2D 模型加载完成');
-  } catch (err) {
-    console.error('Live2D 初始化失败：', err);
+  } catch (error) {
+    console.warn('Live2D 暂时不可用：', error);
+  } finally {
+    initializing = false;
   }
+};
+
+onMounted(() => {
+  desktopViewport.addEventListener('change', initialize);
+  initialize();
 });
 
 onBeforeUnmount(() => {
+  desktopViewport.removeEventListener('change', initialize);
   if (removeGlobalPointerFollow) removeGlobalPointerFollow();
 });
 </script>
@@ -154,6 +158,20 @@ onBeforeUnmount(() => {
 
 #live2d-canvas {
   pointer-events: none !important;
+}
+
+.__live2d-toolbox-item.__live2d-toolbox-item {
+  border: 1px solid var(--home-border);
+  background-color: var(--home-surface-strong) !important;
+  color: var(--text-color);
+}
+
+.__live2d-toolbox-item.__live2d-toolbox-item:hover {
+  background-color: var(--home-accent-soft) !important;
+}
+
+.__live2d-toolbox-item.__live2d-toolbox-item svg path {
+  fill: currentColor;
 }
 
 #live2d-toolbox,

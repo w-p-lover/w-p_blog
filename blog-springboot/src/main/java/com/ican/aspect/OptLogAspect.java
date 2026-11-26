@@ -7,8 +7,10 @@ import com.ican.entity.OperationLog;
 import com.ican.manager.AsyncManager;
 import com.ican.manager.factory.AsyncFactory;
 import com.ican.utils.IpUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
+import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
@@ -29,6 +31,7 @@ import java.util.Objects;
  * @author xcs
  * @date 2022/12/02 17:55
  **/
+@Slf4j
 @Aspect
 @Component
 public class OptLogAspect {
@@ -62,6 +65,22 @@ public class OptLogAspect {
      */
     @AfterReturning(value = "optLogPointCut()", returning = "result")
     public void doAfterReturning(JoinPoint joinPoint, Object result) {
+        try {
+            recordOperation(joinPoint, result);
+        } catch (RuntimeException error) {
+            // 业务可能已经提交，辅助日志失败不能把成功响应变成失败。
+            log.warn("操作日志记录失败，业务结果保留", error);
+        } finally {
+            startTime.remove();
+        }
+    }
+
+    @AfterThrowing("optLogPointCut()")
+    public void clearFailedRequest() {
+        startTime.remove();
+    }
+
+    private void recordOperation(JoinPoint joinPoint, Object result) {
         // 从切面织入点处通过反射机制获取织入点处的方法
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         // 获取切入点所在的方法
@@ -91,7 +110,7 @@ public class OptLogAspect {
         // 操作描述（使用方法名）
         operationLog.setDescription(method.getName());
         // 请求参数
-        if (joinPoint.getArgs()[0] instanceof MultipartFile) {
+        if (joinPoint.getArgs().length > 0 && joinPoint.getArgs()[0] instanceof MultipartFile) {
             operationLog.setParams(((MultipartFile) joinPoint.getArgs()[0]).getOriginalFilename());
         } else {
             operationLog.setParams(JSON.toJSONString(joinPoint.getArgs()));
@@ -110,7 +129,6 @@ public class OptLogAspect {
         operationLog.setIpSource(IpUtils.getIpSource(ip));
         // 执行耗时
         operationLog.setTimes(System.currentTimeMillis() - startTime.get());
-        startTime.remove();
         // 保存到数据库
         AsyncManager.getInstance().execute(AsyncFactory.recordOperation(operationLog));
     }

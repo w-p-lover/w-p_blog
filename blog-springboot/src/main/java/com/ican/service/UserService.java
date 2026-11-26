@@ -117,11 +117,5 @@ public interface UserService extends IService<User> {
      */
     void updatePassword(UserDTO user);
 
-    /**
-     * 查看共享用户列表
-     *
-     * @param condition 条件
-     * @return 用户列表
-     */
-    PageResult<DocDTO.CollabDTO> getUserLis(ConditionDTO condition);
+
 }

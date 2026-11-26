@@ -2,19 +2,24 @@
   <n-modal class="dialog-wrapper bg" v-model:show="dialogVisible" preset="dialog" :show-icon="false"
            transform-origin="center" :block-scroll="false">
     <template #header>
-      <span class="title">本地搜索</span>
+      <span class="title">搜索文章</span>
     </template>
     <!-- 输入框 -->
     <div class="search-input-wrapper">
       <label for="search">
         <svg-icon icon-class="search"></svg-icon>
       </label>
-      <input id="search" placeholder="输入文章标题或内容..." v-model="keyword"/>
+      <input id="search" aria-label="搜索文章标题或内容" placeholder="输入文章标题或内容..." v-model="keyword"/>
     </div>
     <!-- 搜索结果 -->
     <div class="search-result-wrapper">
       <hr class="divider"/>
-      <ul v-if="articleList.length">
+      <p v-if="searching" role="status">正在搜索…</p>
+      <div v-else-if="searchError" role="alert">
+        <p>{{ searchError }}</p>
+        <button class="search-retry" type="button" @click="handleSearch">重新搜索</button>
+      </div>
+      <ul v-else-if="articleList.length">
         <li class="search-result" v-for="article in articleList" :key="article.id">
           <!-- 文章标题 -->
           <router-link class="search-title" :to="`/article/${article.id}`">
@@ -36,7 +41,6 @@
 import {searchArticle} from "@/api/article";
 import {ArticleSearch} from "@/api/article/types";
 import useStore from "@/store";
-import {debouncedWatch} from "@vueuse/core";
 
 const {app} = useStore();
 const dialogVisible = computed({
@@ -45,15 +49,43 @@ const dialogVisible = computed({
 });
 const keyword = ref("");
 const articleList = ref<ArticleSearch[]>([]);
-debouncedWatch(
-    keyword,
-    () => keyword.value ? handleSearch() : articleList.value = [],
-    {debounce: 300},
-);
-const handleSearch = () => {
-  searchArticle(keyword.value).then(({data}) => {
+const searching = ref(false);
+const searchError = ref("");
+let requestSequence = 0;
+
+watch(keyword, (value, _previous, onCleanup) => {
+  ++requestSequence;
+  articleList.value = [];
+  searchError.value = "";
+  searching.value = !!value.trim();
+  if (!value.trim()) return;
+  const timer = setTimeout(() => void handleSearch(), 300);
+  onCleanup(() => {
+    clearTimeout(timer);
+    ++requestSequence;
+  });
+}, {flush: "sync"});
+
+const handleSearch = async () => {
+  const term = keyword.value.trim();
+  if (!term) return;
+  const sequence = ++requestSequence;
+  articleList.value = [];
+  searchError.value = "";
+  searching.value = true;
+  try {
+    const {data} = await searchArticle(term);
+    if (sequence !== requestSequence) return;
+    if (!data.flag || !Array.isArray(data.data)) {
+      searchError.value = data.msg || "搜索暂时不可用，请稍后重试";
+      return;
+    }
     articleList.value = data.data;
-  })
+  } catch {
+    if (sequence === requestSequence) searchError.value = "搜索请求失败，请稍后重试";
+  } finally {
+    if (sequence === requestSequence) searching.value = false;
+  }
 }
 </script>
 
@@ -61,6 +93,13 @@ const handleSearch = () => {
 .title {
   color: var(--color-blue);
   font-size: 1.25rem;
+}
+
+.search-retry {
+  margin-top: 0.5rem;
+  color: var(--text-color);
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 .search-input-wrapper {

@@ -1,11 +1,7 @@
 package com.ican;
 
 import com.ican.cache.MultiLevelCacheManager;
-import com.ican.model.vo.AiChatResponseVO;
 import com.ican.model.vo.BlogInfoVO;
-import com.ican.service.AiArticleService;
-import com.ican.service.AiRagService;
-import com.ican.service.AiWriteAssistService;
 import com.ican.service.BlogInfoService;
 import com.ican.service.RedisService;
 import com.ican.service.TaskService;
@@ -15,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -39,14 +34,8 @@ class SmokeTest {
     @MockBean
     private BlogInfoService blogInfoService;
 
-    @MockBean
-    private AiRagService aiRagService;
 
-    @MockBean
-    private AiWriteAssistService aiWriteAssistService;
 
-    @MockBean
-    private AiArticleService aiArticleService;
 
     @MockBean
     private RedisService redisService;
@@ -63,8 +52,6 @@ class SmokeTest {
     @MockBean
     private MultiLevelCacheManager multiLevelCacheManager;
 
-    @MockBean
-    private VectorStore vectorStore;
 
     @Test
     void contextLoads() {
@@ -79,13 +66,4 @@ class SmokeTest {
                .andExpect(status().isOk());
     }
 
-    @Test
-    void aiChatEndpoint_shouldReturn200() throws Exception {
-        when(aiRagService.chat(anyString())).thenReturn(new AiChatResponseVO("ok", List.of()));
-
-        mockMvc.perform(post("/api/ai/chat")
-                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
-                        .content("{\"question\":\"Redis缓存击穿怎么解决\"}"))
-                .andExpect(status().isOk());
-    }
 }

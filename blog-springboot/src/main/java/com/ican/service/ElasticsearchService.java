@@ -1,8 +1,5 @@
 package com.ican.service;
 
-import com.ican.entity.Article;
-import com.ican.model.vo.ArticleSearchVO;
-
 /**
  * es文章业务接口
  *
@@ -11,24 +8,10 @@ import com.ican.model.vo.ArticleSearchVO;
 public interface ElasticsearchService {
 
     /**
-     * 添加文章
+     * 按数据库当前状态同步文章；重复执行不会追加文档，失败必须向调用方传播。
      *
-     * @param article 文章
+     * @param articleId 文章id
      */
-    void addArticle(ArticleSearchVO article);
-
-    /**
-     * 更新文章
-     *
-     * @param article 文章
-     */
-    void updateArticle(ArticleSearchVO article);
-
-    /**
-     * 删除文章
-     *
-     * @param id 文章id
-     */
-    void deleteArticle(Integer id);
+    void syncArticle(Integer articleId);
 
 }

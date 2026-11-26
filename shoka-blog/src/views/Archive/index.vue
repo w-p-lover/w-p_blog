@@ -49,16 +49,10 @@
               <div class="article-time">
                 <svg-icon icon-class="calendar" style="margin-right:0.4rem;"></svg-icon>
                 <time>{{ formatDate(archive.createTime) }}</time>
-                <span v-if="archive.tags && archive.tags.length" class="article-tags">
-                  <span v-for="tag in archive.tags" :key="tag.id" class="tag-item">{{ tag.name }}</span>
-                </span>
               </div>
               <router-link class="article-title" :to="`/article/${archive.id}`">
                 {{ archive.articleTitle }}
               </router-link>
-              <p class="article-excerpt" :class="{ show: hoveredId === archive.id }">
-                {{ archive.excerpt || '点击查看文章详情...' }}
-              </p>
             </div>
           </div>
         </div>
@@ -67,7 +61,7 @@
       <Pagination
           v-if="count > 0"
           v-model:current="queryParams.current"
-          :total="Math.ceil(count / 5)"
+          :total="Math.ceil(count / queryParams.size)"
           class="pagination"
       />
     </div>
@@ -97,7 +91,6 @@ const data = reactive({
 });
 
 const { count, queryParams, archivesList, groupedArchives, allYears, currentYear } = toRefs(data);
-const hoveredId = ref<number | null>(null); // 用于控制摘要显示的ID
 
 // 按年份分组归档数据
 const groupByYear = (list: Archives[]) => {

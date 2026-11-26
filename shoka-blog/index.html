@@ -1,53 +1,17 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8"/>
     <link rel="icon" href="/favicon.ico"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Hello World</title>
+    <title>W-P Blog</title>
     <link rel="stylesheet" href="/src/assets/styles/tac.css">
     <script src="/tac.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.css"/>
     <script src="/katex.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css"/>
-    <link rel="preconnect" href="https://wangyoupeng-penghong.oss-cn-beijing.aliyuncs.com" crossorigin/>
-    <link rel="preload" as="image" href="https://wangyoupeng-penghong.oss-cn-beijing.aliyuncs.com/avatar/wallhaven-q21drl_2560x1440.png" fetchpriority="high"/>
-    <script src="/APlayer.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script>
-    <script src="https://webapi.amap.com/maps?v=2.0&key=fa2bc4b0a7bc2783f47a74f601f8636f&plugin=Map3D,AMap.DistrictLayer,AMap.Scale,AMap.ToolBar"></script>
-    <script src="https://a.amap.com/Loca/static/mock/adcodes.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        #app {
-            position: relative;
-            z-index: 2;
-            min-height: 100vh;
-        }
-        .fireworks-container {
-            position: fixed;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            background: #000;
-            z-index: 0;
-            pointer-events: none;
-        }
-    </style>
 </head>
 <body>
 <div id="app"></div>
 <script type="module" src="./src/main.ts"></script>
-<div class="fireworks-container" id="fireworks"></div>
-<script src="https://cdn.jsdelivr.net/npm/fireworks-js@2.x/dist/index.umd.js"></script>
-<script>
-    const container = document.querySelector('#fireworks');
-    const fireworks = new Fireworks.default(container);
-    fireworks.start();
-</script>
-
 </body>
 </html>

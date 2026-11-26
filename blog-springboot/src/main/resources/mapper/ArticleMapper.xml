@@ -37,7 +37,7 @@
         </collection>
     </resultMap>
 
-    <resultMap id="articleVO" type="com.ican.model.vo.ArticleVO">
+    <resultMap id="articleBody" type="com.ican.model.vo.ArticleVO">
         <id column="id" property="id"/>
         <result column="article_cover" property="articleCover"/>
         <result column="article_title" property="articleTitle"/>
@@ -48,14 +48,6 @@
         <result column="views" property="views"/>
         <result column="ai_summary" property="aiSummary"/>
         <result column="ai_suggest_tags" property="aiSuggestTags"/>
-        <association property="category" javaType="com.ican.model.vo.CategoryOptionVO">
-            <id column="category_id" property="id"/>
-            <result column="category_name" property="categoryName"/>
-        </association>
-        <collection property="tagVOList" ofType="com.ican.model.vo.TagOptionVO">
-            <id column="tag_id" property="id"/>
-            <result column="tag_name" property="tagName"/>
-        </collection>
     </resultMap>
 
     <resultMap id="articleConditionVO" type="com.ican.model.vo.ArticleConditionVO">
@@ -188,6 +180,38 @@
         </where>
     </select>
 
+    <!-- articleAlias 只由下面 include 的静态属性提供，不接受请求参数。 -->
+    <sql id="excludePrivateArticles">
+        AND (${articleAlias}.category_id IS NULL OR ${articleAlias}.category_id NOT IN (60, 61))
+        AND NOT EXISTS (
+            SELECT 1 FROM t_article_tag private_tat
+            INNER JOIN t_tag private_tag ON private_tag.id = private_tat.tag_id
+            WHERE private_tat.article_id = ${articleAlias}.id
+              AND private_tag.tag_name IN ('红红专属~', '猫猫出没', 'w&amp;p~')
+        )
+    </sql>
+
+    <select id="selectVisibleArticleIds" resultType="java.lang.Integer">
+        SELECT id
+        FROM t_article
+        WHERE is_delete = 0 AND `status` = 1
+        <if test="!privateAccess">
+            <include refid="excludePrivateArticles"><property name="articleAlias" value="t_article"/></include>
+        </if>
+        <choose>
+            <when test="articleIds != null and !articleIds.isEmpty()">
+                AND id IN
+                <foreach collection="articleIds" item="articleId" open="(" separator="," close=")">
+                    #{articleId}
+                </foreach>
+            </when>
+            <otherwise>
+                AND 1 = 0
+            </otherwise>
+        </choose>
+    </select>
+
+
     <select id="selectArticleAllList" resultMap="articleHomeVO">
         SELECT a.id,
         article_cover,
@@ -262,7 +286,8 @@
         SELECT tat.article_id
         FROM t_article_tag tat
         INNER JOIN t_tag t ON tat.tag_id = t.id
-        WHERE t.tag_name NOT IN ('红红专属~', '猫猫出没', 'w&amp;p~'))
+        )
+        <include refid="excludePrivateArticles"><property name="articleAlias" value="t_article"/></include>
         ORDER BY is_top DESC,  ${sort} DESC, id DESC
         ) a
         INNER JOIN t_category c ON a.category_id = c.id
@@ -274,29 +299,77 @@
         ORDER BY a.is_top DESC, a.${sort} DESC,a.id DESC
     </select>
 
-    <select id="selectArticleHomeById" resultMap="articleVO">
-        SELECT a.id,
-               article_cover,
-               article_title,
-               article_content,
-               article_type,
-               a.create_time,
-               a.update_time,
-               a.category_id,
-               c.category_name,
-               t.id AS tag_id,
-               tag_name,
-               views,
-               ai_summary,
-               ai_suggest_tags,
-               ai_indexed_at
+    <select id="selectVisibleArticleVersion" resultType="java.lang.String">
+        SELECT content_version FROM t_article
+        WHERE id = #{articleId} AND is_delete = 0 AND `status` = 1
+        <if test="!privateAccess">
+            <include refid="excludePrivateArticles"><property name="articleAlias" value="t_article"/></include>
+        </if>
+    </select>
+
+    <resultMap id="articleDetailState" type="com.ican.model.vo.ArticleDetailStateVO">
+        <id column="content_version" property="contentVersion"/>
+        <result column="views" property="views"/>
+        <association property="lastArticle" javaType="com.ican.model.vo.ArticlePaginationVO" notNullColumn="last_id">
+            <id column="last_id" property="id"/>
+            <result column="last_cover" property="articleCover"/>
+            <result column="last_title" property="articleTitle"/>
+        </association>
+        <association property="nextArticle" javaType="com.ican.model.vo.ArticlePaginationVO" notNullColumn="next_id">
+            <id column="next_id" property="id"/>
+            <result column="next_cover" property="articleCover"/>
+            <result column="next_title" property="articleTitle"/>
+        </association>
+        <association property="category" javaType="com.ican.model.vo.CategoryOptionVO">
+            <id column="category_id" property="id"/>
+            <result column="category_name" property="categoryName"/>
+        </association>
+        <collection property="tagVOList" ofType="com.ican.model.vo.TagOptionVO">
+            <id column="tag_id" property="id"/>
+            <result column="tag_name" property="tagName"/>
+        </collection>
+    </resultMap>
+
+    <select id="selectVisibleArticleDetailState" resultMap="articleDetailState">
+        SELECT a.content_version, a.views, a.category_id, c.category_name,
+               t.id AS tag_id, t.tag_name,
+               p.id AS last_id, p.article_cover AS last_cover, p.article_title AS last_title,
+               n.id AS next_id, n.article_cover AS next_cover, n.article_title AS next_title
         FROM t_article a
-                 INNER JOIN t_category c ON a.category_id = c.id
-                 INNER JOIN t_article_tag tat ON a.id = tat.article_id
-                 INNER JOIN t_tag t ON tat.tag_id = t.id
+        INNER JOIN t_category c ON a.category_id = c.id
+        INNER JOIN t_article_tag tat ON a.id = tat.article_id
+        INNER JOIN t_tag t ON tat.tag_id = t.id
+        LEFT JOIN t_article p ON p.id = (
+            SELECT MAX(prev_candidate.id) FROM t_article prev_candidate
+            WHERE prev_candidate.id &lt; #{articleId}
+              AND prev_candidate.is_delete = 0 AND prev_candidate.`status` = 1
+            <if test="!privateAccess">
+                <include refid="excludePrivateArticles"><property name="articleAlias" value="prev_candidate"/></include>
+            </if>
+        )
+        LEFT JOIN t_article n ON n.id = (
+            SELECT MIN(next_candidate.id) FROM t_article next_candidate
+            WHERE next_candidate.id &gt; #{articleId}
+              AND next_candidate.is_delete = 0 AND next_candidate.`status` = 1
+            <if test="!privateAccess">
+                <include refid="excludePrivateArticles"><property name="articleAlias" value="next_candidate"/></include>
+            </if>
+        )
+        WHERE a.id = #{articleId} AND a.is_delete = 0 AND a.`status` = 1
+        <if test="!privateAccess">
+            <include refid="excludePrivateArticles"><property name="articleAlias" value="a"/></include>
+        </if>
+    </select>
+
+    <!-- 正文缓存不保存可被独立改名/删除的分类、标签快照。 -->
+    <select id="selectArticleHomeById" resultMap="articleBody">
+        SELECT a.id, article_cover, article_title, article_content, article_type,
+               a.create_time, a.update_time, views, ai_summary, ai_suggest_tags
+        FROM t_article a
         WHERE is_delete = 0
           AND `status` = 1
           AND a.id = #{articleId}
+          AND a.content_version = #{contentVersion}
     </select>
 
     <select id="selectLastArticle" resultType="com.ican.model.vo.ArticlePaginationVO">
@@ -304,6 +377,9 @@
         FROM t_article
         WHERE is_delete = 0
           AND `status` = 1
+        <if test="!privateAccess">
+            <include refid="excludePrivateArticles"><property name="articleAlias" value="t_article"/></include>
+        </if>
           AND id &lt; #{articleId}
         ORDER BY id DESC
         LIMIT 1
@@ -314,18 +390,20 @@
         FROM t_article
         WHERE is_delete = 0
           AND `status` = 1
+        <if test="!privateAccess">
+            <include refid="excludePrivateArticles"><property name="articleAlias" value="t_article"/></include>
+        </if>
           AND id &gt; #{articleId}
         ORDER BY id ASC
         LIMIT 1
     </select>
 
-    <select id="PselectArchiveList" resultType="com.ican.model.vo.ArchiveVO">
-        select id, article_title, article_cover, create_time
-        from t_article
-        where is_delete = 0
-          and `status` = 1
-        order by create_time desc
-        limit #{limit}, #{size}
+    <select id="countVisibleArticles" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM t_article
+        WHERE is_delete = 0 AND `status` = 1
+        <if test="!privateAccess">
+            <include refid="excludePrivateArticles"><property name="articleAlias" value="t_article"/></include>
+        </if>
     </select>
 
     <select id="selectArchiveList" resultType="com.ican.model.vo.ArchiveVO">
@@ -333,7 +411,9 @@
         from t_article
         where is_delete = 0
           and `status` = 1
-          and category_id NOT IN (60, 61)
+        <if test="!privateAccess">
+            <include refid="excludePrivateArticles"><property name="articleAlias" value="t_article"/></include>
+        </if>
         order by create_time desc
         limit #{limit}, #{size}
     </select>
@@ -366,6 +446,9 @@
         FROM t_article
         WHERE is_delete = 0
           AND `status` = 1
+        <if test="!privateAccess">
+            <include refid="excludePrivateArticles"><property name="articleAlias" value="t_article"/></include>
+        </if>
           AND is_recommend = 1
         LIMIT 5
     </select>
@@ -379,29 +462,32 @@
         c.category_name,
         t.id AS tag_id,
         tag_name
-        FROM t_article a
+        FROM (
+            SELECT id, category_id, article_cover, article_title, create_time FROM t_article
+            WHERE is_delete = 0 AND `status` = 1
+            <if test="!privateAccess">
+                <include refid="excludePrivateArticles"><property name="articleAlias" value="t_article"/></include>
+            </if>
+            <if test="condition.categoryId != null">
+                AND category_id = #{condition.categoryId}
+            </if>
+            <if test="condition.tagId != null">
+                AND EXISTS (SELECT 1 FROM t_article_tag filter_tat
+                            WHERE filter_tat.article_id = t_article.id AND filter_tat.tag_id = #{condition.tagId})
+            </if>
+            AND EXISTS (SELECT 1 FROM t_category c WHERE c.id = t_article.category_id)
+            AND EXISTS (SELECT 1 FROM t_article_tag tat INNER JOIN t_tag t ON t.id = tat.tag_id
+                        WHERE tat.article_id = t_article.id)
+            ORDER BY id DESC
+            LIMIT #{limit}, #{size}
+        ) a
         INNER JOIN t_category c ON a.category_id = c.id
         INNER JOIN t_article_tag tat ON a.id = tat.article_id
         INNER JOIN t_tag t ON tat.tag_id = t.id
-        <where>
-            is_delete = 0 and `status` = 1
-            <if test="condition.categoryId != null">
-                and category_id = #{condition.categoryId}
-            </if>
-            <if test="condition.tagId != null">
-                and tag_id = #{condition.tagId}
-            </if>
-        </where>
         ORDER BY a.id DESC
-        LIMIT #{limit}, #{size}
     </select>
 
-    <update id="updateArticleAiResult">
-        UPDATE t_article
-        SET ai_summary = #{aiSummary},
-            ai_suggest_tags = #{aiSuggestTags},
-            ai_indexed_at = #{aiIndexedAt}
-        WHERE id = #{articleId}
-    </update>
+
+
 
 </mapper>

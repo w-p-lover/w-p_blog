@@ -259,18 +259,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 .eq(User::getUsername, user.getUsername()));
     }
 
-    @Override
-    public PageResult<DocDTO.CollabDTO> getUserLis(ConditionDTO condition) {
-        List<User> users = userMapper.selectList(new LambdaQueryWrapper<>());
-        return new PageResult<>(users.stream()
-                .map(user -> {
-                    DocDTO.CollabDTO collabDTO = new DocDTO.CollabDTO();
-                    collabDTO.setName(user.getNickname());
-                    collabDTO.setAvatar(user.getAvatar());
-                    return collabDTO;
-                })
-                .collect(Collectors.toList()), (long) users.size());
-    }
+
 
     /**
      * 校验验证码

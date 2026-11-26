@@ -14,11 +14,11 @@
 import useStore from "@/store";
 
 const {blog} = useStore();
-const blogInfo = [
+const blogInfo = computed(() => [
   {path: "/archive", count: blog.blogInfo.articleCount, name: "文章"},
   {path: "/category", count: blog.blogInfo.categoryCount, name: "分类"},
   {path: "/tag", count: blog.blogInfo.tagCount, name: "标签"},
-];
+]);
 </script>
 
 <style scoped></style>

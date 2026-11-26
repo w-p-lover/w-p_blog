@@ -1,146 +1,29 @@
-# Blog SpringBoot
+# W-P Blog 后端
 
-![Java](https://img.shields.io/badge/Java-17-2f6fed)
-![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.5-3f9f46)
-![MyBatis Plus](https://img.shields.io/badge/MyBatis--Plus-3.5.7-1677ff)
-![Redis](https://img.shields.io/badge/Redis-7.x-cb3837)
-![RabbitMQ](https://img.shields.io/badge/RabbitMQ-3.x-ff6600)
-![Spring AI](https://img.shields.io/badge/Spring%20AI-1.0.0-6db33f)
+面向个人技术博客的 Spring Boot 3 / Java 17 后端。当前成品围绕文章写作、发布、检索、阅读、说说图文动态和评论；功能边界见 [个人技术博客成品边界](docs/00-项目总览/08-个人技术博客成品边界.md)。
 
-`blog-springboot` 是 W-P Blog 的后端服务。项目已从传统博客后端升级为内容平台后端，重点放在文章内容、热点访问、AI 增强、搜索检索和工程化部署。
+保留 MySQL、Redis/Caffeine 缓存、RabbitMQ 邮件与文章搜索同步、Elasticsearch 搜索、Sa-Token 权限和必要监控。已移出 AI/Qdrant、活动报名、聊天、协作文档和娱乐工具。旧实现保存在 `备份/精简前完整功能`（本地保留，不推送旧历史），不需要为退出模块设置开关。
 
-## Position
+## 本地运行
 
-> 基于 Spring Boot 3 + Java 17 的内容平台与 AI 增强知识检索系统。
-
-适合重点展示：
-
-- 文章发布后的异步 AI 处理链路。
-- Caffeine + Redis 多级缓存与热点文章优化。
-- Redis Lua 限流、Redisson 分布式锁、RabbitMQ 死信队列。
-- Spring AI + Qdrant 的 RAG 问答和 SSE 写作助手。
-- 多环境配置、Docker Compose、Prometheus 指标和结构化日志。
-
-## Architecture
-
-```mermaid
-flowchart LR
-    A["文章发布"] --> B["MySQL 保存"]
-    B --> C["RabbitMQ"]
-    C --> D["AI 处理"]
-    D --> E["摘要/标签回写"]
-    D --> F["Qdrant 向量库"]
-    F --> G["RAG 问答"]
-```
-
-```mermaid
-flowchart LR
-    A["文章详情"] --> B["Lua 限流"]
-    B --> C["Caffeine L1"]
-    C --> D["Redis L2"]
-    D --> E["Redisson 锁"]
-    E --> F["数据库回源"]
-```
-
-## Features
-
-| 模块 | 能力 |
-| --- | --- |
-| 内容 | 文章、分类、标签、归档、推荐、置顶 |
-| 互动 | 评论、留言、点赞、访问记录、WebSocket 聊天 |
-| 后台 | 用户、角色、菜单、权限、日志、任务调度 |
-| 搜索 | MySQL/Elasticsearch 策略切换 |
-| AI | 摘要、标签、向量入库、RAG 问答、SSE 写作 |
-| 性能 | 多级缓存、限流、分布式锁、热点预热 |
-| 工程 | Docker Compose、多环境配置、Actuator、Prometheus |
-
-## Stack
-
-| 方向 | 技术 |
-| --- | --- |
-| Framework | Spring Boot 3.2.5, Java 17, Maven |
-| Database | MyBatis-Plus, MySQL 8, Druid |
-| Cache | Redis, Caffeine, Redisson, Lua |
-| Async | RabbitMQ, Quartz, ThreadPoolTaskExecutor |
-| Search & AI | Elasticsearch 7.17, Spring AI, Qdrant, DashScope, DeepSeek |
-| Security | Sa-Token, CORS, externalized secrets |
-| Observability | Actuator, Micrometer, Prometheus, OpenTelemetry, JSON logs |
-
-## Quick Start
-
-准备环境变量：
+需要 Java 17+、Maven、MySQL、Redis、RabbitMQ；默认搜索模式使用 Elasticsearch。先准备已有业务 schema 与本机配置，不把历史迁移当作可重复执行的初始化程序。
 
 ```powershell
 Copy-Item .env.example .env
 Copy-Item config\application-private.example.yml config\application-private.yml
-```
-
-`.env.example` 负责本地环境变量，`config/application-private.example.yml` 负责本机私有覆盖；两者都只需要按自己的数据库、Redis、RabbitMQ 和第三方密钥改值即可。
-
-启动后端：
-
-```powershell
 mvn spring-boot:run
 ```
 
-常用地址：
+配置示例只使用占位值。默认 API 端口 8080，接口文档 `/doc.html`，健康检查 `/actuator/health`。运行配置从环境变量和本机私有配置读取，不要求模型密钥或向量库。
 
-| 地址 | 说明 |
-| --- | --- |
-| `http://localhost:8080` | API 服务 |
-| `http://localhost:8080/doc.html` | Knife4j 文档 |
-| `http://localhost:8080/actuator/health` | 健康检查 |
-| `http://localhost:8080/actuator/prometheus` | Prometheus 指标 |
+## 容器运行
 
-Docker Compose：
+在本目录配置 `.env` 后执行 `docker compose up -d --build`。本目录 Dockerfile 使用 Java 17；Compose 包含应用、MySQL、Redis、RabbitMQ 和 Elasticsearch，持久卷按原约定保留。Compose 不创建或迁移业务表，也不删除旧 Qdrant 卷或任何业务数据。
 
-```powershell
-docker compose up -d --build
-```
+前后台分别在 `../shoka-blog`、`../shoka-admin` 构建。两端 `VITE_API_BASE_URL` 统一控制请求地址；同域部署可设置 `/api`，并在反向代理中将该前缀移除后转发至后端。必须同时保留验证码与上传路径的代理。
 
-会启动 Spring Boot、MySQL、Redis、RabbitMQ、Elasticsearch 和 Qdrant。
+## 开发与验证
 
-## API Examples
+使用 npm 与各自的 package-lock.json 构建前后台。后端有隔离单元/Mapper 契约用例；默认不以真实数据库或模型进行测试。详细结果见 [精简总结](docs/03-阶段总结/16-个人技术博客精简总结.md)。
 
-RAG 问答：
-
-```powershell
-curl -X POST "http://localhost:8080/api/ai/chat" `
-  -H "Content-Type: application/json" `
-  -d "{\"question\":\"Redis 缓存击穿怎么解决\"}"
-```
-
-SSE 写作助手：
-
-```powershell
-curl -N "http://localhost:8080/api/ai/write-assist?action=expand&content=缓存优化实践"
-```
-
-## Project Map
-
-```text
-src/main/java/com/ican
-├─ annotation/    # 限流、日志、访问记录注解
-├─ aspect/        # AOP 切面
-├─ cache/         # 多级缓存
-├─ config/        # Redis、RabbitMQ、WebSocket、AI 等配置
-├─ consumer/      # MQ 消费者
-├─ controller/    # REST API
-├─ metrics/       # 自定义指标
-├─ service/       # 业务逻辑
-├─ strategy/      # 搜索、上传策略
-└─ utils/         # 工具与 Python 脚本运行器
-```
-
-## Docs
-
-- [文档目录](docs/README.md)
-- [就业项目分析](docs/00-项目总览/01-就业项目分析.md)
-- [后端深度开发路线](docs/00-项目总览/02-后端深度开发路线.md)
-- [安全配置](docs/02-部署运维/01-安全配置快速开始.md)
-- [Docker Compose 部署](docs/02-部署运维/02-Docker-Compose部署说明.md)
-- [Nacos 示例](docs/02-部署运维/03-Nacos配置示例.md)
-
-## Resume Line
-
-基于 Spring Boot 3、Java 17、Redis、RabbitMQ、Elasticsearch 与 Spring AI 构建内容平台后端，实现文章管理、热点缓存、异步 AI 处理、向量检索、RAG 问答和 Docker Compose 部署。
+[文档中心](docs/README.md)保留旧阶段设计和证据；其 AI/报名内容是历史记录，不代表当前成品仍提供这些业务。当前开发优先修复实际写作、阅读、部署中的问题，不继续按旧阶段扩展功能。

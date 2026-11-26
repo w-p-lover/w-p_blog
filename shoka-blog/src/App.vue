@@ -11,7 +11,6 @@
       </main>
       <Footer></Footer>
       <Tool></Tool>
-      <AiWriterFloat></AiWriterFloat>
       <Search></Search>
       <Login></Login>
       <Register></Register>
@@ -28,8 +27,7 @@
 import {getBlogInfo, report} from "@/api/blogInfo";
 import useStore from '@/store';
 import Live2d from "@/components/Live2d/Live2d.vue";
-import MusicPlayer  from "@/components/MusicPlayer/index.vue"
-import AiWriterFloat from "@/components/AiWriterFloat/index.vue";
+import MusicPlayer from "@/components/MusicPlayer/index.vue";
 
 const {blog} = useStore();
 onMounted(() => {

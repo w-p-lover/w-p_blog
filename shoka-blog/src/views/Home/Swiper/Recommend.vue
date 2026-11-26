@@ -1,7 +1,8 @@
 <template>
-  <swiper v-if="articleList.length > 0" class="swiper-container" :modules="modules" :loop="true" :slides-per-view="1"
-          navigation mousewheel :autoplay="{ delay: 5000, disableOnInteraction: false, }"
-          :pagination="{ clickable: true }">
+  <swiper v-if="articleList.length > 0" class="swiper-container" :modules="modules" :loop="articleList.length > 1" :slides-per-view="1"
+          :navigation="articleList.length > 1"
+          :autoplay="articleList.length > 1 && !reducedMotion ? {delay: 5000, disableOnInteraction: true, pauseOnMouseEnter: true} : false"
+          :pagination="articleList.length > 1 ? { clickable: true } : false">
     <swiper-slide v-for="article in articleList" :key="article.id">
       <div class="slide-content">
         <div class="recommend-badge">荐</div>
@@ -10,7 +11,7 @@
           <router-link :to="`/article/${article.id}`" class="slide-title">{{ article.articleTitle }}</router-link>
           <span class="slide-time">{{ formatDate(article.createTime) }}</span>
         </div>
-        <router-link :to="`/article/${article.id}`" class="slide-thumb">
+        <router-link :to="`/article/${article.id}`" class="slide-thumb" v-if="article.articleCover">
           <img :src="article.articleCover" alt="">
         </router-link>
       </div>
@@ -22,15 +23,16 @@
 import {getArticleRecommend} from "@/api/article";
 import {ArticleRecommend} from "@/api/article/types";
 import {formatDate} from "@/utils/date";
-import {Autoplay, Mousewheel, Navigation, Pagination} from 'swiper';
+import {Autoplay, Navigation, Pagination} from 'swiper';
 import {Swiper, SwiperSlide} from 'swiper/vue';
 // 自定义模块
-const modules = [Pagination, Navigation, Mousewheel, Autoplay];
+const modules = [Pagination, Navigation, Autoplay];
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const articleList = ref<ArticleRecommend[]>([]);
 onMounted(() => {
   getArticleRecommend().then(({data}) => {
-    articleList.value = data.data;
-  });
+    articleList.value = data.flag && Array.isArray(data.data) ? data.data : [];
+  }).catch(() => { articleList.value = []; });
 });
 </script>
 
@@ -45,8 +47,7 @@ onMounted(() => {
   border-radius: 0.65rem;
   border: 1px solid var(--home-border);
   border-left: 4px solid rgba(200, 85, 64, 0.58);
-  background:
-    linear-gradient(90deg, rgba(255, 254, 250, 0.98), rgba(250, 248, 242, 0.9));
+  background: var(--home-surface-strong);
   box-shadow: 0 7px 18px rgba(89, 78, 56, 0.055), var(--home-glow);
   overflow: hidden;
 }

@@ -48,6 +48,15 @@ public class MqConstant {
     public final static String ARTICLE_KEY = "article.key";
 
     /**
+     * 搜索同步故障消息，保留原始批次供修复后重放。
+     */
+    public static final String ARTICLE_SYNC_ERROR_EXCHANGE = "article.sync.error";
+
+    public static final String ARTICLE_SYNC_ERROR_QUEUE = "article.sync.error.queue";
+
+    public static final String ARTICLE_SYNC_ERROR_KEY = "article.sync.error.key";
+
+    /**
      * 文章AI交换机
      */
     public static final String ARTICLE_AI_EXCHANGE = "article.ai";
