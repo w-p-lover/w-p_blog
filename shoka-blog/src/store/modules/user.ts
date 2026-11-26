@@ -37,7 +37,7 @@ const useUserStore = defineStore("useUserStore", {
                             this.loginType = data.data.loginType;
                             this.articleLikeSet = data.data.articleLikeSet;
                             this.commentLikeSet = data.data.commentLikeSet;
-                            this.talkLikeSet = data.data.talkLikeSet;
+                            this.talkLikeSet = data.data.talkLikeSet || [];
                             this.permissionList = data.data.permissionList || [];
                         }
                         resolve(data);
@@ -55,7 +55,6 @@ const useUserStore = defineStore("useUserStore", {
                         removeToken();
                         // 触发刷新文章列表的事件
                         EventBus.emit("refresh-articles");
-                        EventBus.emit("refresh-chat");
                         resolve(null);
                     })
                     .catch((error) => {

@@ -1,6 +1,7 @@
 package com.ican.service.impl;
 
 import com.ican.cache.ArticleHotScoreProperties;
+import com.ican.exception.ServiceException;
 import com.ican.mapper.ArticleMapper;
 import com.ican.mapper.CommentMapper;
 import com.ican.mapper.UserFavoriteMapper;
@@ -15,10 +16,15 @@ import com.ican.service.RedisService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
+import java.util.ArrayList;
+import java.util.UUID;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -41,10 +47,26 @@ public class ArticleHotScoreServiceImpl implements ArticleHotScoreService {
     private final RedisService redisService;
     private final ArticleHotScoreProperties properties;
     private final BlogMetrics blogMetrics;
+    private final StringRedisTemplate snapshotRedis;
+
+    private static final String REFRESH_TOKEN = ARTICLE_HOT_SCORE + ":refresh";
+    private static final DefaultRedisScript<Long> STAGE = new DefaultRedisScript<>();
+    private static final DefaultRedisScript<Long> PUBLISH = new DefaultRedisScript<>();
+
+    static {
+        STAGE.setLocation(new ClassPathResource("lua/article_hot_stage.lua"));
+        STAGE.setResultType(Long.class);
+        PUBLISH.setLocation(new ClassPathResource("lua/article_hot_publish.lua"));
+        PUBLISH.setResultType(Long.class);
+    }
 
     @Override
     public ArticleHotScoreRefreshResultVO refreshHotScores() {
         long start = System.currentTimeMillis();
+        // 先登记刷新代，再读信号；晚完成的旧执行不能覆盖更新的刷新。
+        String token = UUID.randomUUID().toString();
+        String staging = ARTICLE_HOT_SCORE + ":build:" + token;
+        snapshotRedis.opsForValue().set(REFRESH_TOKEN, token);
         List<ArticleHotScoreSourceVO> articles = safeList(articleMapper.selectHotScoreSourceArticles());
         Map<Object, Double> redisViews = safeMap(redisService.getZsetAllScore(ARTICLE_VIEW_COUNT));
         Map<String, Object> likes = safeMap(redisService.getHashAll(ARTICLE_LIKE_COUNT));
@@ -59,21 +81,54 @@ public class ArticleHotScoreServiceImpl implements ArticleHotScoreService {
                         ArticleFavoriteCountVO::getFavoriteCount,
                         Integer::sum));
 
-        redisService.deleteObject(ARTICLE_HOT_SCORE);
-        for (ArticleHotScoreSourceVO article : articles) {
-            Integer articleId = article.getArticleId();
-            int viewCount = getViewCount(redisViews, articleId, article.getViews());
-            int likeCount = toInt(likes.get(String.valueOf(articleId)));
-            int commentCount = Optional.ofNullable(comments.get(articleId)).orElse(0);
-            int favoriteCount = Optional.ofNullable(favorites.get(articleId)).orElse(0);
-            double score = calculateHotScore(article, viewCount, likeCount, commentCount, favoriteCount);
-            redisService.setZsetScore(ARTICLE_HOT_SCORE, articleId, score);
+        try {
+            List<String> batch = new ArrayList<>();
+            batch.add(token);
+            for (ArticleHotScoreSourceVO article : articles) {
+                Integer articleId = article.getArticleId();
+                int viewCount = getViewCount(redisViews, articleId, article.getViews());
+                int likeCount = toInt(likes.get(String.valueOf(articleId)));
+                int commentCount = Optional.ofNullable(comments.get(articleId)).orElse(0);
+                int favoriteCount = Optional.ofNullable(favorites.get(articleId)).orElse(0);
+                double score = calculateHotScore(article, viewCount, likeCount, commentCount, favoriteCount);
+                if (!Double.isFinite(score)) {
+                    throw new ServiceException("热度分无效，本次未发布");
+                }
+                batch.add(articleId.toString());
+                batch.add(Double.toString(score));
+                if (batch.size() == 201) {
+                    stageHotScores(staging, batch);
+                    batch.subList(1, batch.size()).clear();
+                }
+            }
+            if (batch.size() > 1) {
+                stageHotScores(staging, batch);
+            }
+            Long published = snapshotRedis.execute(PUBLISH,
+                    List.of(REFRESH_TOKEN, staging, ARTICLE_HOT_SCORE), token, Integer.toString(articles.size()));
+            if (!Long.valueOf(1).equals(published)) {
+                throw new ServiceException("热榜刷新已被更新执行替代或快照已过期，请重新刷新");
+            }
+        } finally {
+            // 临时键自身有TTL；清理失败不能把已经成功发布伪装成业务失败。
+            try {
+                snapshotRedis.delete(staging);
+            } catch (RuntimeException e) {
+                log.warn("热榜临时快照清理失败，等待TTL: key={}", staging, e);
+            }
         }
 
         long costMillis = System.currentTimeMillis() - start;
         blogMetrics.recordArticleHotScoreRefresh(articles.size(), costMillis);
         log.info("文章热度分刷新完成: count={}, cost={}ms", articles.size(), costMillis);
         return new ArticleHotScoreRefreshResultVO(articles.size(), costMillis);
+    }
+
+    private void stageHotScores(String staging, List<String> batch) {
+        Long staged = snapshotRedis.execute(STAGE, List.of(REFRESH_TOKEN, staging), batch.toArray());
+        if (!Long.valueOf(1).equals(staged)) {
+            throw new ServiceException("热榜刷新已被更新执行替代，请重新刷新");
+        }
     }
 
     @Override

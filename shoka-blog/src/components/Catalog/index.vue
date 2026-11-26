@@ -154,7 +154,7 @@ watch([() => props.domRef], () => {
 watch([titleList], () => {
   nextTick(() => {
     if (titleList.value.length && props.domRef?.$el) {
-      const allHeadings = Array.from(props.domRef.$el.querySelectorAll('h1, h2, h3'));
+      const allHeadings = Array.from((props.domRef.$el as HTMLElement).querySelectorAll<HTMLElement>('h1, h2, h3'));
       titleList.value.forEach((anchor: any, idx: number) => {
         if (allHeadings[anchor.elementIndex]) {
           anchor.offsetTop = allHeadings[anchor.elementIndex].offsetTop;

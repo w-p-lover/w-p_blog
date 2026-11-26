@@ -2,6 +2,18 @@ import {createRouter, createWebHistory, RouteRecordRaw} from "vue-router";
 
 const routes: RouteRecordRaw[] = [
     {
+        name: "talk",
+        path: "/talk",
+        component: () => import("@/views/Talk/TalkList.vue"),
+        meta: {title: "说说"},
+    },
+    {
+        name: "talkInfo",
+        path: "/talk/:id",
+        component: () => import("@/views/Talk/Talk.vue"),
+        meta: {title: "说说"},
+    },
+    {
         path: "/",
         component: () => import("@/views/Home/index.vue"),
         meta: {
@@ -9,58 +21,10 @@ const routes: RouteRecordRaw[] = [
         },
     },
     {
-        path: "/message",
-        component: () => import("@/views/Message/index.vue"),
-        meta: {
-            title: "留言板",
-        },
-    },
-    {
-        path: "/chat",
-        component: () => import("@/views/Chat/index.vue"),
-        meta: {
-            title: "聊天",
-        },
-        redirect: "/chat/ChatHome", // 重定向到子路由
-        children: [
-            {
-                path: "ChatHome", // 子路径名称
-                component: () => import("@/components/ChatHome/index.vue"),
-                meta: {
-                    title: "聊天主页",
-                },
-            },
-        ],
-    },
-    {
-        path: "/ai-chat",
-        component: () => import("@/views/AiChat/index.vue"),
-        meta: { title: "AI问答" }
-    },
-    {
-        path: "/lab",
-        component: () => import("@/views/Lab/index.vue"),
-        meta: { title: "实验室" }
-    },
-    {
         path: "/about",
         component: () => import("@/views/About/index.vue"),
         meta: {
             title: "关于",
-        },
-    },
-    {
-        path: "/music",
-        component: () => import("@/views/Music/index.vue"),
-        meta: {
-            title: "音乐库",
-        },
-    },
-    {
-        path: "/music/:id",
-        component: () => import("@/views/Music/MusicDetail.vue"),
-        meta: {
-            title: "音乐详情",
         },
     },
     {
@@ -87,83 +51,6 @@ const routes: RouteRecordRaw[] = [
         },
     },
     {
-        path: "/collab",
-        component: () => import("@/views/Collab/index.vue"),
-        meta: {
-            title: "共享",
-        },
-        children: [
-            {
-                path: "my-edit", // 子路径名称
-                component: () => import("@/views/Collab/index.vue"),
-                meta: {
-                    title: "共享",
-                },
-            },
-            {
-                path: "favorites",
-                component: () => import("@/views/Collab/index.vue"),
-                meta: {
-                    title: "共享",
-                },
-            }
-        ],
-    },
-    {
-        path: "/collab/create", // 子路径名称
-        component: () => import("@/views/Collab/edit.vue"),
-    },
-    {
-        path: "/collab/:collabId", // 子路径名称
-        component: () => import("@/views/Collab/edit.vue"),
-    },
-    {
-        path: "/collab/edit/:collabId", // 子路径名称
-        component: () => import("@/views/Collab/edit.vue"),
-    },
-    {
-        path: "/weather",
-        component: () => import("@/views/Weather/index.vue"),
-        meta: {
-            title: "天气",
-        },
-    },
-    {
-        path: "/trend",
-        component: () => import("@/views/Trending/index.vue"),
-        meta: {
-            title: "项目",
-        },
-    },
-    {
-        path: "/steam",
-        component: () => import("@/views/Steam/index.vue"),
-        meta: {
-            title: "游戏",
-        },
-    },
-    {
-        path: "/life",
-        component: () => import("@/views/Life/index.vue"),
-        meta: {
-            title: "路线",
-        },
-    },
-    {
-        path: "/book",
-        component: () => import("@/views/Book/index.vue"),
-        meta: {
-            title: "书目",
-        },
-    },
-    {
-        path: "/book/:id",
-        component: () => import("@/views/Book/BookDetail.vue"),
-        meta: {
-            title: "书籍详情",
-        },
-    },
-    {
         path: "/user",
         component: () => import("@/views/User/index.vue"),
         meta: {
@@ -182,33 +69,6 @@ const routes: RouteRecordRaw[] = [
         component: () => import("@/views/Tag/index.vue"),
         meta: {
             title: "标签",
-        },
-    },
-    {
-        path: "/album",
-        component: () => import("@/views/Album/Album.vue"),
-        meta: {
-            title: "相册",
-        },
-    },
-    {
-        path: "/album/:albumId",
-        component: () => import("@/views/Album/Photo.vue"),
-    },
-    {
-        name: "talk",
-        path: "/talk",
-        component: () => import("@/views/Talk/TalkList.vue"),
-        meta: {
-            title: "说说",
-        },
-    },
-    {
-        name: "talkInfo",
-        path: "/talk/:id",
-        component: () => import("@/views/Talk/Talk.vue"),
-        meta: {
-            title: "说说",
         },
     },
     {

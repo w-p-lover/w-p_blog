@@ -12,3 +12,6 @@ blog-springboot/src/main/resources/static/pixiv/
 /target/
 /blog-springboot/config/application-private.yml
 /blog-springboot/config/application-private.yaml
+
+# 独立调度项目有自己的 Git 仓库，不属于 blog 的源码与提交范围。
+/homa-xxl-job/

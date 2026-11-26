@@ -51,6 +51,15 @@ public class ExceptionLogAspect {
      */
     @AfterThrowing(pointcut = "exceptionLogPointCut()", throwing = "e")
     public void doAfterThrowing(JoinPoint joinPoint, Throwable e) {
+        try {
+            recordException(joinPoint, e);
+        } catch (RuntimeException loggingError) {
+            // 日志构造或调度失败不能覆盖原始业务异常及其响应契约。
+            log.warn("异常日志记录失败，原业务异常保留: {}", e.toString(), loggingError);
+        }
+    }
+
+    private void recordException(JoinPoint joinPoint, Throwable e) {
         // 从切面织入点处通过反射机制获取织入点处的方法
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         // 获取切入点所在的方法
@@ -83,7 +92,7 @@ public class ExceptionLogAspect {
         // 异常信息
         exceptionLog.setMessage(stackTraceToString(e.getClass().getName(), e.getMessage(), e.getStackTrace()));
         // 请求参数
-        if (joinPoint.getArgs()[0] instanceof MultipartFile) {
+        if (joinPoint.getArgs().length > 0 && joinPoint.getArgs()[0] instanceof MultipartFile) {
             exceptionLog.setParams(((MultipartFile) joinPoint.getArgs()[0]).getOriginalFilename());
         } else {
             List<Object> safeArgs = new ArrayList<>();

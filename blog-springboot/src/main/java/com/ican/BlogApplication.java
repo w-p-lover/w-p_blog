@@ -3,6 +3,7 @@ package com.ican;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
 import org.springframework.web.client.RestTemplate;
@@ -18,6 +19,7 @@ import java.time.format.DateTimeFormatter;
  **/
 @SpringBootApplication
 @EnableCaching
+@EnableScheduling
 public class BlogApplication {
 
     private static Environment environment = null;

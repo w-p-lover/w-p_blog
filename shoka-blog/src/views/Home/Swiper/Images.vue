@@ -45,14 +45,12 @@ import {
 } from "./hitokotoModel";
 
 const imageList = [
-  "\n" +
   "https://wangyoupeng-penghong.oss-cn-beijing.aliyuncs.com/img/202410311034088.jpg",
   "https://wangyoupeng-penghong.oss-cn-beijing.aliyuncs.com/IMG_20240508_190550.jpg",
   "https://wangyoupeng-penghong.oss-cn-beijing.aliyuncs.com/IMG_20240508_174939.jpg",
   "https://wangyoupeng-penghong.oss-cn-beijing.aliyuncs.com/IMG_20240508_173624.jpg",
   "https://wangyoupeng-penghong.oss-cn-beijing.aliyuncs.com/IMG_20240420_190212.jpg",
   "https://wangyoupeng-penghong.oss-cn-beijing.aliyuncs.com/img202410311029127.jpg",
-  "\n"
 ];
 const fallbackSentence = "愿你在此寻得片刻安宁。";
 const selectedType = ref<HitokotoType>(DEFAULT_HITOKOTO_TYPE);
@@ -67,6 +65,10 @@ const typer = reactive({
   sentencePause: false,
 });
 const startTyping = (sentence: string) => {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    typer.output = sentence || fallbackSentence;
+    return;
+  }
   typer.output = "";
   new EasyTyper(
       typer,
@@ -126,7 +128,7 @@ onBeforeUnmount(() => {
     height: 100%;
     background: no-repeat 50% 50% / cover;
     opacity: 0;
-    animation: imageAnimation 38s linear infinite 0s;
+    animation: imageAnimation 36s linear infinite 0s;
     backface-visibility: hidden;
     transform-style: preserve-3d;
 
@@ -335,5 +337,10 @@ onBeforeUnmount(() => {
     -webkit-line-clamp: 1;
     font-size: 0.86rem;
   }
+}
+@media (prefers-reduced-motion: reduce) {
+  .imgs .item { animation: none; opacity: 0; }
+  .imgs .item:first-child { opacity: 1; }
+  .easy-typed-cursor { animation: none; }
 }
 </style>

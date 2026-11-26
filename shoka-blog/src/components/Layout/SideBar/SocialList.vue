@@ -1,10 +1,8 @@
 <template>
-  <div class="social-container">
-    <template v-for="(item, index) in showSocialList">
-      <a class="social-item" :key="index" v-if="isShowSocial(item.type)" target="_blank" :href="item.href">
+  <div v-if="showSocialList.length" class="social-container">
+      <a v-for="item in showSocialList" class="social-item" :class="{ 'social-github': item.type === 'github' }" :key="item.type" target="_blank" rel="noopener noreferrer" :href="item.href" :aria-label="item.type">
         <svg-icon :icon-class="item.type" size="1.4rem" :color="item.color"></svg-icon>
       </a>
-    </template>
   </div>
 </template>
 
@@ -40,8 +38,12 @@ const showSocialList = computed(() => {
       href: siteConfig.qq ? `https://user.qzone.qq.com/${siteConfig.qq}/main` : "",
       color: "#00a1d6",
     },
-  ];
+  ].filter(item => item.href && isShowSocial(item.type));
 });
 </script>
 
-<style scoped></style>
+<style scoped>
+[theme="dark"] .social-github {
+  filter: brightness(0) invert(0.85);
+}
+</style>

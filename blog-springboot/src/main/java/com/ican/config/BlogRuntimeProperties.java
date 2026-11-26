@@ -27,7 +27,6 @@ public class BlogRuntimeProperties {
     @Data
     public static class Security {
         private List<String> allowedOrigins = new ArrayList<>();
-        private List<String> websocketAllowedOrigins = new ArrayList<>();
     }
 
     @Data

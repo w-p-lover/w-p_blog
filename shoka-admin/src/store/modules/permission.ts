@@ -13,21 +13,25 @@ export const filterAsyncRoutes = (routes: RouteRecordRaw[]) => {
     const res: RouteRecordRaw[] = [];
     routes.forEach((route) => {
         const tmp = {...route} as any;
+        const container = tmp.component === "Layout" || tmp.component === "ParentView";
+        if (tmp.children) {
+            tmp.children = filterAsyncRoutes(tmp.children);
+        }
+        if (container && !tmp.children?.length) {
+            return;
+        }
         if (tmp.component == "Layout") {
             tmp.component = Layout;
         } else if (tmp.component === "ParentView") {
             tmp.component = ParentView;
         } else {
-            Object.keys(modules).forEach((url) => {
-                if (url == `../../views${tmp.component}.vue`) {
-                    tmp.component = modules[url];
-                }
-            });
+            const component = modules[`../../views${tmp.component}.vue`];
+            if (!component) {
+                return;
+            }
+            tmp.component = component;
         }
         res.push(tmp);
-        if (tmp.children) {
-            tmp.children = filterAsyncRoutes(tmp.children);
-        }
     });
     return res;
 };

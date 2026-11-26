@@ -8,11 +8,14 @@ import cn.dev33.satoken.stp.StpUtil;
 import com.ican.exception.ServiceException;
 import com.ican.model.vo.Result;
 import com.ican.service.UserService;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.Objects;
 
@@ -52,6 +55,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
     public Result<?> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         return Result.fail(VALID_ERROR.getCode(), Objects.requireNonNull(e.getBindingResult().getFieldError()).getDefaultMessage());
+    }
+
+    @ExceptionHandler(value = {ConstraintViolationException.class, MethodArgumentTypeMismatchException.class,
+            HttpMessageNotReadableException.class})
+    public Result<?> handleInvalidRequestException(Exception e) {
+        return Result.fail(VALID_ERROR.getCode(), "请求参数不合法");
     }
 
     /**
@@ -103,7 +112,9 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(value = Exception.class)
     public Result<?> handleSystemException(Exception e) {
-        return Result.fail(SYSTEM_ERROR.getCode(), e.getMessage());
+        // 对外不返回底层异常原文，完整堆栈保留在服务端日志。
+        log.error("系统异常", e);
+        return Result.fail(SYSTEM_ERROR.getCode(), "系统繁忙，请稍后重试");
     }
 
 }

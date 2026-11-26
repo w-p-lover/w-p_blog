@@ -1,11 +1,11 @@
 <template>
-  <div :class="drawerVisible(app.isCollapse)" @click="app.isCollapse = true">
+  <button type="button" aria-label="打开导航" :aria-expanded="app.isCollapse" :class="drawerVisible(app.isCollapse)" @click="app.isCollapse = !app.isCollapse">
     <div class="lines">
       <span class="line"></span>
       <span class="line"></span>
       <span class="line"></span>
     </div>
-  </div>
+  </button>
 </template>
 
 <script setup lang="ts">
@@ -57,9 +57,9 @@ const drawerVisible = computed(() => (value: boolean) => value ? "toggle close" 
     width: 100%;
     height: 0.125rem;
     border-radius: 0.0625rem;
-    background: var(--header-text-color);
+    background: var(--text-color);
     vertical-align: top;
-    box-shadow: 0 0 0.5rem rgb(0 0 0 / 50%);
+    box-shadow: none;
     transition: all 0.4s;
 
     &:not(:first-child) {

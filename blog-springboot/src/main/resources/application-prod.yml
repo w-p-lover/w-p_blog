@@ -22,26 +22,11 @@ spring:
     password: ${BLOG_MAIL_PASSWORD}
   elasticsearch:
     uris: ${BLOG_ES_URIS}
-  ai:
-    openai:
-      api-key: ${BLOG_OPENAI_API_KEY}
-      base-url: ${BLOG_OPENAI_BASE_URL}
-    dashscope:
-      api-key: ${BLOG_DASHSCOPE_API_KEY}
-    vectorstore:
-      qdrant:
-        host: ${BLOG_QDRANT_HOST}
-        port: ${BLOG_QDRANT_PORT}
-        collection-name: ${BLOG_QDRANT_COLLECTION}
   web:
     resources:
       static-locations:
         - file:${BLOG_STATIC_DIR:/app/static/}
         - classpath:/static/
-
-hefeng:
-  api-key: ${BLOG_HEFENG_API_KEY}
-  base-url: ${BLOG_HEFENG_BASE_URL:https://pe7byfyfwb.re.qweatherapi.com/}
 
 blog:
   url: ${BLOG_SITE_HOST:127.0.0.1}
@@ -54,9 +39,6 @@ blog:
     allowed-origins:
       - ${BLOG_CORS_ORIGIN_1:${BLOG_SITE_URL:http://127.0.0.1:5173}}
       - ${BLOG_CORS_ORIGIN_2:${BLOG_ADMIN_URL:http://127.0.0.1:5174}}
-    websocket-allowed-origins:
-      - ${BLOG_WS_ORIGIN_1:${BLOG_SITE_URL:http://127.0.0.1:5173}}
-      - ${BLOG_WS_ORIGIN_2:${BLOG_ADMIN_URL:http://127.0.0.1:5174}}
 
 upload:
   local:
@@ -68,11 +50,6 @@ upload:
     bucketName: ${BLOG_OSS_BUCKET_NAME}
     accessKeyId: ${BLOG_OSS_ACCESS_KEY_ID}
     accesskeySecret: ${BLOG_OSS_ACCESS_KEY_SECRET}
-
-spider:
-  dir: ${BLOG_SPIDER_DIR:/app/static/}
-  python:
-    cmd: ${BLOG_PYTHON_CMD:python3}
 
 oauth:
   gitee:

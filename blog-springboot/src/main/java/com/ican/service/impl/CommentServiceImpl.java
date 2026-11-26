@@ -124,6 +124,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
 
     @Override
     public PageResult<CommentVO> listCommentVO(ConditionDTO condition) {
+        Assert.notNull(getCommentPath(condition.getCommentType()), "不支持的评论类型");
         // 查询父评论数量
         Long count = commentMapper.selectCount(new LambdaQueryWrapper<Comment>()
                 .eq(Objects.nonNull(condition.getTypeId()), Comment::getTypeId, condition.getTypeId())
@@ -171,6 +172,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     }
 
     private void verifyComment(CommentDTO comment) {
+        Assert.notNull(getCommentPath(comment.getCommentType()), "不支持的评论类型");
         if (comment.getCommentType().equals(ARTICLE.getType())) {
             Article article = articleMapper.selectOne(new LambdaQueryWrapper<Article>().select(Article::getId).eq(Article::getId, comment.getTypeId()));
             Assert.notNull(article, "文章不存在");

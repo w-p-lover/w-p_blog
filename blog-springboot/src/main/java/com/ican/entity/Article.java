@@ -35,6 +35,17 @@ public class Article {
     private Integer userId;
 
     /**
+     * 详情正文的持久版本标记，不作为编辑冲突或任务执行顺序。
+     */
+    private String contentVersion;
+
+    /** 作者保存生成的正文身份，AI派生写入不得改变。 */
+    private String sourceVersion;
+
+    /** 所有向量批次完成后发布的正文身份。 */
+    private String indexedSourceVersion;
+
+    /**
      * 文章分类
      */
     private Integer categoryId;

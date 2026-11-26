@@ -15,6 +15,7 @@ import com.ican.model.dto.CategoryDTO;
 import com.ican.model.dto.ConditionDTO;
 import com.ican.model.vo.*;
 import com.ican.service.CategoryService;
+import com.ican.service.ArticleAccessService;
 import com.ican.utils.BeanCopyUtils;
 import com.ican.utils.PageUtils;
 import lombok.RequiredArgsConstructor;
@@ -46,6 +47,8 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
     private final UserMapper userMapper;
 
     private final ArticleMapper articleMapper;
+
+    private final ArticleAccessService articleAccessService;
 
     @Override
     public PageResult<CategoryBackVO> listCategoryBackVO(ConditionDTO condition) {
@@ -178,7 +181,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
     @Override
     public ArticleConditionList listArticleCategory(ConditionDTO condition) {
         List<ArticleConditionVO> articleConditionList = articleMapper.listArticleByCondition(PageUtils.getLimit(),
-                PageUtils.getSize(), condition);
+                PageUtils.getSize(), condition, articleAccessService.canReadPrivateArticles());
         String name = categoryMapper.selectOne(new LambdaQueryWrapper<Category>()
                         .select(Category::getCategoryName)
                         .eq(Category::getId, condition.getCategoryId()))

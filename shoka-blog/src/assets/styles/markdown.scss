@@ -52,7 +52,7 @@
   border-left: 0.22rem solid var(--primary-color) !important;
   border-left-color: var(--primary-color) !important;
   border-radius: 0.45rem;
-  background-color: #faf8f2 !important;
+  background-color: var(--grey-2) !important;
   color: var(--grey-6) !important;
   word-wrap: break-word;
 }
@@ -197,7 +197,7 @@ dt {
 }
 
 // code样式
-:not(pre) > code {
+.md :not(pre) > code {
   color: var(--home-accent-warm) !important;
   border-radius: 0.3rem !important;
   border: 0.0625rem solid var(--home-border);
@@ -293,7 +293,7 @@ dt {
 .md h4,
 .md h5,
 .md h6 {
-  color: #333;
+  color: var(--text-color) !important;
   letter-spacing: 0;
 }
 

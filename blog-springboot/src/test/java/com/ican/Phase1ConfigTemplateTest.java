@@ -22,7 +22,6 @@ class Phase1ConfigTemplateTest {
         String content = Files.readString(envExample, StandardCharsets.UTF_8);
         assertTrue(content.contains("SPRING_PROFILES_ACTIVE=dev"));
         assertTrue(content.contains("BLOG_DB_URL="));
-        assertTrue(content.contains("BLOG_OPENAI_API_KEY="));
         assertTrue(content.contains("BLOG_GITHUB_CLIENT_SECRET="));
     }
 

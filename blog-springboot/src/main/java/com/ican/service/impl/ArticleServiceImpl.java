@@ -2,20 +2,20 @@ package com.ican.service.impl;
 
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.lang.Assert;
-import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ican.annotation.RateLimit;
 import com.ican.cache.MultiLevelCacheManager;
+import com.ican.exception.ServiceException;
 import com.ican.entity.*;
 import com.ican.mapper.*;
 import com.ican.metrics.BlogMetrics;
 import com.ican.model.dto.*;
 import com.ican.model.vo.*;
-import com.ican.service.AiTaskService;
 import com.ican.service.ArticleService;
+import com.ican.service.ArticleAccessService;
 import com.ican.service.HotArticleWarmupService;
 import com.ican.service.RedisService;
 import com.ican.service.TagService;
@@ -28,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,14 +36,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import static com.ican.constant.CommonConstant.FALSE;
-import static com.ican.constant.PersonConstant.MY_MAIL;
-import static com.ican.constant.PersonConstant.MY_RED_MAIL;
 import static com.ican.constant.RedisConstant.*;
-import static com.ican.enums.ArticleStatusEnum.PUBLIC;
 import static com.ican.enums.FilePathEnum.ARTICLE;
 
 /**
@@ -61,7 +59,7 @@ import static com.ican.enums.FilePathEnum.ARTICLE;
 @Slf4j
 public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> implements ArticleService {
 
-    private final UserMapper userMapper;
+    private final ArticleAccessService articleAccessService;
 
     private final CategoryMapper categoryMapper;
 
@@ -87,7 +85,10 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     private final HotArticleWarmupService hotArticleWarmupService;
 
-    private final AiTaskService aiTaskService;
+
+    private final ArticleViewService articleViewService;
+
+    private final AtomicBoolean homeWarmupScheduled = new AtomicBoolean();
 
     @Autowired
     private ThreadPoolTaskExecutor hotArticleExecutor;
@@ -130,11 +131,13 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         }
         newArticle.setCategoryId(categoryId);
         newArticle.setUserId(StpUtil.getLoginIdAsInt());
+        newArticle.setContentVersion(UUID.randomUUID().toString());
+        newArticle.setSourceVersion(UUID.randomUUID().toString());
         baseMapper.insert(newArticle);
         // 保存文章标签
         saveArticleTag(article, newArticle.getId());
-        // 创建文章AI任务并异步投递
-        createArticleAiTask(newArticle.getId(), newArticle.getArticleTitle(), newArticle.getArticleContent());
+        // 提交后失效，也清除文章创建前可能存在的负缓存及旧装载。
+        cacheManager.evict("article:" + newArticle.getId());
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -185,13 +188,13 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         Article newArticle = BeanCopyUtils.copyBean(article, Article.class);
         newArticle.setCategoryId(categoryId);
         newArticle.setUserId(StpUtil.getLoginIdAsInt());
+        newArticle.setContentVersion(UUID.randomUUID().toString());
+        newArticle.setSourceVersion(UUID.randomUUID().toString());
         baseMapper.updateById(newArticle);
         // 保存文章标签
         saveArticleTag(article, newArticle.getId());
         // 清除缓存
         cacheManager.evict("article:" + newArticle.getId());
-        // 创建文章AI任务并异步投递
-        createArticleAiTask(newArticle.getId(), newArticle.getArticleTitle(), newArticle.getArticleContent());
     }
 
     @Override
@@ -243,14 +246,13 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     public PageResult<ArticleHomeVO> listArticleHomeVO(String sort, Integer tagId, String start, String end) {
 
         String safeSort = normalizeSort(sort);
-        String email = getCurrentUserEmail();
-        boolean isSpecialEmail = checkSpecialEmail(email);
+        boolean isSpecialEmail = articleAccessService.canReadPrivateArticles();
         List<ArticleHomeVO> articles = queryArticles(safeSort, tagId, start, end, isSpecialEmail);
         if (CollectionUtils.isEmpty(articles)) {
             return new PageResult<>();
         }
         PageResult<ArticleHomeVO> result = paginateResults(articles);
-        processHotArticles(articles);
+        processHotArticles(result.getRecordList());
         return result;
     }
 
@@ -259,7 +261,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
      */
     private void processHotArticles(List<ArticleHomeVO> articles) {
         Map<Object, Double> viewCountMap = redisService.getZsetAllScore(ARTICLE_VIEW_COUNT);
-        Set<Integer> hotCandidates = new HashSet<>();
+        Set<Integer> hotCandidates = new LinkedHashSet<>();
 
         for (ArticleHomeVO article : articles) {
             article.setArticleContent(article.getArticleContent().replaceAll("#", ""));
@@ -271,8 +273,22 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             }
         }
 
-        if (!hotCandidates.isEmpty()) {
-            CompletableFuture.runAsync(() -> hotArticleWarmupService.warmupArticleIds(hotCandidates), hotArticleExecutor);
+        // 同一实例首页最多一个待执行/运行中的预热，避免重复请求占满队列。
+        if (!hotCandidates.isEmpty() && homeWarmupScheduled.compareAndSet(false, true)) {
+            try {
+                hotArticleExecutor.execute(() -> {
+                    try {
+                        hotArticleWarmupService.warmupArticleIds(hotCandidates);
+                    } catch (RuntimeException e) {
+                        log.warn("首页热点预热失败，不影响已取得的列表", e);
+                    } finally {
+                        homeWarmupScheduled.set(false);
+                    }
+                });
+            } catch (RuntimeException e) {
+                homeWarmupScheduled.set(false);
+                log.warn("首页热点预热未能入队", e);
+            }
         }
     }
 
@@ -280,84 +296,76 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
      * 查询文章详情（使用多级缓存 + 限流）
      */
     @Override
-    @RateLimit(key = "api:article:view:#{#articleId}", limit = 10, period = 60)
+    @RateLimit(key = "api:article:view:#{#articleId}", perClient = true, limit = 10, period = 60)
     public ArticleVO getArticleHomeById(Integer articleId) {
-        String cacheKey = "article:" + articleId;
-
-        // 使用多级缓存管理器（自动处理缓存穿透、击穿、雪崩）
-        ArticleVO article = cacheManager.get(cacheKey, key -> {
-            ArticleVO dbArticle = articleMapper.selectArticleHomeById(articleId);
-            if (dbArticle != null) {
-                hydrateArticleStatsFromRedis(articleId, dbArticle);
-            }
-            return dbArticle;
-        }, 30); // 30 分钟过期
-
-        if (article != null) {
-            updateArticleStatsFromRedis(articleId, article);
+        // 先选持久版本，旧实例L1、漏广播或失败删除不再决定详情正文版本。
+        // 此处仅选已发布版本；读者权限仍在装载完成后确认。
+        String contentVersion = articleMapper.selectVisibleArticleVersion(articleId, true);
+        if (contentVersion == null) {
+            return null;
         }
+        String cacheKey = "article:" + articleId + ":v:" + contentVersion + ":body";
+
+        // 正文回源不读取动态统计；统计故障不能污染正文负缓存或阻止回填。
+        ArticleVO article = cacheManager.get(cacheKey, key -> {
+            ArticleVO loaded = articleMapper.selectArticleHomeById(articleId, contentVersion);
+            if (loaded == null) {
+                // 选版本后撤回/删除可能使装载为空，不能给可恢复的同版本正文留下负缓存。
+                throw new ServiceException("内容已更新，请重新读取");
+            }
+            return loaded;
+        }, 30);
+
+        // 即使命中负缓存，也要检查装载期间是否发生发布/编辑。
+        boolean privateAccess = articleAccessService.canReadPrivateArticles();
+        ArticleDetailStateVO state = articleMapper.selectVisibleArticleDetailState(articleId, privateAccess);
+        if (state == null) {
+            return null;
+        }
+        if (!contentVersion.equals(state.getContentVersion())) {
+            throw new ServiceException("内容已更新，请重新读取");
+        }
+        if (article == null) {
+            // 清理升级前可能留下的同版本负缓存；不把当前存在的文章伪装为不存在。
+            cacheManager.evict(cacheKey);
+            throw new ServiceException("内容已更新，请重新读取");
+        }
+        // 共享缓存不保存当前读者的导航；每次覆盖旧缓存中可能残留的上下篇。
+        article = BeanCopyUtils.copyBean(article, ArticleVO.class);
+        article.setCategory(state.getCategory());
+        article.setTagVOList(state.getTagVOList());
+        article.setLastArticle(state.getLastArticle());
+        article.setNextArticle(state.getNextArticle());
+        updateArticleStatsFromRedis(articleId, article, state.getViews());
         return article;
     }
 
-    private void updateArticleStatsFromRedis(Integer articleId, ArticleVO articleVO) {
-        blogMetrics.incrementArticleView(articleId);
-        Double viewCount = Optional.ofNullable(redisService
-                .getZsetScore(ARTICLE_VIEW_COUNT, articleId)).orElse((double) 0);
-        // 缓存中浏览量+1
-        redisService.incrZet(ARTICLE_VIEW_COUNT, articleId, 1D);
-        hydrateArticleStatsFromRedis(articleId, articleVO, viewCount.intValue() + 1);
-        // 异步更新数据库
-        CompletableFuture.runAsync(() ->
-                articleMapper.incrementViews(Long.valueOf(articleId)), hotArticleExecutor);
-    }
-
-    private void hydrateArticleStatsFromRedis(Integer articleId, ArticleVO articleVO) {
-        Double viewCount = Optional.ofNullable(redisService
-                .getZsetScore(ARTICLE_VIEW_COUNT, articleId)).orElse((double) 0);
-        hydrateArticleStatsFromRedis(articleId, articleVO, viewCount.intValue());
-    }
-
-    private void hydrateArticleStatsFromRedis(Integer articleId, ArticleVO articleVO, Integer views) {
-        Integer likeCount = redisService.getHash(ARTICLE_LIKE_COUNT, articleId.toString());
-        // 查询下一篇文章
-        ArticlePaginationVO lastArticle = articleMapper.selectLastArticle(articleId);
-        ArticlePaginationVO nextArticle = articleMapper.selectNextArticle(articleId);
-        articleVO.setLikeCount(Optional.ofNullable(likeCount).orElse(0));
-        articleVO.setLastArticle(lastArticle);
-        articleVO.setNextArticle(nextArticle);
-        articleVO.setViews(views);
+    private void updateArticleStatsFromRedis(Integer articleId, ArticleVO articleVO, Integer persistedViews) {
+        articleVO.setViews(articleViewService.recordView(articleId, persistedViews));
+        try {
+            Integer likes = redisService.getHash(ARTICLE_LIKE_COUNT, articleId.toString());
+            articleVO.setLikeCount(Optional.ofNullable(likes).orElse(0));
+        } catch (DataAccessException e) {
+            blogMetrics.recordArticleStatsFailure("likes_read");
+            articleVO.setLikeCount(0);
+            log.debug("文章点赞统计不可用: articleId={}", articleId, e);
+        }
     }
 
     @Override
     public PageResult<ArchiveVO> listArchiveVO() {
-        // 查询文章数量
-        Long count = articleMapper.selectCount(new LambdaQueryWrapper<Article>()
-                .eq(Article::getIsDelete, FALSE)
-                .eq(Article::getStatus, PUBLIC.getStatus()));
+        boolean privateAccess = articleAccessService.canReadPrivateArticles();
+        Long count = articleMapper.countVisibleArticles(privateAccess);
         if (count == 0) {
             return new PageResult<>();
         }
-        String email = null;
-        if (StpUtil.isLogin()) {
-            int userId = StpUtil.getLoginIdAsInt();
-            email = userMapper.selectOne(new LambdaQueryWrapper<User>()
-                    .select(User::getEmail).eq(User::getId, userId)).getEmail();
-        }
-        // 查询用户信息
-        if (ObjectUtil.isNotNull(email) && (email.equals(MY_MAIL) || email.equals(MY_RED_MAIL))) {
-            // 查询首页文章
-            List<ArchiveVO> archiveList = articleMapper.PselectArchiveList(PageUtils.getLimit(), PageUtils.getSize());
-            return new PageResult<>(archiveList, count);
-        } else {
-            List<ArchiveVO> articleHomeVOList = articleMapper.selectArchiveList(PageUtils.getLimit(), PageUtils.getSize());
-            return new PageResult<>(articleHomeVOList, count);
-        }
-
+        List<ArchiveVO> archiveList = articleMapper.selectArchiveList(PageUtils.getLimit(), PageUtils.getSize(), privateAccess);
+        return new PageResult<>(archiveList, count);
     }
 
     @Override
     public List<ArticleRecommendVO> listArticleRecommendVO() {
-        return articleMapper.selectArticleRecommend();
+        return articleMapper.selectArticleRecommend(articleAccessService.canReadPrivateArticles());
     }
 
     @Override
@@ -461,33 +469,11 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     // ----------- 辅助方法 ----------- //
 
-    // 获取当前用户邮箱
-    private String getCurrentUserEmail() {
-        try {
-
-            if (StpUtil.isLogin()) {
-                User user = userMapper.selectOne(new LambdaQueryWrapper<User>()
-                        .select(User::getEmail)
-                        .eq(User::getId, StpUtil.getLoginIdAsInt()));
-                return user != null ? user.getEmail() : null;
-            }
-            return null;
-        } catch (Exception e) {
-            log.error("获取用户邮箱失败", e);
-            return null;
-        }
-    }
-
-    // 判断是否特权邮箱
-    private boolean checkSpecialEmail(String email) {
-        return ObjectUtil.isNotNull(email) && (email.equals(MY_MAIL) || email.equals(MY_RED_MAIL));
-    }
-
     // 查询文章列表（核心查询方法）
     private List<ArticleHomeVO> queryArticles(String sort, Integer tagId, String start,
                                               String end, boolean isSpecial) {
         if (isSpecial) {
-            // 特权用户查询所有文章（包括未发布）
+            // 指定账号可查看私人标记，但仍限于已发布且未删除文章
             return articleMapper.selectArticleAllList(sort, tagId, start, end);
         } else {
             // 普通用户只能查询已发布文章
@@ -525,10 +511,5 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         return "create_time";
     }
 
-    private void createArticleAiTask(Integer articleId, String title, String content) {
-        if (articleId == null || StringUtils.isBlank(content)) {
-            return;
-        }
-        aiTaskService.createArticleTask(articleId, title, content);
-    }
+
 }

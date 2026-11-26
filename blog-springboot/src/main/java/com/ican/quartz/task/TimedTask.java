@@ -2,7 +2,6 @@ package com.ican.quartz.task;
 
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
-import com.ican.mapper.ChatMapper;
 import com.ican.mapper.VisitLogMapper;
 import com.ican.service.ArticleHotScoreService;
 import com.ican.service.HotArticleWarmupService;
@@ -28,8 +27,6 @@ public class TimedTask {
     @Autowired
     private VisitLogMapper visitLogMapper;
 
-    @Autowired
-    private ChatMapper chatMapper;
 
     @Autowired
     private ArticleHotScoreService articleHotScoreService;
@@ -60,13 +57,7 @@ public class TimedTask {
         visitLogMapper.deleteVisitLog(endTime);
     }
 
-    /**
-     * 清除半个月前的聊天日志
-     */
-    public void clearChatRecord() {
-        DateTime endTime = DateUtil.beginOfDay(DateUtil.offsetDay(new Date(), -15));
-        chatMapper.deleteChatRecord(endTime);
-    }
+
 
     /**
      * 刷新文章热度分

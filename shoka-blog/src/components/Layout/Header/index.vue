@@ -7,10 +7,14 @@
     <!-- 右侧按钮 -->
     <ul class="right">
       <li class="item">
-        <svg-icon style="cursor: pointer;" :icon-class="isDark ? 'moon' : 'sun'" @click="toggle()"></svg-icon>
+        <button type="button" :aria-label="isDark ? '切换浅色主题' : '切换深色主题'" @click="toggle()">
+          <svg-icon :icon-class="isDark ? 'moon' : 'sun'"></svg-icon>
+        </button>
       </li>
       <li class="item">
-        <svg-icon style="cursor: pointer;" icon-class="search" @click="app.searchFlag = true"></svg-icon>
+        <button type="button" aria-label="搜索文章" @click="app.searchFlag = true">
+          <svg-icon icon-class="search"></svg-icon>
+        </button>
       </li>
     </ul>
   </header>
@@ -79,6 +83,17 @@ watch(y, (newValue, oldValue) => {
 }
 
 .right {
+  button {
+    display: inline-flex;
+    color: inherit;
+    cursor: pointer;
+  }
+
+  button:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 4px;
+  }
+
   display: inline-flex;
   align-items: center;
   justify-content: center;

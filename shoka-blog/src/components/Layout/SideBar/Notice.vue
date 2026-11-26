@@ -18,12 +18,18 @@ const {blog} = useStore();
 
 <style lang="scss" scoped>
 .notice-title {
-  font-size: 1.2em;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.35rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
 }
 
 .notice-content {
-  font-size: 0.9rem;
-  line-height: 1.75rem;
+  font-size: 0.8125rem;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
 }
 
 .trumpet {

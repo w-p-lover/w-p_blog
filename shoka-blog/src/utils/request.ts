@@ -2,8 +2,10 @@ import useStore from "@/store";
 import axios, {AxiosError, AxiosResponse, InternalAxiosRequestConfig} from "axios";
 import {getToken, token_prefix} from "./token";
 
+export const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || "http://localhost:8080").replace(/\/+$/, "");
+
 const requests = axios.create({
-    baseURL: "http://localhost:8080",
+    baseURL: apiBaseUrl,
     timeout: 10000,
     // 请求头
     headers: {

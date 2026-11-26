@@ -183,6 +183,7 @@
 </template>
 
 <script setup lang="ts">
+import {apiBaseUrl} from "@/utils/request";
 import { ref, computed, reactive, toRefs, nextTick } from "vue";
 import { useRoute } from "vue-router";
 import { useIntervalFn } from '@vueuse/core';
@@ -325,8 +326,8 @@ const showCaptcha = ref(false);
 const captchaBox = ref<HTMLElement | null>(null);
 let globalTAC: any;
 const captchaConfig = {
-  requestCaptchaDataUrl: "http://localhost:8080/gen?type=RANDOM",
-  validCaptchaUrl: "http://localhost:8080/check",
+  requestCaptchaDataUrl: `${apiBaseUrl}/gen?type=RANDOM`,
+  validCaptchaUrl: `${apiBaseUrl}/check`,
   bindEl: "#captcha-box",
   validSuccess: (res: any, c: any, tac: any) => {
     tac.destroyWindow();
