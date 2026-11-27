@@ -2,6 +2,61 @@ import {createRouter, createWebHistory, RouteRecordRaw} from "vue-router";
 
 const routes: RouteRecordRaw[] = [
     {
+        path: "/living",
+        component: () => import("@/views/Living/index.vue"),
+        meta: {title: "生活"},
+    },
+    {
+        path: "/album",
+        component: () => import("@/views/Album/Album.vue"),
+        meta: {title: "相册"},
+    },
+    {
+        path: "/album/:albumId",
+        component: () => import("@/views/Album/Photo.vue"),
+        meta: {title: "相册"},
+    },
+    {
+        path: "/book",
+        component: () => import("@/views/Book/index.vue"),
+        meta: {title: "书架"},
+    },
+    {
+        path: "/book/:id",
+        component: () => import("@/views/Book/BookDetail.vue"),
+        meta: {title: "书籍详情"},
+    },
+    {
+        path: "/music",
+        component: () => import("@/views/Music/index.vue"),
+        meta: {title: "音乐"},
+    },
+    {
+        path: "/music/:id",
+        component: () => import("@/views/Music/MusicDetail.vue"),
+        meta: {title: "音乐详情"},
+    },
+    {
+        path: "/steam",
+        component: () => import("@/views/Steam/index.vue"),
+        meta: {title: "游戏"},
+    },
+    {
+        path: "/life",
+        component: () => import("@/views/Life/index.vue"),
+        meta: {title: "成长路线"},
+    },
+    {
+        path: "/weather",
+        component: () => import("@/views/Weather/index.vue"),
+        meta: {title: "天气"},
+    },
+    {
+        path: "/trend",
+        component: () => import("@/views/Trending/index.vue"),
+        meta: {title: "开源发现"},
+    },
+    {
         name: "talk",
         path: "/talk",
         component: () => import("@/views/Talk/TalkList.vue"),

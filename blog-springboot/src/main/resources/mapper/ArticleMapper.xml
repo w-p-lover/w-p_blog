@@ -211,6 +211,26 @@
         </choose>
     </select>
 
+    <select id="selectVisibleAiArticles" resultType="com.ican.entity.Article">
+        SELECT id, source_version, indexed_source_version
+        FROM t_article
+        WHERE source_version IS NOT NULL AND indexed_source_version = source_version
+          AND is_delete = 0 AND `status` = 1
+        <if test="!privateAccess">
+            <include refid="excludePrivateArticles"><property name="articleAlias" value="t_article"/></include>
+        </if>
+        <choose>
+            <when test="articleIds != null and !articleIds.isEmpty()">
+                AND id IN
+                <foreach collection="articleIds" item="articleId" open="(" separator="," close=")">
+                    #{articleId}
+                </foreach>
+            </when>
+            <otherwise>
+                AND 1 = 0
+            </otherwise>
+        </choose>
+    </select>
 
     <select id="selectArticleAllList" resultMap="articleHomeVO">
         SELECT a.id,
@@ -487,7 +507,29 @@
         ORDER BY a.id DESC
     </select>
 
+    <update id="updateArticleAiResult">
+        UPDATE t_article
+        SET ai_summary = #{aiSummary},
+            ai_suggest_tags = #{aiSuggestTags},
+            ai_indexed_at = #{aiIndexedAt},
+            content_version = UUID(),
+            indexed_source_version = #{sourceVersion}
+        WHERE id = #{articleId} AND source_version = #{sourceVersion}
+          AND is_delete = 0 AND status = 1
+          AND EXISTS (SELECT 1 FROM t_ai_task WHERE id = #{taskId}
+                      AND status = 'RUNNING' AND execution_token = #{token}
+                      AND biz_id = #{articleId} AND source_version = #{sourceVersion})
+    </update>
 
+    <update id="resetArticleAiResult">
+        UPDATE t_article SET ai_summary = NULL, ai_suggest_tags = NULL,
+            ai_indexed_at = NULL, indexed_source_version = NULL
+        WHERE id = #{articleId} AND source_version = #{sourceVersion}
+    </update>
 
+    <update id="publishArticleVector">
+        UPDATE t_article SET indexed_source_version = #{sourceVersion}, ai_indexed_at = NOW()
+        WHERE id = #{articleId} AND source_version = #{sourceVersion} AND is_delete = 0 AND status = 1
+    </update>
 
 </mapper>

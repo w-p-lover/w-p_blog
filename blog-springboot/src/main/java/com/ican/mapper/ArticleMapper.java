@@ -193,4 +193,17 @@ public interface ArticleMapper extends BaseMapper<Article> {
     @Update("UPDATE t_article SET views = views + #{i} WHERE id = #{articleId}")
     void incrementViewsByi(@Param("articleId") Integer id, @Param("i") Double aDouble);
 
+    List<Article> selectVisibleAiArticles(@Param("articleIds") Collection<Integer> articleIds,
+                                          @Param("privateAccess") boolean privateAccess);
+
+    int resetArticleAiResult(@Param("articleId") Integer articleId, @Param("sourceVersion") String sourceVersion);
+
+    int publishArticleVector(@Param("articleId") Integer articleId, @Param("sourceVersion") String sourceVersion);
+
+    int updateArticleAiResult(@Param("articleId") Integer articleId,
+                               @Param("aiSummary") String aiSummary,
+                               @Param("aiSuggestTags") String aiSuggestTags,
+                               @Param("aiIndexedAt") LocalDateTime aiIndexedAt,
+                               @Param("sourceVersion") String sourceVersion,
+                               @Param("taskId") Integer taskId, @Param("token") String token);
 }

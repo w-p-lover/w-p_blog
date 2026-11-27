@@ -1,0 +1,19 @@
+spring:
+  ai:
+    openai:
+      api-key: ${BLOG_OPENAI_API_KEY:}
+      base-url: ${BLOG_OPENAI_BASE_URL:https://api.deepseek.com}
+      chat:
+        options:
+          model: ${BLOG_OPENAI_CHAT_MODEL:deepseek-chat}
+          temperature: ${BLOG_OPENAI_CHAT_TEMPERATURE:0.7}
+    dashscope:
+      api-key: ${BLOG_DASHSCOPE_API_KEY:}
+      embedding:
+        options:
+          model: ${BLOG_DASHSCOPE_EMBED_MODEL:text-embedding-v3}
+    vectorstore:
+      qdrant:
+        host: ${BLOG_QDRANT_HOST:127.0.0.1}
+        port: ${BLOG_QDRANT_PORT:6334}
+        collection-name: ${BLOG_QDRANT_COLLECTION:blog-articles}

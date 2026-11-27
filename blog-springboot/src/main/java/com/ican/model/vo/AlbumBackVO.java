@@ -1,0 +1,44 @@
+package com.ican.model.vo;
+
+import lombok.Data;
+
+/**
+ * 相册后台VO
+ *
+ * @author xcs
+ * @date 2022/12/30 16:06
+ **/
+@Data
+public class AlbumBackVO {
+
+    /**
+     * 相册id
+     */
+    private Integer id;
+
+    /**
+     * 相册名
+     */
+    private String albumName;
+
+    /**
+     * 相册封面
+     */
+    private String albumCover;
+
+    /**
+     * 相册描述
+     */
+    private String albumDesc;
+
+    /**
+     * 照片数量
+     */
+    private Long photoCount;
+
+    /**
+     * 状态 (1公开 2私密)
+     */
+    private Integer status;
+
+}

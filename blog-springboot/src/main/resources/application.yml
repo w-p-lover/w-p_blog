@@ -218,3 +218,40 @@ knife4j:
 
 captcha:
   init-default-resource: true
+
+hefeng:
+  api-key: ${BLOG_HEFENG_API_KEY:}
+  base-url: ${BLOG_HEFENG_BASE_URL:https://pe7byfyfwb.re.qweatherapi.com/}
+
+
+spider:
+  dir: ${BLOG_SPIDER_DIR:${user.dir}/src/main/resources/static/}
+  python:
+    cmd: ${BLOG_PYTHON_CMD:python}
+  photo:
+    album:
+      id: 1
+
+
+---
+# AI 架构保留，普通博客启动不创建模型、向量连接或任务消费者。
+spring:
+  config:
+    activate:
+      on-profile: "!ai"
+  autoconfigure:
+    exclude:
+      - org.springframework.ai.model.openai.autoconfigure.OpenAiChatAutoConfiguration
+      - org.springframework.ai.model.openai.autoconfigure.OpenAiEmbeddingAutoConfiguration
+      - org.springframework.ai.model.openai.autoconfigure.OpenAiImageAutoConfiguration
+      - org.springframework.ai.model.openai.autoconfigure.OpenAiAudioSpeechAutoConfiguration
+      - org.springframework.ai.model.openai.autoconfigure.OpenAiAudioTranscriptionAutoConfiguration
+      - org.springframework.ai.model.openai.autoconfigure.OpenAiModerationAutoConfiguration
+      - org.springframework.ai.vectorstore.qdrant.autoconfigure.QdrantVectorStoreAutoConfiguration
+      - com.alibaba.cloud.ai.autoconfigure.dashscope.DashScopeChatAutoConfiguration
+      - com.alibaba.cloud.ai.autoconfigure.dashscope.DashScopeAgentAutoConfiguration
+      - com.alibaba.cloud.ai.autoconfigure.dashscope.DashScopeImageAutoConfiguration
+      - com.alibaba.cloud.ai.autoconfigure.dashscope.DashScopeAudioSpeechAutoConfiguration
+      - com.alibaba.cloud.ai.autoconfigure.dashscope.DashScopeAudioTranscriptionAutoConfiguration
+      - com.alibaba.cloud.ai.autoconfigure.dashscope.DashScopeRerankAutoConfiguration
+      - com.alibaba.cloud.ai.autoconfigure.dashscope.DashScopeEmbeddingAutoConfiguration

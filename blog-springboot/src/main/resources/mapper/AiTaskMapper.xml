@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ican.mapper.AiTaskMapper">
+
+    <!-- PENDING投递到期；RUNNING同字段表示租约，RETRYING表示业务退避。 -->
+    <select id="selectDuePendingTasks" resultType="java.lang.Integer">
+        SELECT id FROM t_ai_task
+        WHERE biz_type = 'ARTICLE' AND task_type = 'ARTICLE_SUMMARY_TAG_VECTOR'
+          AND status = 'PENDING' AND (next_dispatch_at IS NULL OR next_dispatch_at &lt;= NOW(6))
+        ORDER BY next_dispatch_at, id LIMIT #{size}
+    </select>
+
+    <update id="reserveDispatch">
+        UPDATE t_ai_task
+        SET next_dispatch_at = TIMESTAMPADD(SECOND,
+                LEAST(300, 30 * POW(2, LEAST(COALESCE(dispatch_attempts, 0), 4))), NOW(6)),
+            dispatch_attempts = LEAST(COALESCE(dispatch_attempts, 0) + 1, 2147483647),
+            update_time = NOW()
+        WHERE id = #{taskId} AND biz_type = 'ARTICLE' AND task_type = 'ARTICLE_SUMMARY_TAG_VECTOR'
+          AND status = 'PENDING' AND (next_dispatch_at IS NULL OR next_dispatch_at &lt;= NOW(6))
+    </update>
+
+    <update id="claimPendingTask">
+        UPDATE t_ai_task
+        SET status = 'RUNNING', execution_token = #{token}, started_at = NOW(),
+            next_dispatch_at = TIMESTAMPADD(SECOND, 900, NOW(6)),
+            finished_at = NULL, cost_time = NULL, result_payload = NULL, error_message = NULL,
+            update_time = NOW()
+        WHERE id = #{taskId} AND biz_type = 'ARTICLE' AND task_type = 'ARTICLE_SUMMARY_TAG_VECTOR'
+          AND status = 'PENDING'
+    </update>
+
+    <update id="saveGeneratedPayload">
+        UPDATE t_ai_task SET generated_payload = #{payload},
+            next_dispatch_at = TIMESTAMPADD(SECOND, 900, NOW(6)), update_time = NOW()
+        WHERE id = #{taskId} AND status = 'RUNNING' AND execution_token = #{token}
+          AND next_dispatch_at &gt; NOW(6)
+    </update>
+
+    <update id="completeExecution">
+        UPDATE t_ai_task
+        SET status = #{task.status}, retry_count = #{task.retryCount},
+            result_payload = #{task.resultPayload}, error_message = #{task.errorMessage},
+            finished_at = #{task.finishedAt}, cost_time = #{task.costTime},
+            execution_token = NULL,
+            next_dispatch_at = CASE WHEN #{task.status} = 'RETRYING'
+                THEN TIMESTAMPADD(SECOND, LEAST(300, 30 * POW(2, LEAST(#{task.retryCount}, 4))), NOW(6))
+                ELSE NULL END, update_time = NOW()
+        WHERE id = #{task.id} AND status = 'RUNNING' AND execution_token = #{token}
+    </update>
+
+    <update id="resetFailedTask">
+        UPDATE t_ai_task
+        SET status = 'PENDING', execution_token = NULL, next_dispatch_at = NULL, dispatch_attempts = 0,
+            started_at = NULL, finished_at = NULL, cost_time = NULL,
+            result_payload = NULL, error_message = NULL, update_time = NOW()
+        WHERE id = #{taskId} AND biz_type = 'ARTICLE' AND task_type = 'ARTICLE_SUMMARY_TAG_VECTOR'
+          AND status IN ('RETRYING', 'FAILED')
+          AND generated_payload IS NOT NULL AND generated_payload != ''
+          AND COALESCE(retry_count, 0) = #{retryCount}
+          AND COALESCE(retry_count, 0) &lt; COALESCE(max_retry_count, 3)
+    </update>
+
+    <!-- 与最终发布在同一个短事务中锁任务行，回收UPDATE也竞争该行锁。 -->
+    <select id="lockExecution" resultType="com.ican.entity.AiTask">
+        SELECT * FROM t_ai_task
+        WHERE id = #{taskId} AND status = 'RUNNING' AND execution_token = #{token}
+        FOR UPDATE
+    </select>
+
+    <update id="renewExecution">
+        UPDATE t_ai_task SET next_dispatch_at = TIMESTAMPADD(SECOND, 900, NOW(6)), update_time = NOW()
+        WHERE id = #{taskId} AND status = 'RUNNING' AND execution_token = #{token}
+          AND next_dispatch_at &gt; NOW(6)
+    </update>
+
+    <select id="selectRecoverableTasks" resultType="java.lang.Integer">
+        SELECT id FROM t_ai_task
+        WHERE biz_type = 'ARTICLE' AND task_type = 'ARTICLE_SUMMARY_TAG_VECTOR'
+          AND (status = 'RUNNING'
+               OR (status = 'RETRYING'
+                   AND generated_payload IS NOT NULL AND generated_payload != ''
+                   AND COALESCE(retry_count, 0) &lt; COALESCE(max_retry_count, 3)))
+          AND next_dispatch_at &lt;= NOW(6)
+        ORDER BY next_dispatch_at, id LIMIT #{size}
+    </select>
+
+    <update id="expireExecution">
+        UPDATE t_ai_task
+        SET status = CASE WHEN generated_payload IS NULL OR generated_payload = '' THEN 'UNKNOWN'
+                         WHEN COALESCE(retry_count, 0) + 1 &gt;= COALESCE(max_retry_count, 3) THEN 'FAILED'
+                         ELSE 'RETRYING' END,
+            error_message = '执行租约到期；无检查点需核查模型结果，有检查点按预算接续',
+            next_dispatch_at = TIMESTAMPADD(SECOND,
+                LEAST(300, 30 * POW(2, LEAST(COALESCE(retry_count, 0) + 1, 4))), NOW(6)),
+            retry_count = COALESCE(retry_count, 0) + 1,
+            execution_token = NULL, finished_at = NOW(), update_time = NOW()
+        WHERE id = #{taskId} AND biz_type = 'ARTICLE' AND task_type = 'ARTICLE_SUMMARY_TAG_VECTOR'
+          AND status = 'RUNNING' AND next_dispatch_at &lt;= NOW(6)
+    </update>
+
+    <update id="resumeCheckpointTask">
+        UPDATE t_ai_task SET status = 'PENDING', next_dispatch_at = NULL, dispatch_attempts = 0,
+            execution_token = NULL, update_time = NOW()
+        WHERE id = #{taskId} AND biz_type = 'ARTICLE' AND task_type = 'ARTICLE_SUMMARY_TAG_VECTOR'
+          AND status = 'RETRYING' AND next_dispatch_at &lt;= NOW(6)
+          AND generated_payload IS NOT NULL AND generated_payload != ''
+          AND COALESCE(retry_count, 0) &lt; COALESCE(max_retry_count, 3)
+    </update>
+
+    <select id="selectTaskBacklog" resultType="java.util.HashMap">
+        SELECT status AS taskStatus, COUNT(*) AS taskCount,
+               GREATEST(0, TIMESTAMPDIFF(SECOND, MIN(create_time), NOW())) AS oldestSeconds
+        FROM t_ai_task
+        WHERE biz_type = 'ARTICLE' AND task_type = 'ARTICLE_SUMMARY_TAG_VECTOR'
+          AND status IN ('PENDING', 'RUNNING', 'RETRYING', 'UNKNOWN', 'FAILED')
+        GROUP BY status
+    </select>
+
+    <select id="countTaskBackVO" resultType="java.lang.Long">
+        SELECT COUNT(id)
+        FROM t_ai_task
+        <where>
+            <if test="condition.keyword != null and condition.keyword != ''">
+                AND (biz_type LIKE concat('%', #{condition.keyword}, '%')
+                    OR task_type LIKE concat('%', #{condition.keyword}, '%')
+                    OR error_message LIKE concat('%', #{condition.keyword}, '%'))
+            </if>
+            <if test="condition.bizType != null and condition.bizType != ''">
+                AND biz_type = #{condition.bizType}
+            </if>
+            <if test="condition.taskType != null and condition.taskType != ''">
+                AND task_type = #{condition.taskType}
+            </if>
+            <if test="condition.status != null and condition.status != ''">
+                AND status = #{condition.status}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectTaskBackVO" resultType="com.ican.model.vo.AiTaskBackVO">
+        SELECT id,
+               biz_type,
+               biz_id,
+               task_type,
+               status,
+               retry_count,
+               max_retry_count,
+               error_message,
+               model_name,
+               prompt_version,
+               started_at,
+               finished_at,
+               cost_time,
+               create_time,
+               update_time
+        FROM t_ai_task
+        <where>
+            <if test="condition.keyword != null and condition.keyword != ''">
+                AND (biz_type LIKE concat('%', #{condition.keyword}, '%')
+                    OR task_type LIKE concat('%', #{condition.keyword}, '%')
+                    OR error_message LIKE concat('%', #{condition.keyword}, '%'))
+            </if>
+            <if test="condition.bizType != null and condition.bizType != ''">
+                AND biz_type = #{condition.bizType}
+            </if>
+            <if test="condition.taskType != null and condition.taskType != ''">
+                AND task_type = #{condition.taskType}
+            </if>
+            <if test="condition.status != null and condition.status != ''">
+                AND status = #{condition.status}
+            </if>
+        </where>
+        ORDER BY id DESC
+        LIMIT #{limit}, #{size}
+    </select>
+</mapper>
