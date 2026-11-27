@@ -156,7 +156,7 @@ class ArticleSearchRecoveryIntegrationTest {
 
     private int replay(boolean execute) throws Exception {
         var command = new java.util.ArrayList<>(java.util.List.of(System.getenv("BLOG_SEARCH_REPLAY_PYTHON"),
-                Path.of("docs/09-模板与脚本/replay_article_search.py").toString(),
+                Path.of("docs/09-tooling/replay_article_search.py").toString(),
                 "--expect-host", System.getenv("BLOG_RABBITMQ_HOST"),
                 "--expect-vhost", System.getenv("BLOG_SEARCH_REPLAY_TEST_VHOST"), "--limit", "1"));
         if (execute) {

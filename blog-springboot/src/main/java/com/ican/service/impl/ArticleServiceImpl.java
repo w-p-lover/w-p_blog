@@ -14,6 +14,7 @@ import com.ican.mapper.*;
 import com.ican.metrics.BlogMetrics;
 import com.ican.model.dto.*;
 import com.ican.model.vo.*;
+import com.ican.service.AiTaskService;
 import com.ican.service.ArticleService;
 import com.ican.service.ArticleAccessService;
 import com.ican.service.HotArticleWarmupService;
@@ -85,6 +86,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     private final HotArticleWarmupService hotArticleWarmupService;
 
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private AiTaskService aiTaskService;
 
     private final ArticleViewService articleViewService;
 
@@ -138,6 +141,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         saveArticleTag(article, newArticle.getId());
         // 提交后失效，也清除文章创建前可能存在的负缓存及旧装载。
         cacheManager.evict("article:" + newArticle.getId());
+        // 创建文章AI任务并异步投递
+        createArticleAiTask(newArticle.getId(), newArticle.getArticleTitle(), newArticle.getArticleContent());
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -191,10 +196,13 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         newArticle.setContentVersion(UUID.randomUUID().toString());
         newArticle.setSourceVersion(UUID.randomUUID().toString());
         baseMapper.updateById(newArticle);
+        articleMapper.resetArticleAiResult(newArticle.getId(), newArticle.getSourceVersion());
         // 保存文章标签
         saveArticleTag(article, newArticle.getId());
         // 清除缓存
         cacheManager.evict("article:" + newArticle.getId());
+        // 创建文章AI任务并异步投递
+        createArticleAiTask(newArticle.getId(), newArticle.getArticleTitle(), newArticle.getArticleContent());
     }
 
     @Override
@@ -511,5 +519,10 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         return "create_time";
     }
 
-
+    private void createArticleAiTask(Integer articleId, String title, String content) {
+        if (aiTaskService == null || articleId == null || StringUtils.isBlank(content)) {
+            return;
+        }
+        aiTaskService.createArticleTask(articleId, title, content);
+    }
 }

@@ -18,10 +18,24 @@ import java.util.concurrent.atomic.AtomicLong;
 public class BlogMetrics {
 
     private final MeterRegistry registry;
+    private final java.util.Map<String, AtomicLong> aiTaskCounts = new java.util.HashMap<>();
+    private final java.util.Map<String, AtomicLong> aiTaskAges = new java.util.HashMap<>();
+    private final AtomicLong aiTaskSnapshotAt = new AtomicLong();
     private final AtomicLong articleViewsPending = new AtomicLong();
 
     public BlogMetrics(MeterRegistry registry) {
         this.registry = registry;
+        Gauge.builder("blog.ai.task.snapshot.timestamp", aiTaskSnapshotAt, AtomicLong::get)
+                .description("持久任务积压快照最近成功采集的Unix秒，0表示尚未成功")
+                .register(registry);
+        for (String status : java.util.List.of("PENDING", "RUNNING", "RETRYING", "UNKNOWN", "FAILED")) {
+            AtomicLong count = new AtomicLong();
+            AtomicLong age = new AtomicLong();
+            aiTaskCounts.put(status, count);
+            aiTaskAges.put(status, age);
+            Gauge.builder("blog.ai.task.backlog", count, AtomicLong::get).tag("status", status).register(registry);
+            Gauge.builder("blog.ai.task.oldest.seconds", age, AtomicLong::get).tag("status", status).register(registry);
+        }
         Gauge.builder("blog.article.views.pending", articleViewsPending, AtomicLong::get)
                 .description("最近一次PV同步观察到的待同步文章数")
                 .register(registry);
@@ -34,10 +48,24 @@ public class BlogMetrics {
                 .register(registry).increment();
     }
 
-
+    public void recordAiTaskEvent(String stage, String outcome) {
+        Counter.builder("blog.ai.task.events").tag("stage", stage).tag("outcome", outcome)
+                .register(registry).increment();
+    }
 
     /** 最近一次成功扫描的持久任务快照；年龄从任务创建开始，不是broker队列长度。 */
-
+    public void setAiTaskBacklog(java.util.List<java.util.Map<String, Object>> rows) {
+        aiTaskCounts.values().forEach(value -> value.set(0));
+        aiTaskAges.values().forEach(value -> value.set(0));
+        for (var row : rows) {
+            String status = String.valueOf(row.get("taskStatus"));
+            if (aiTaskCounts.containsKey(status)) {
+                aiTaskCounts.get(status).set(((Number) row.get("taskCount")).longValue());
+                aiTaskAges.get(status).set(((Number) row.get("oldestSeconds")).longValue());
+            }
+        }
+        aiTaskSnapshotAt.set(java.time.Instant.now().getEpochSecond());
+    }
 
     public void recordCacheDuration(String stage, long costNanos) {
         Timer.builder("blog.cache.duration").tag("stage", stage)
